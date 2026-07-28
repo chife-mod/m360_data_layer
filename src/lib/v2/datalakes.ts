@@ -23,6 +23,7 @@ import {
   bankingPairs,
   bankingTriples,
   bankingAiChatIds,
+  bankingFallback,
 } from "./datalakes-banking";
 
 export type Datalake = {
@@ -43,6 +44,12 @@ export type DatalakeSet = {
   tripleDescriptions: Record<string, string>;
   /** Subset surfaced when the "available in AI chats" toggle is on. */
   aiChatIds: string[];
+  /**
+   * Shown for combinations nobody wrote copy for. When absent, a sentence is
+   * composed from the labels. Sets whose copy is still placeholder set this so
+   * an unwritten combination does not render as finished text.
+   */
+  fallbackDescription?: string;
 };
 
 // ─── Watches set — adapted from the original data, unchanged in content ───────
@@ -73,6 +80,7 @@ const bankingSet: DatalakeSet = {
   pairDescriptions: bankingPairs,
   tripleDescriptions: bankingTriples,
   aiChatIds: bankingAiChatIds,
+  fallbackDescription: bankingFallback,
 };
 
 export const DATALAKE_SETS: Record<string, DatalakeSet> = {
@@ -213,6 +221,7 @@ export function getDescription(set: DatalakeSet, selectedIds: string[]): string 
       : set.tripleDescriptions[comboKey(selectedIds)];
 
   if (authored) return authored;
+  if (set.fallbackDescription) return set.fallbackDescription;
 
   const labels = selectedIds
     .map((id) => getDatalake(set, id)?.label)

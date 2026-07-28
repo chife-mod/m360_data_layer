@@ -68,6 +68,12 @@ export function DataCard({
   }
 
   const s = cardStyles[currentState];
+
+  /** One duration for every cross-fade, so the whole tile settles together. */
+  const STATE_MS = 180;
+  const isSolidBorder = s.borderType === "solid" && s.borderStyle !== "dotted";
+  const isDottedBorder = s.borderStyle === "dotted";
+
   const accentColor = source.color;
   const iconColor = isSelected ? accentColor : "rgba(255, 255, 255, 1)";
   const textColor = isSelected ? accentColor : "rgba(255, 255, 255, 1)";
@@ -108,65 +114,98 @@ export function DataCard({
           height: "130px",
           backgroundColor: s.bg,
           borderRadius: "12px",
-          border:
-            s.borderType === "solid"
-              ? `${s.borderWidth}px ${s.borderStyle ?? "solid"} ${s.borderColor}`
-              : "none",
           boxShadow: s.shadow === "none" ? undefined : s.shadow,
           cursor: isDisabled ? "not-allowed" : "pointer",
-          transition: "all 0.15s ease",
+          // Deliberately NOT `all`: animating the border made the tile pass
+          // through a half-drawn outline on every state change.
+          transition: `background-color ${STATE_MS}ms ease, box-shadow ${STATE_MS}ms ease`,
         }}
       >
-        {/* Gradient border — Default & Hover */}
-        {s.borderType === "gradient" && (
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              borderRadius: "12px",
-              padding: `${s.borderWidth}px`,
-              background: `linear-gradient(180deg, ${s.gradientStops})`,
-              WebkitMask:
-                "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-              WebkitMaskComposite: "xor",
-              maskComposite: "exclude",
-              zIndex: 20,
-            }}
-          />
-        )}
+        {/* ── Border layers ──────────────────────────────────────────────────
+            All three are always mounted and cross-fade by opacity.
+            They used to be one animated `border` on the card: switching to the
+            disabled look snapped border-style to dotted while border-width was
+            still animating 0 -> 2px, so the tile visibly grew a dotted outline
+            instead of simply fading. Opacity is the only thing that moves now,
+            and the border sits on overlays rather than the box, so the content
+            no longer shifts by the border width either. */}
+
+        {/* Default & Hover — gradient hairline */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            borderRadius: "12px",
+            padding: `${s.borderType === "gradient" ? s.borderWidth : 1}px`,
+            background: `linear-gradient(180deg, ${
+              s.gradientStops ?? cardStyles.default.gradientStops
+            })`,
+            WebkitMask:
+              "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            maskComposite: "exclude",
+            opacity: s.borderType === "gradient" ? 1 : 0,
+            transition: `opacity ${STATE_MS}ms ease`,
+            zIndex: 20,
+          }}
+        />
+
+        {/* Active & Selected — solid hairline */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            borderRadius: "12px",
+            border: `1px solid ${s.borderColor ?? "transparent"}`,
+            opacity: isSolidBorder ? 1 : 0,
+            transition: `opacity ${STATE_MS}ms ease`,
+            zIndex: 20,
+          }}
+        />
+
+        {/* Disabled — dotted outline */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            borderRadius: "12px",
+            border: `2px dotted ${cardStyles.disabled.borderColor}`,
+            opacity: isDottedBorder ? 1 : 0,
+            transition: `opacity ${STATE_MS}ms ease`,
+            zIndex: 20,
+          }}
+        />
 
         {/* Ellipse 850 — top-left white corner glow */}
-        {s.showCornerGlow && (
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              left: "-46px",
-              top: "-46px",
-              width: "92px",
-              height: "92px",
-              borderRadius: "50%",
-              backgroundColor: `rgba(255, 255, 255, ${s.cornerGlowOpacity})`,
-              filter: "blur(40px)",
-              transform: "translate3d(0,0,0)",
-            }}
-          />
-        )}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            left: "-46px",
+            top: "-46px",
+            width: "92px",
+            height: "92px",
+            borderRadius: "50%",
+            backgroundColor: "rgba(255, 255, 255, 1)",
+            filter: "blur(40px)",
+            transform: "translate3d(0,0,0)",
+            opacity: s.showCornerGlow ? s.cornerGlowOpacity : 0,
+            transition: `opacity ${STATE_MS}ms ease`,
+          }}
+        />
 
         {/* Ellipse 851 — bottom-right white corner glow */}
-        {s.showCornerGlow && (
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              right: "-46px",
-              bottom: "-46px",
-              width: "92px",
-              height: "92px",
-              borderRadius: "50%",
-              backgroundColor: `rgba(255, 255, 255, ${s.cornerGlowOpacity})`,
-              filter: "blur(40px)",
-              transform: "translate3d(0,0,0)",
-            }}
-          />
-        )}
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            right: "-46px",
+            bottom: "-46px",
+            width: "92px",
+            height: "92px",
+            borderRadius: "50%",
+            backgroundColor: "rgba(255, 255, 255, 1)",
+            filter: "blur(40px)",
+            transform: "translate3d(0,0,0)",
+            opacity: s.showCornerGlow ? s.cornerGlowOpacity : 0,
+            transition: `opacity ${STATE_MS}ms ease`,
+          }}
+        />
 
         {/* Ellipse 849 — bottom-center green glow (Selected/Selected Hover only) */}
         <div
@@ -206,7 +245,7 @@ export function DataCard({
                 opacity: s.iconOpacity,
                 color: iconColor,
                 flexShrink: 0,
-                transition: "all 0.15s ease",
+                transition: `opacity ${STATE_MS}ms ease, color ${STATE_MS}ms ease`,
               }}
               dangerouslySetInnerHTML={{ __html: processedIcon }}
             />
@@ -223,29 +262,31 @@ export function DataCard({
               opacity: s.textOpacity,
               whiteSpace: "nowrap",
               fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
-              transition: "all 0.15s ease",
+              transition: `opacity ${STATE_MS}ms ease, color ${STATE_MS}ms ease`,
             }}
           >
             {source.label}
           </span>
         </div>
 
-        {/* Ellipse 867 — indicator dot top-right */}
-        {s.showDot && (
-          <div
-            className="absolute pointer-events-none z-10"
-            style={{
-              right: "8px",
-              top: "8px",
-              width: "12px",
-              height: "12px",
-              borderRadius: "50%",
-              backgroundColor: s.dotFill === "currentColor" ? accentColor : s.dotFill,
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              transition: "all 0.15s ease",
-            }}
-          />
-        )}
+        {/* Ellipse 867 — indicator dot top-right.
+            Always mounted: unmounting it made the dot pop out instead of
+            fading with the rest of the tile. */}
+        <div
+          className="absolute pointer-events-none z-10"
+          style={{
+            right: "8px",
+            top: "8px",
+            width: "12px",
+            height: "12px",
+            borderRadius: "50%",
+            backgroundColor:
+              s.dotFill === "currentColor" ? accentColor : s.dotFill,
+            border: "1px solid rgba(255, 255, 255, 0.2)",
+            opacity: s.showDot ? 1 : 0,
+            transition: `opacity ${STATE_MS}ms ease, background-color ${STATE_MS}ms ease`,
+          }}
+        />
       </div>
     </motion.div>
   );
