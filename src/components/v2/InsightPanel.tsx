@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SignalConfig } from "@/lib/v2/signals-data";
 import { getInsightDescription } from "@/lib/v2/signals-data";
@@ -236,9 +237,15 @@ function UseCaseCard({
 /**
  * A single job, opened from the Apps list.
  *
- * Rendered inside the panel rather than as a page-level modal: the module is a
- * section of a landing page, so darkening the whole page for one card would be
- * out of proportion, and containing it keeps the demo on one surface.
+ * Centred page-level modal rather than a panel-sized popup or a right-hand
+ * drawer. The subject here is the artifact — what the finished AI report looks
+ * like — and that needs real width; inside the 515px panel it reads as a
+ * thumbnail. A drawer is for content you compare against what is behind it,
+ * but nothing behind this matters, and sliding one in from the right would
+ * read as the insight panel swelling.
+ *
+ * Portalled to <body>: the panel clips its overflow and framer's transforms
+ * would trap a `position: fixed` child, so neither can host it.
  */
 function JobPopup({
   useCase,
@@ -252,17 +259,28 @@ function JobPopup({
   onClose: () => void;
 }) {
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+
+    // Scroll-lock so the page behind cannot move while the modal is up.
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
   }, [onClose]);
 
-  const Row = ({ label, value }: { label: string; value: string }) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+  const Field = ({ label, value }: { label: string; value: string }) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
       <span
         style={{
           fontSize: 11,
@@ -273,78 +291,108 @@ function JobPopup({
       >
         {label}
       </span>
-      <span style={{ fontSize: 15, lineHeight: 1.4, color: "rgba(255,255,255,0.92)" }}>
+      <span style={{ fontSize: 15, lineHeight: 1.45, color: "rgba(255,255,255,0.92)" }}>
         {value}
       </span>
     </div>
   );
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <motion.div
-      role="dialog"
-      aria-modal="true"
-      aria-label={useCase.job}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.16, ease: "easeOut" }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      onClick={onClose}
       style={{
-        position: "absolute",
+        position: "fixed",
         inset: 0,
-        zIndex: 40,
-        backgroundColor: "rgba(7, 10, 40, 0.82)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
+        zIndex: 200,
+        backgroundColor: "rgba(4, 6, 24, 0.78)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
         display: "flex",
-        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 40,
         fontFamily: font,
       }}
-      onClick={onClose}
     >
       <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 6, opacity: 0 }}
-        transition={{ duration: 0.18, ease: "easeOut" }}
+        role="dialog"
+        aria-modal="true"
+        aria-label={useCase.job}
+        initial={{ opacity: 0, y: 16, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.99 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
         onClick={(e) => e.stopPropagation()}
-        className="m360-scroll"
         style={{
-          margin: 20,
-          padding: 24,
-          borderRadius: 12,
+          width: "min(960px, 100%)",
+          maxHeight: "85vh",
           backgroundColor: "#111539",
           border: "1px solid rgba(255,255,255,0.14)",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          borderRadius: 16,
+          boxShadow: "0 32px 80px rgba(0,0,0,0.55)",
           display: "flex",
           flexDirection: "column",
-          gap: 18,
-          overflowY: "auto",
-          flex: "1 1 auto",
-          minHeight: 0,
+          overflow: "hidden",
         }}
       >
+        {/* Header — stays put while the body scrolls */}
         <div
           style={{
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
-            gap: 16,
+            gap: 24,
+            padding: "28px 32px 20px 32px",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            flexShrink: 0,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            <span
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: accent,
+                }}
+              >
+                {datalakeLabel} · {useCase.role}
+              </span>
+              {!useCase.authored && (
+                <span
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.3)",
+                    border: "1px solid rgba(255,255,255,0.15)",
+                    borderRadius: 4,
+                    padding: "1px 5px",
+                  }}
+                >
+                  draft
+                </span>
+              )}
+            </div>
+            <h2
               style={{
-                fontSize: 11,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: accent,
+                fontSize: 28,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: "white",
+                margin: 0,
+                letterSpacing: "-0.01em",
               }}
             >
-              {datalakeLabel} · {useCase.role}
-            </span>
-            <span style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.2, color: "white" }}>
               {useCase.job}
-            </span>
+            </h2>
           </div>
 
           <button
@@ -353,14 +401,14 @@ function JobPopup({
             aria-label="Close"
             style={{
               flexShrink: 0,
-              width: 28,
-              height: 28,
+              width: 32,
+              height: 32,
               borderRadius: 8,
               border: "1px solid rgba(255,255,255,0.14)",
               background: "transparent",
               color: "rgba(255,255,255,0.6)",
               cursor: "pointer",
-              fontSize: 16,
+              fontSize: 18,
               lineHeight: 1,
               outline: "none",
             }}
@@ -369,47 +417,77 @@ function JobPopup({
           </button>
         </div>
 
-        <Row label="Dataset" value={useCase.dataset} />
-        <Row label="Parameters" value={useCase.parameters} />
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <span
-            style={{
-              fontSize: 11,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.35)",
-            }}
-          >
-            {useCase.reportTemplate}
-          </span>
-          {/* Placeholder for the artifact preview — "what the finished report
-              looks like". Nothing is drawn yet because no template exists. */}
+        {/* Body */}
+        <div
+          className="m360-scroll"
+          style={{
+            flex: "1 1 auto",
+            minHeight: 0,
+            overflowY: "auto",
+            padding: "24px 32px 32px 32px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 24,
+          }}
+        >
           <div
             style={{
-              height: 120,
-              borderRadius: 10,
-              border: "1px dashed rgba(255,255,255,0.14)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "rgba(255,255,255,0.28)",
-              fontSize: 13,
-              textAlign: "center",
-              padding: 16,
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 24,
             }}
           >
-            Report preview goes here
+            <Field label="Dataset" value={useCase.dataset} />
+            <Field label="Parameters" value={useCase.parameters} />
+            <Field label="Output" value={useCase.reportTemplate} />
           </div>
-        </div>
 
-        {!useCase.authored && (
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
-            Draft — placeholder text, awaiting the real job description.
-          </span>
-        )}
+          {/* The artifact itself — the whole reason this modal is large.
+              Nothing is drawn yet because no report template exists. */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.35)",
+              }}
+            >
+              Report preview
+            </span>
+            <div
+              style={{
+                minHeight: 360,
+                borderRadius: 12,
+                border: "1px dashed rgba(255,255,255,0.14)",
+                backgroundColor: "rgba(255,255,255,0.02)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                color: "rgba(255,255,255,0.28)",
+                fontSize: 14,
+                textAlign: "center",
+                padding: 32,
+              }}
+            >
+              <span>Report preview goes here</span>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.18)" }}>
+                A screenshot or live render of the finished report
+              </span>
+            </div>
+          </div>
+
+          {!useCase.authored && (
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+              Draft — placeholder text, awaiting the real job description.
+            </span>
+          )}
+        </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 
