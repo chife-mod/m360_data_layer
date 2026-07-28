@@ -1,11 +1,24 @@
-# M360 — Product Intelligence Platform
+# M360 — Data Layer
 
 ## Quick Links
 
+The app is served under the `/m360_data_layer` basePath, in dev as well as in
+production — `http://localhost:3000/` alone returns a 404.
+
 | | Local | Production |
 |---|---|---|
-| **Product page** | [localhost:3000](http://localhost:3000) | [graceful-cendol-0a11de.netlify.app](https://graceful-cendol-0a11de.netlify.app) |
-| **Dashboard** | [localhost:3000/dashboard](http://localhost:3000/dashboard) | [graceful-cendol-0a11de.netlify.app/dashboard](https://graceful-cendol-0a11de.netlify.app/dashboard) |
+| **Data Layer V2** (current) | [/m360_data_layer/v2](http://localhost:3000/m360_data_layer/v2) | [chife-mod.github.io/m360_data_layer/v2](https://chife-mod.github.io/m360_data_layer/v2) |
+| **V1** (frozen reference) | [/m360_data_layer](http://localhost:3000/m360_data_layer) | [chife-mod.github.io/m360_data_layer](https://chife-mod.github.io/m360_data_layer) |
+| **Dashboard** | [/m360_data_layer/dashboard](http://localhost:3000/m360_data_layer/dashboard) | [chife-mod.github.io/m360_data_layer/dashboard](https://chife-mod.github.io/m360_data_layer/dashboard) |
+
+Design basis and tokens: [DESIGN.md](DESIGN.md) · change log: [history/HISTORY.md](history/HISTORY.md)
+
+**Deploy** is manual — GitHub Pages serves the `gh-pages` branch:
+
+```bash
+npm run build          # -> out/
+# then publish out/ to the gh-pages branch
+```
 
 ---
 

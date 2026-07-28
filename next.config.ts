@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: "/Market360_Signal_Selector",
+  basePath: "/m360_data_layer",
   env: {
-    NEXT_PUBLIC_BASE_PATH: "/Market360_Signal_Selector",
+    NEXT_PUBLIC_BASE_PATH: "/m360_data_layer",
   },
   images: {
     unoptimized: true
