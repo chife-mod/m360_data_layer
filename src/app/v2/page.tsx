@@ -47,10 +47,21 @@ export default function DataLayerV2() {
     setTypeId(id);
   }, []);
 
-  const handleToggleChange = useCallback((value: boolean) => {
-    setShowAiOnly(value);
-    setSelectedIds([]);
-  }, []);
+  const handleToggleChange = useCallback(
+    (value: boolean) => {
+      setShowAiOnly(value);
+      // Keep whatever survives the mode change instead of always clearing.
+      // Turning the filter on drops tiles it hides and, since that mode is
+      // single-select, keeps the first surviving one; turning it off widens the
+      // board, so nothing has to go.
+      setSelectedIds((prev) => {
+        if (!value) return prev;
+        const surviving = prev.filter((id) => set.aiChatIds.includes(id));
+        return surviving.slice(0, 1);
+      });
+    },
+    [set]
+  );
 
   const handleReset = useCallback(() => setSelectedIds([]), []);
 
@@ -304,6 +315,7 @@ export default function DataLayerV2() {
             selectedSignals={selectedDatalakes}
             singleSelect={showAiOnly}
             description={description}
+            setId={set.id}
           />
         </div>
       </div>

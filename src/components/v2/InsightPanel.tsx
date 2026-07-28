@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { SignalConfig } from "@/lib/v2/signals-data";
 import { getInsightDescription } from "@/lib/v2/signals-data";
 import { getAssetPath } from "@/lib/utils";
+import { getUseCaseGroups } from "@/lib/v2/use-cases";
+import type { UseCase } from "@/lib/v2/use-cases";
 
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -139,6 +141,95 @@ function SignalIconBadge({
   );
 }
 
+/**
+ * One Job to be Done, in the client's own field order:
+ * Role | Job | Dataset | Parameters | AI Report Template.
+ */
+function UseCaseCard({
+  useCase,
+  accent,
+}: {
+  useCase: UseCase;
+  accent: string;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const font = "var(--font-inter), Inter, system-ui, sans-serif";
+
+  return (
+    <button
+      type="button"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: 6,
+        width: "100%",
+        padding: 16,
+        borderRadius: 10,
+        textAlign: "left",
+        cursor: "pointer",
+        outline: "none",
+        backgroundColor: hovered
+          ? "rgba(255,255,255,0.05)"
+          : "rgba(255,255,255,0.02)",
+        border: `1px solid ${
+          hovered ? "rgba(255,255,255,0.16)" : "rgba(255,255,255,0.08)"
+        }`,
+        transition: "background-color 0.15s ease, border-color 0.15s ease",
+        fontFamily: font,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span
+          style={{
+            fontSize: 11,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: accent,
+          }}
+        >
+          {useCase.role}
+        </span>
+        {!useCase.authored && (
+          <span
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.3)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 4,
+              padding: "1px 5px",
+            }}
+          >
+            draft
+          </span>
+        )}
+      </div>
+
+      <span style={{ fontSize: 15, lineHeight: 1.35, color: "rgba(255,255,255,0.95)" }}>
+        {useCase.job}
+      </span>
+
+      <span style={{ fontSize: 13, lineHeight: 1.45, color: "rgba(255,255,255,0.45)" }}>
+        {useCase.dataset} · {useCase.parameters}
+      </span>
+
+      <span
+        style={{
+          fontSize: 13,
+          color: hovered ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)",
+          transition: "color 0.15s ease",
+        }}
+      >
+        → {useCase.reportTemplate}
+      </span>
+    </button>
+  );
+}
+
 type Props = {
   selectedSignals: SignalConfig[];
   singleSelect?: boolean;
@@ -148,16 +239,28 @@ type Props = {
    * know about. Falls back to the watches lookup when omitted.
    */
   description?: string;
+  /** Which datalake set is active — needed to look up jobs. */
+  setId?: string;
 };
 
 export function InsightPanel({
   selectedSignals,
   singleSelect = false,
   description: descriptionProp,
+  setId = "watches",
 }: Props) {
   const count = selectedSignals.length;
   const description =
     descriptionProp ?? getInsightDescription(selectedSignals.map((s) => s.id));
+
+  const [activeTab, setActiveTab] = useState<"overview" | "apps">("overview");
+
+  // A job list for tiles that are no longer selected would be nonsense.
+  useEffect(() => {
+    if (count === 0) setActiveTab("overview");
+  }, [count]);
+
+  const useCaseGroups = getUseCaseGroups(setId, selectedSignals);
 
   return (
     <div
@@ -333,97 +436,133 @@ export function InsightPanel({
                 </div>
               </div>
 
-              <motion.p
-                layout
-                transition={{
-                  layout: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
-                }}
-                style={{
-                  fontSize: 16,
-                  fontWeight: 400,
-                  lineHeight: 1.4,
-                  color: "white",
-                  width: 378,
-                  maxWidth: "100%",
-                  margin: 0,
-                  fontFamily:
-                    "var(--font-inter), Inter, system-ui, sans-serif",
-                }}
-              >
-                {description}
-              </motion.p>
-
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                <motion.button
+              {activeTab === "overview" && (
+                <motion.p
                   layout
                   transition={{
-                    layout: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] },
+                    layout: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
                   }}
-                  whileHover={{
-                    backgroundColor: "rgba(255, 255, 255, 0.04)",
-                  }}
-                  whileTap={{ scale: 0.98 }}
                   style={{
-                    border: "1px solid rgba(255, 255, 255, 0.5)",
-                    borderRadius: 8,
-                    height: 40,
-                    padding: "0 24px",
-                    fontSize: 14,
+                    fontSize: 16,
                     fontWeight: 400,
-                    lineHeight: 1,
+                    lineHeight: 1.4,
                     color: "white",
-                    background: "transparent",
-                    cursor: "pointer",
+                    width: 378,
+                    maxWidth: "100%",
+                    margin: 0,
                     fontFamily:
                       "var(--font-inter), Inter, system-ui, sans-serif",
-                    outline: "none",
                   }}
                 >
-                  Overview
-                </motion.button>
+                  {description}
+                </motion.p>
+              )}
 
-                <motion.button
-                  layout
-                  transition={{
-                    layout: { duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] },
-                  }}
-                  whileHover={{ color: "rgba(255, 255, 255, 1)" }}
-                  whileTap={{ scale: 0.98 }}
+              {/* Tabs. These were decorative in the Figma design — Apps had no
+                  handler at all. Apps is where the client's Jobs to be Done
+                  live: `Jobs to be Done == Use Case == App`. */}
+              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                {(["overview", "apps"] as const).map((tab) => {
+                  const isActive = activeTab === tab;
+                  return (
+                    <motion.button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
+                      aria-pressed={isActive}
+                      whileHover={
+                        isActive
+                          ? { backgroundColor: "rgba(255, 255, 255, 0.04)" }
+                          : { color: "rgba(255, 255, 255, 1)" }
+                      }
+                      whileTap={{ scale: 0.98 }}
+                      style={{
+                        border: isActive
+                          ? "1px solid rgba(255, 255, 255, 0.5)"
+                          : "1px solid transparent",
+                        borderRadius: 8,
+                        height: 40,
+                        padding: isActive ? "0 24px" : "0 16px",
+                        fontSize: 14,
+                        fontWeight: 400,
+                        lineHeight: 1,
+                        color: isActive ? "white" : "rgba(255, 255, 255, 0.45)",
+                        background: "transparent",
+                        cursor: "pointer",
+                        fontFamily:
+                          "var(--font-inter), Inter, system-ui, sans-serif",
+                        outline: "none",
+                        transition: "color 0.15s ease, border-color 0.15s ease",
+                      }}
+                    >
+                      {tab === "overview" ? "Overview" : "Apps"}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {activeTab === "apps" && (
+                <div
                   style={{
-                    border: "none",
-                    background: "transparent",
-                    height: 40,
-                    padding: "0 16px",
-                    fontSize: 14,
-                    fontWeight: 400,
-                    lineHeight: 1,
-                    color: "rgba(255, 255, 255, 0.45)",
-                    cursor: "pointer",
-                    fontFamily:
-                      "var(--font-inter), Inter, system-ui, sans-serif",
-                    outline: "none",
+                    flex: "1 1 0",
+                    minHeight: 0,
+                    overflowY: "auto",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 20,
+                    paddingBottom: 32,
+                    marginRight: -12,
+                    paddingRight: 12,
                   }}
                 >
-                  Apps
-                </motion.button>
-              </div>
+                  {useCaseGroups.map((group) => (
+                    <div
+                      key={group.datalakeId}
+                      style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                    >
+                      {useCaseGroups.length > 1 && (
+                        <span
+                          style={{
+                            fontSize: 11,
+                            letterSpacing: "0.06em",
+                            textTransform: "uppercase",
+                            color: group.color,
+                            fontFamily:
+                              "var(--font-inter), Inter, system-ui, sans-serif",
+                          }}
+                        >
+                          {group.datalakeLabel}
+                        </span>
+                      )}
+
+                      {group.useCases.map((uc) => (
+                        <UseCaseCard key={uc.id} useCase={uc} accent={group.color} />
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      <div
-        style={{
-          height: 119,
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "flex-end",
-          overflow: "hidden",
-          width: "100%",
-        }}
-      >
-        <SignalBarChart selectedSignals={selectedSignals} />
-      </div>
+      {/* The chart belongs to Overview. Apps needs the height for the job list,
+          and a chart under a list of jobs would imply the two are related. */}
+      {activeTab === "overview" && (
+        <div
+          style={{
+            height: 119,
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "flex-end",
+            overflow: "hidden",
+            width: "100%",
+          }}
+        >
+          <SignalBarChart selectedSignals={selectedSignals} />
+        </div>
+      )}
     </div>
   );
 }

@@ -52,8 +52,9 @@ export function Toggle({
       ? GLOW_OFF_HOVER
       : GLOW_OFF;
 
-  // Off = knob LEFT, On = knob RIGHT
-  const knobX = isOn ? KNOB_TRAVEL : 0;
+  // Inverted in V2: On = knob LEFT (purple), Off = knob RIGHT (grey).
+  // V1 keeps the original left-off / right-on direction.
+  const knobX = isOn ? 0 : KNOB_TRAVEL;
 
   const handleClick = () => {
     if (!disabled && onChange) onChange(!checked);
