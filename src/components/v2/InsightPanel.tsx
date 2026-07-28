@@ -726,7 +726,11 @@ export function InsightPanel({
                     flexDirection: "column",
                     gap: 20,
                     paddingBottom: 32,
-                    marginRight: -12,
+                    // Cancel the content block's 40px right padding so the cards
+                    // reach the panel edge, then leave a narrow gutter that the
+                    // scrollbar sits in — it rides next to the border instead of
+                    // eating 40px of card width.
+                    marginRight: -40,
                     paddingRight: 12,
                   }}
                 >
