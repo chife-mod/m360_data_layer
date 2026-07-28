@@ -148,9 +148,11 @@ function SignalIconBadge({
 function UseCaseCard({
   useCase,
   accent,
+  onClick,
 }: {
   useCase: UseCase;
   accent: string;
+  onClick: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
@@ -158,6 +160,7 @@ function UseCaseCard({
   return (
     <button
       type="button"
+      onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -230,6 +233,186 @@ function UseCaseCard({
   );
 }
 
+/**
+ * A single job, opened from the Apps list.
+ *
+ * Rendered inside the panel rather than as a page-level modal: the module is a
+ * section of a landing page, so darkening the whole page for one card would be
+ * out of proportion, and containing it keeps the demo on one surface.
+ */
+function JobPopup({
+  useCase,
+  accent,
+  datalakeLabel,
+  onClose,
+}: {
+  useCase: UseCase;
+  accent: string;
+  datalakeLabel: string;
+  onClose: () => void;
+}) {
+  const font = "var(--font-inter), Inter, system-ui, sans-serif";
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const Row = ({ label, value }: { label: string; value: string }) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <span
+        style={{
+          fontSize: 11,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.35)",
+        }}
+      >
+        {label}
+      </span>
+      <span style={{ fontSize: 15, lineHeight: 1.4, color: "rgba(255,255,255,0.92)" }}>
+        {value}
+      </span>
+    </div>
+  );
+
+  return (
+    <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={useCase.job}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.16, ease: "easeOut" }}
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 40,
+        backgroundColor: "rgba(7, 10, 40, 0.82)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+        display: "flex",
+        flexDirection: "column",
+        fontFamily: font,
+      }}
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: 6, opacity: 0 }}
+        transition={{ duration: 0.18, ease: "easeOut" }}
+        onClick={(e) => e.stopPropagation()}
+        className="m360-scroll"
+        style={{
+          margin: 20,
+          padding: 24,
+          borderRadius: 12,
+          backgroundColor: "#111539",
+          border: "1px solid rgba(255,255,255,0.14)",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+          display: "flex",
+          flexDirection: "column",
+          gap: 18,
+          overflowY: "auto",
+          flex: "1 1 auto",
+          minHeight: 0,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 16,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: accent,
+              }}
+            >
+              {datalakeLabel} · {useCase.role}
+            </span>
+            <span style={{ fontSize: 22, fontWeight: 600, lineHeight: 1.2, color: "white" }}>
+              {useCase.job}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              flexShrink: 0,
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              border: "1px solid rgba(255,255,255,0.14)",
+              background: "transparent",
+              color: "rgba(255,255,255,0.6)",
+              cursor: "pointer",
+              fontSize: 16,
+              lineHeight: 1,
+              outline: "none",
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        <Row label="Dataset" value={useCase.dataset} />
+        <Row label="Parameters" value={useCase.parameters} />
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <span
+            style={{
+              fontSize: 11,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.35)",
+            }}
+          >
+            {useCase.reportTemplate}
+          </span>
+          {/* Placeholder for the artifact preview — "what the finished report
+              looks like". Nothing is drawn yet because no template exists. */}
+          <div
+            style={{
+              height: 120,
+              borderRadius: 10,
+              border: "1px dashed rgba(255,255,255,0.14)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "rgba(255,255,255,0.28)",
+              fontSize: 13,
+              textAlign: "center",
+              padding: 16,
+            }}
+          >
+            Report preview goes here
+          </div>
+        </div>
+
+        {!useCase.authored && (
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
+            Draft — placeholder text, awaiting the real job description.
+          </span>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 type Props = {
   selectedSignals: SignalConfig[];
   singleSelect?: boolean;
@@ -254,6 +437,16 @@ export function InsightPanel({
     descriptionProp ?? getInsightDescription(selectedSignals.map((s) => s.id));
 
   const [activeTab, setActiveTab] = useState<"overview" | "apps">("overview");
+  const [openJob, setOpenJob] = useState<{
+    useCase: UseCase;
+    accent: string;
+    datalakeLabel: string;
+  } | null>(null);
+
+  // A popup for a job that is no longer on screen would be orphaned.
+  useEffect(() => {
+    setOpenJob(null);
+  }, [activeTab, count]);
 
   // A job list for tiles that are no longer selected would be nonsense.
   useEffect(() => {
@@ -436,6 +629,70 @@ export function InsightPanel({
                 </div>
               </div>
 
+              {/* Tabs sit above their content — they label what is below them
+                  rather than trailing it. They were decorative in the Figma
+                  design; Apps had no handler at all, and is where the client's
+                  Jobs to be Done live: `Jobs to be Done == Use Case == App`. */}
+              <div
+                role="tablist"
+                style={{
+                  display: "flex",
+                  alignItems: "stretch",
+                  gap: 24,
+                  borderBottom: "1px solid rgba(255,255,255,0.1)",
+                  flexShrink: 0,
+                }}
+              >
+                {(["overview", "apps"] as const).map((tab) => {
+                  const isActive = activeTab === tab;
+                  return (
+                    <button
+                      key={tab}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => setActiveTab(tab)}
+                      style={{
+                        position: "relative",
+                        border: "none",
+                        background: "transparent",
+                        padding: "0 0 10px 0",
+                        fontSize: 14,
+                        fontWeight: 400,
+                        lineHeight: 1,
+                        color: isActive ? "white" : "rgba(255, 255, 255, 0.45)",
+                        cursor: "pointer",
+                        fontFamily:
+                          "var(--font-inter), Inter, system-ui, sans-serif",
+                        outline: "none",
+                        transition: "color 0.15s ease",
+                      }}
+                    >
+                      {tab === "overview" ? "Overview" : "Apps"}
+                      {isActive && (
+                        <motion.span
+                          layoutId="tab-underline"
+                          transition={{
+                            type: "spring",
+                            stiffness: 450,
+                            damping: 38,
+                          }}
+                          style={{
+                            position: "absolute",
+                            left: 0,
+                            right: 0,
+                            bottom: -1,
+                            height: 2,
+                            borderRadius: 2,
+                            backgroundColor: "white",
+                          }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
               {activeTab === "overview" && (
                 <motion.p
                   layout
@@ -458,51 +715,9 @@ export function InsightPanel({
                 </motion.p>
               )}
 
-              {/* Tabs. These were decorative in the Figma design — Apps had no
-                  handler at all. Apps is where the client's Jobs to be Done
-                  live: `Jobs to be Done == Use Case == App`. */}
-              <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                {(["overview", "apps"] as const).map((tab) => {
-                  const isActive = activeTab === tab;
-                  return (
-                    <motion.button
-                      key={tab}
-                      type="button"
-                      onClick={() => setActiveTab(tab)}
-                      aria-pressed={isActive}
-                      whileHover={
-                        isActive
-                          ? { backgroundColor: "rgba(255, 255, 255, 0.04)" }
-                          : { color: "rgba(255, 255, 255, 1)" }
-                      }
-                      whileTap={{ scale: 0.98 }}
-                      style={{
-                        border: isActive
-                          ? "1px solid rgba(255, 255, 255, 0.5)"
-                          : "1px solid transparent",
-                        borderRadius: 8,
-                        height: 40,
-                        padding: isActive ? "0 24px" : "0 16px",
-                        fontSize: 14,
-                        fontWeight: 400,
-                        lineHeight: 1,
-                        color: isActive ? "white" : "rgba(255, 255, 255, 0.45)",
-                        background: "transparent",
-                        cursor: "pointer",
-                        fontFamily:
-                          "var(--font-inter), Inter, system-ui, sans-serif",
-                        outline: "none",
-                        transition: "color 0.15s ease, border-color 0.15s ease",
-                      }}
-                    >
-                      {tab === "overview" ? "Overview" : "Apps"}
-                    </motion.button>
-                  );
-                })}
-              </div>
-
               {activeTab === "apps" && (
                 <div
+                  className="m360-scroll"
                   style={{
                     flex: "1 1 0",
                     minHeight: 0,
@@ -536,7 +751,18 @@ export function InsightPanel({
                       )}
 
                       {group.useCases.map((uc) => (
-                        <UseCaseCard key={uc.id} useCase={uc} accent={group.color} />
+                        <UseCaseCard
+                          key={uc.id}
+                          useCase={uc}
+                          accent={group.color}
+                          onClick={() =>
+                            setOpenJob({
+                              useCase: uc,
+                              accent: group.color,
+                              datalakeLabel: group.datalakeLabel,
+                            })
+                          }
+                        />
                       ))}
                     </div>
                   ))}
@@ -563,6 +789,18 @@ export function InsightPanel({
           <SignalBarChart selectedSignals={selectedSignals} />
         </div>
       )}
+
+      <AnimatePresence>
+        {openJob && (
+          <JobPopup
+            key={openJob.useCase.id}
+            useCase={openJob.useCase}
+            accent={openJob.accent}
+            datalakeLabel={openJob.datalakeLabel}
+            onClose={() => setOpenJob(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
