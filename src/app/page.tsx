@@ -11,6 +11,7 @@ import {
 import { DataCard } from "@/components/ui/DataCard";
 import { InsightPanel } from "@/components/ui/InsightPanel";
 import { Toggle } from "@/components/ui/Toggle";
+import { VersionSwitcher } from "@/components/VersionSwitcher";
 import { getAssetPath } from "@/lib/utils";
 
 export default function Home() {
@@ -224,6 +225,8 @@ export default function Home() {
         <InsightPanel selectedSignals={selectedSignals} singleSelect={showAiOnly} />
         </div>
       </div>
+
+      <VersionSwitcher current="v1" />
     </main>
   );
 }

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Zap,
+  History,
   ToggleLeft,
   Layers,
   Sparkles,
@@ -15,14 +16,24 @@ import {
 
 const MODULES = [
   {
-    id: "signal-selector",
-    title: "Signal Selector",
+    id: "signal-selector-v2",
+    title: "Signal Selector V2",
     description:
-      "Interactive data source picker with 16 signal types. Right panel adapts content to the selection in real time.",
-    href: "/",
-    status: "live" as const,
+      "Current working version. Own component tree and data — every change here is isolated from V1.",
+    href: "/v2",
+    status: "wip" as const,
     Icon: Zap,
     accent: "#00e59b",
+  },
+  {
+    id: "signal-selector-v1",
+    title: "Signal Selector V1",
+    description:
+      "Frozen reference. Kept intact for side-by-side comparison and rollback. Interactive picker with 16 signal types.",
+    href: "/",
+    status: "live" as const,
+    Icon: History,
+    accent: "#646eca",
   },
   {
     id: "toggle",
