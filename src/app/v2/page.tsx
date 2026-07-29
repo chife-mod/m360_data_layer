@@ -258,7 +258,7 @@ export default function DataLayerV2() {
                 whiteSpace: "nowrap",
               }}
             >
-              Show only signals available in AI chats
+              Show only datasets available in LLMs
             </span>
             <Toggle checked={showAiOnly} onChange={handleToggleChange} />
           </div>
@@ -316,6 +316,9 @@ export default function DataLayerV2() {
             singleSelect={showAiOnly}
             description={description}
             setId={set.id}
+            typeLabel={
+              industry.types.find((t) => t.id === typeId)?.label ?? ""
+            }
           />
         </div>
       </div>

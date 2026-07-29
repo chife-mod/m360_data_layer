@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { SignalConfig } from "@/lib/v2/signals-data";
 import { getInsightDescription } from "@/lib/v2/signals-data";
 import { getAssetPath } from "@/lib/utils";
-import { getUseCaseGroups } from "@/lib/v2/use-cases";
+import { getUseCaseGroups, resolveTitle } from "@/lib/v2/use-cases";
 import type { UseCase } from "@/lib/v2/use-cases";
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -148,11 +148,11 @@ function SignalIconBadge({
  */
 function UseCaseCard({
   useCase,
-  accent,
+  title,
   onClick,
 }: {
   useCase: UseCase;
-  accent: string;
+  title: string;
   onClick: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -185,13 +185,17 @@ function UseCaseCard({
         fontFamily: font,
       }}
     >
+      {/* Role sits where the draft chip used to — the client asked for "who
+          it is for" in that slot. Muted rather than accent-coloured, per the
+          same note. The draft chip survives only on placeholder apps, so
+          filler is still obvious at a glance. */}
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span
           style={{
             fontSize: 11,
             letterSpacing: "0.06em",
             textTransform: "uppercase",
-            color: accent,
+            color: "rgba(255,255,255,0.45)",
           }}
         >
           {useCase.role}
@@ -214,23 +218,75 @@ function UseCaseCard({
       </div>
 
       <span style={{ fontSize: 15, lineHeight: 1.35, color: "rgba(255,255,255,0.95)" }}>
-        {useCase.job}
+        {title}
       </span>
 
-      <span style={{ fontSize: 13, lineHeight: 1.45, color: "rgba(255,255,255,0.45)" }}>
-        {useCase.dataset} · {useCase.parameters}
-      </span>
+      {/* Absent overview is hidden rather than printed as N/A — the client's
+          own option, and "N/A" on screen reads as unfinished during a demo. */}
+      {useCase.overview && (
+        <span style={{ fontSize: 13, lineHeight: 1.45, color: "rgba(255,255,255,0.45)" }}>
+          {useCase.overview}
+        </span>
+      )}
 
-      <span
-        style={{
-          fontSize: 13,
-          color: hovered ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)",
-          transition: "color 0.15s ease",
-        }}
-      >
-        → {useCase.reportTemplate}
-      </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        {useCase.reportTemplateUrl && (
+          <span
+            style={{
+              fontSize: 13,
+              color: hovered ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)",
+              transition: "color 0.15s ease",
+            }}
+          >
+            → Report Template
+          </span>
+        )}
+        {useCase.dashboardUrl && (
+          <span
+            style={{
+              fontSize: 13,
+              color: hovered ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)",
+              transition: "color 0.15s ease",
+            }}
+          >
+            → Dashboard
+          </span>
+        )}
+      </div>
     </button>
+  );
+}
+
+/** Opens the client's report template / dashboard in a new tab. */
+function LinkButton({ href, label }: { href: string; label: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        height: 40,
+        padding: "0 18px",
+        borderRadius: 8,
+        border: `1px solid ${
+          hovered ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.18)"
+        }`,
+        backgroundColor: hovered ? "rgba(255,255,255,0.05)" : "transparent",
+        color: "white",
+        fontSize: 14,
+        textDecoration: "none",
+        transition: "border-color 0.15s ease, background-color 0.15s ease",
+      }}
+    >
+      {label}
+      <span style={{ opacity: 0.5, fontSize: 12 }}>↗</span>
+    </a>
   );
 }
 
@@ -249,11 +305,13 @@ function UseCaseCard({
  */
 function JobPopup({
   useCase,
+  title,
   accent,
   datalakeLabel,
   onClose,
 }: {
   useCase: UseCase;
+  title: string;
   accent: string;
   datalakeLabel: string;
   onClose: () => void;
@@ -323,7 +381,7 @@ function JobPopup({
       <motion.div
         role="dialog"
         aria-modal="true"
-        aria-label={useCase.job}
+        aria-label={title}
         initial={{ opacity: 0, y: 16, scale: 0.985 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 10, scale: 0.99 }}
@@ -391,7 +449,7 @@ function JobPopup({
                 letterSpacing: "-0.01em",
               }}
             >
-              {useCase.job}
+              {title}
             </h2>
           </div>
 
@@ -430,17 +488,18 @@ function JobPopup({
             gap: 24,
           }}
         >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: 24,
-            }}
-          >
-            <Field label="Dataset" value={useCase.dataset} />
-            <Field label="Parameters" value={useCase.parameters} />
-            <Field label="Output" value={useCase.reportTemplate} />
-          </div>
+          {useCase.overview && <Field label="Overview" value={useCase.overview} />}
+
+          {(useCase.reportTemplateUrl || useCase.dashboardUrl) && (
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              {useCase.reportTemplateUrl && (
+                <LinkButton href={useCase.reportTemplateUrl} label="Report Template" />
+              )}
+              {useCase.dashboardUrl && (
+                <LinkButton href={useCase.dashboardUrl} label="Dashboard" />
+              )}
+            </div>
+          )}
 
           {/* The artifact itself — the whole reason this modal is large.
               Nothing is drawn yet because no report template exists. */}
@@ -500,8 +559,10 @@ type Props = {
    * know about. Falls back to the watches lookup when omitted.
    */
   description?: string;
-  /** Which datalake set is active — needed to look up jobs. */
+  /** Which datalake set is active — needed to look up apps. */
   setId?: string;
+  /** Current Type selector label — some app titles depend on it. */
+  typeLabel?: string;
 };
 
 export function InsightPanel({
@@ -509,6 +570,7 @@ export function InsightPanel({
   singleSelect = false,
   description: descriptionProp,
   setId = "watches",
+  typeLabel = "",
 }: Props) {
   const count = selectedSignals.length;
   const description =
@@ -746,7 +808,7 @@ export function InsightPanel({
                         transition: "color 0.15s ease",
                       }}
                     >
-                      {tab === "overview" ? "Overview" : "Apps"}
+                      {tab === "overview" ? "Overview" : "Tasks & Apps"}
                       {isActive && (
                         <motion.span
                           layoutId="tab-underline"
@@ -836,7 +898,7 @@ export function InsightPanel({
                         <UseCaseCard
                           key={uc.id}
                           useCase={uc}
-                          accent={group.color}
+                          title={resolveTitle(uc.title, typeLabel)}
                           onClick={() =>
                             setOpenJob({
                               useCase: uc,
@@ -877,6 +939,7 @@ export function InsightPanel({
           <JobPopup
             key={openJob.useCase.id}
             useCase={openJob.useCase}
+            title={resolveTitle(openJob.useCase.title, typeLabel)}
             accent={openJob.accent}
             datalakeLabel={openJob.datalakeLabel}
             onClose={() => setOpenJob(null)}

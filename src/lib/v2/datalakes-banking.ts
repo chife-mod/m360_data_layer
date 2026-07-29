@@ -49,7 +49,9 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-media",
     color: "#F43F5E",
     recommendedWith: ["banks", "kols-finance", "regulators"],
-    descriptionSingle: LOREM_B,
+    // Real copy — client email, 2026-07-29. The only banking lake written so far.
+    descriptionSingle:
+      "Monitor and analyze mentions of over 50 Ukrainian banks in global / local and specialized media outlets. Detect sentiment, mentions in title, \"promo\" materials and more.",
   },
   {
     id: "kols-finance",

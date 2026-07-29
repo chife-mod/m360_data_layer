@@ -79,7 +79,16 @@ function Segment({
   );
 }
 
+/**
+ * Hidden for the client demo — brief of 2026-07-29: "Hide V1 / V2 switch in the
+ * bottom". The versions still exist at `/` and `/v2`; only the pill is gone.
+ * Flip this to bring it back.
+ */
+const SHOW_VERSION_SWITCHER = false;
+
 export function VersionSwitcher({ current }: { current: string }) {
+  if (!SHOW_VERSION_SWITCHER) return null;
+
   return (
     <nav
       aria-label="Prototype version"
