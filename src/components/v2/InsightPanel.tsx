@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState, useEffect } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SignalConfig } from "@/lib/v2/signals-data";
@@ -25,6 +25,68 @@ function useIconSvg(iconName: string) {
       .catch(() => { });
   }, [iconName]);
   return svg;
+}
+
+/**
+ * Drag-to-scroll for the report preview strip — grab it with the mouse and
+ * throw it sideways, the way a finger works on a tablet.
+ *
+ * Two things it has to get right: scroll-snap has to be off while dragging or
+ * it fights every move, and the click that ends a drag must not open the
+ * report the pointer happens to be resting on.
+ */
+function useDragScroll() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const state = useRef({ startX: 0, startScroll: 0, moved: false });
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Let the middle/right button and modified clicks behave normally.
+    if (e.button !== 0) return;
+    const el = ref.current;
+    if (!el) return;
+    state.current = { startX: e.clientX, startScroll: el.scrollLeft, moved: false };
+    setDragging(true);
+  };
+
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const el = ref.current;
+    if (!el || !dragging) return;
+    const dx = e.clientX - state.current.startX;
+    if (Math.abs(dx) > 4) {
+      state.current.moved = true;
+      // Only capture once it is clearly a drag, so plain clicks still land.
+      if (el.hasPointerCapture?.(e.pointerId) === false) {
+        el.setPointerCapture?.(e.pointerId);
+      }
+    }
+    el.scrollLeft = state.current.startScroll - dx;
+  };
+
+  const end = (e: React.PointerEvent<HTMLDivElement>) => {
+    ref.current?.releasePointerCapture?.(e.pointerId);
+    setDragging(false);
+  };
+
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (state.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      state.current.moved = false;
+    }
+  };
+
+  return {
+    ref,
+    dragging,
+    handlers: {
+      onPointerDown,
+      onPointerMove,
+      onPointerUp: end,
+      onPointerCancel: end,
+      onClickCapture,
+    },
+  };
 }
 
 const BAR_COUNT = 15;
@@ -146,7 +208,15 @@ function SignalIconBadge({
  * One Job to be Done, in the client's own field order:
  * Role | Job | Dataset | Parameters | AI Report Template.
  */
-function InlineLink({ href, label }: { href: string; label: string }) {
+function InlineLink({
+  href,
+  label,
+  icon,
+}: {
+  href: string;
+  label: string;
+  icon: string;
+}) {
   const [hovered, setHovered] = useState(false);
   return (
     <a
@@ -161,19 +231,37 @@ function InlineLink({ href, label }: { href: string; label: string }) {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 6,
-        margin: "-4px -8px",
-        padding: "4px 8px",
-        borderRadius: 6,
+        gap: 8,
+        height: 32,
+        padding: "0 14px",
+        borderRadius: 8,
+        border: `1px solid ${
+          hovered ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.2)"
+        }`,
+        backgroundColor: hovered ? "rgba(255,255,255,0.07)" : "transparent",
         fontSize: 13,
+        lineHeight: 1,
         textDecoration: "none",
-        color: hovered ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.55)",
-        backgroundColor: hovered ? "rgba(255,255,255,0.08)" : "transparent",
-        transition: "color 0.15s ease, background-color 0.15s ease",
+        color: hovered ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.75)",
+        transition:
+          "color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease",
+        whiteSpace: "nowrap",
       }}
     >
+      <img
+        src={getAssetPath(`/assets/icons/${icon}.svg`)}
+        alt=""
+        width={16}
+        height={16}
+        draggable={false}
+        style={{
+          filter: "invert(1)",
+          opacity: hovered ? 0.95 : 0.6,
+          transition: "opacity 0.15s ease",
+        }}
+      />
       {label}
-      <span style={{ opacity: 0.55, fontSize: 11 }}>↗</span>
+      <span style={{ opacity: 0.45, fontSize: 11 }}>↗</span>
     </a>
   );
 }
@@ -281,16 +369,24 @@ function UseCaseCard({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 16,
+            gap: 8,
             flexWrap: "wrap",
             marginTop: 2,
           }}
         >
           {useCase.reportTemplateUrl && (
-            <InlineLink href={useCase.reportTemplateUrl} label="Report Template" />
+            <InlineLink
+              href={useCase.reportTemplateUrl}
+              label="Report Template"
+              icon="ui-report-template"
+            />
           )}
           {useCase.dashboardUrl && (
-            <InlineLink href={useCase.dashboardUrl} label="Dashboard" />
+            <InlineLink
+              href={useCase.dashboardUrl}
+              label="Dashboard"
+              icon="ui-dashboard"
+            />
           )}
         </div>
       )}
@@ -359,6 +455,7 @@ function JobPopup({
 }) {
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
   const [mounted, setMounted] = useState(false);
+  const strip = useDragScroll();
 
   useEffect(() => setMounted(true), []);
 
@@ -574,6 +671,8 @@ function JobPopup({
 
               <div
                 className="m360-scroll"
+                ref={strip.ref}
+                {...strip.handlers}
                 style={{
                   display: "flex",
                   gap: 12,
@@ -581,7 +680,12 @@ function JobPopup({
                   paddingBottom: 14,
                   marginRight: -32,
                   paddingRight: 32,
-                  scrollSnapType: "x mandatory",
+                  // Snap fights the drag, so it only applies once the pointer
+                  // is off the strip.
+                  scrollSnapType: strip.dragging ? "none" : "x mandatory",
+                  cursor: strip.dragging ? "grabbing" : "grab",
+                  userSelect: "none",
+                  touchAction: "pan-x",
                 }}
               >
                 {Array.from(
@@ -611,6 +715,7 @@ function JobPopup({
                           src={src}
                           alt={`Page ${i + 1}`}
                           loading="lazy"
+                          draggable={false}
                           style={{ height: 232, width: "auto", display: "block" }}
                         />
                       </a>
@@ -810,7 +915,7 @@ export function InsightPanel({
               style={{
                 position: "absolute",
                 inset: 0,
-                padding: "40px 40px 0 40px",
+                padding: "32px 32px 0 32px",
                 display: "flex",
                 flexDirection: "column",
                 gap: 24,
@@ -978,12 +1083,13 @@ export function InsightPanel({
                     flexDirection: "column",
                     gap: 20,
                     paddingBottom: 32,
-                    // Cancel the content block's 40px right padding so the cards
-                    // reach the panel edge, then leave a narrow gutter that the
-                    // scrollbar sits in — it rides next to the border instead of
-                    // eating 40px of card width.
-                    marginRight: -40,
-                    paddingRight: 12,
+                    // Cards must sit in the same 32px gutter on both sides. The
+                    // scrollbar is inside the box and shrinks the content area,
+                    // so the negative margin has to cover the padding AND the
+                    // scrollbar (~11px at `scrollbar-width: thin`) — otherwise
+                    // the right edge lands ~11px short of the left.
+                    marginRight: -21,
+                    paddingRight: 10,
                   }}
                 >
                   {useCaseGroups.map((group) => (

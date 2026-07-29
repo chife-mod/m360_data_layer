@@ -207,18 +207,23 @@ export function DataCard({
           }}
         />
 
-        {/* Ellipse 849 — bottom-center green glow (Selected/Selected Hover only) */}
+        {/* Ellipse 849 — bottom accent glow (Selected / Selected Hover).
+            Figma puts it at top:102 with a 40px blur, which on a 130px card
+            spills up to roughly y=62 — right through the label, so a selected
+            tile lost contrast on its own name. Dropped and tightened so the
+            light stays under the text. Making the label white instead was not
+            an option: the same accent names the lake in the panel alongside. */}
         <div
           className="absolute pointer-events-none"
           style={{
             left: "32px",
-            top: "102px",
+            top: "118px",
             width: "128px",
             height: "128px",
             borderRadius: "50%",
             backgroundColor: iconColor,
-            filter: "blur(40px)",
-            opacity: s.glowOpacity,
+            filter: "blur(32px)",
+            opacity: s.glowOpacity * 0.85,
             transform: "translate3d(0,0,0)",
             transition: "opacity 0.2s ease",
           }}
