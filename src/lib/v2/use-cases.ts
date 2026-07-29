@@ -34,7 +34,11 @@ export type UseCase = {
 // carried the anchor word "URL"; the hrefs came from the message itself.
 const PUMB_MONTHLY_PULSE = "https://chife-mod.github.io/sf-pumb-monthly-pulse/";
 const VULCAIN_MONTHLY_PULSE = "https://chife-mod.github.io/sf-vulcain-monthly-pulse/";
-const UA_BANKS_DASHBOARD = "https://sf-bi.ai/4fqUseZ";
+// Direct dashboard URL as supplied by the client on 2026-07-29. The email
+// carried the sf-bi.ai/4fqUseZ short link to the same place; this is the
+// unshortened one, so it does not depend on the shortener staying alive.
+const UA_BANKS_DASHBOARD =
+  "https://app.semanticforce.ai/?_gl=1*1p3dqyu*_gcl_au*MTk4NzYxOTYyNC4xNzgzOTI5NDgy#/dashboard/insights/custom/ua/banks_news?sign=beded70bddb60a228a1d38bfe5d14dbb722cd80d";
 
 /** Banking → Media. Client email of 2026-07-29, verbatim. */
 const bankingMediaApps: UseCase[] = [
