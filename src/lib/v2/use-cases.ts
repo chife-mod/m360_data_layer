@@ -26,6 +26,12 @@ export type UseCase = {
   overview?: string;
   reportTemplateUrl?: string;
   dashboardUrl?: string;
+  /**
+   * Captured pages of the report, shown as a swipeable strip in the popup.
+   * `dir` is a folder under public/assets/reports, filled by
+   * scripts/capture-report-slides.js.
+   */
+  reportPreview?: { dir: string; count: number };
   /** Written by the client vs. placeholder. Drives the "draft" marker. */
   authored: boolean;
 };
@@ -49,6 +55,7 @@ const bankingMediaApps: UseCase[] = [
     overview:
       "Build monthly / weekly / daily reports covering bank (s) mentions in global and local media.",
     reportTemplateUrl: PUMB_MONTHLY_PULSE,
+    reportPreview: { dir: "pumb", count: 12 },
     authored: true,
   },
   {
@@ -58,6 +65,7 @@ const bankingMediaApps: UseCase[] = [
     // Overview is N/A in the brief — deliberately absent.
     reportTemplateUrl: VULCAIN_MONTHLY_PULSE,
     dashboardUrl: UA_BANKS_DASHBOARD,
+    reportPreview: { dir: "vulcain", count: 25 },
     authored: true,
   },
   {
@@ -80,6 +88,7 @@ const watchesMediaApps: UseCase[] = [
     overview:
       "Watch Media · My Universe (with ability to tune competitors).",
     reportTemplateUrl: PUMB_MONTHLY_PULSE,
+    reportPreview: { dir: "pumb", count: 12 },
     authored: true,
   },
 ];

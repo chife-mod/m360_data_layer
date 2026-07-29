@@ -543,41 +543,112 @@ function JobPopup({
           )}
 
           {/* The artifact itself — the whole reason this modal is large.
-              Nothing is drawn yet because no report template exists. */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <span
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.35)",
-              }}
-            >
-              Report preview
-            </span>
-            <div
-              style={{
-                minHeight: 360,
-                borderRadius: 12,
-                border: "1px dashed rgba(255,255,255,0.14)",
-                backgroundColor: "rgba(255,255,255,0.02)",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                color: "rgba(255,255,255,0.28)",
-                fontSize: 14,
-                textAlign: "center",
-                padding: 32,
-              }}
-            >
-              <span>Report preview goes here</span>
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.18)" }}>
-                A screenshot or live render of the finished report
-              </span>
+              Left edge lines up with the rest of the body; the strip then runs
+              past the modal's right edge so it visibly continues, which is what
+              invites the swipe. Pages are captured stills rather than live
+              iframes: a dozen iframes each booting the whole report would make
+              the popup crawl. */}
+          {useCase.reportPreview ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 10,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.35)",
+                  }}
+                >
+                  Report preview
+                </span>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
+                  {useCase.reportPreview.count} pages · scroll →
+                </span>
+              </div>
+
+              <div
+                className="m360-scroll"
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  overflowX: "auto",
+                  paddingBottom: 14,
+                  marginRight: -32,
+                  paddingRight: 32,
+                  scrollSnapType: "x mandatory",
+                }}
+              >
+                {Array.from(
+                  { length: useCase.reportPreview.count },
+                  (_, i) => {
+                    const n = String(i + 1).padStart(2, "0");
+                    const src = getAssetPath(
+                      `/assets/reports/${useCase.reportPreview!.dir}/slide-${n}.png`
+                    );
+                    return (
+                      <a
+                        key={n}
+                        href={useCase.reportTemplateUrl ?? "#"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          flex: "0 0 auto",
+                          scrollSnapAlign: "start",
+                          display: "block",
+                          borderRadius: 8,
+                          overflow: "hidden",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          lineHeight: 0,
+                        }}
+                      >
+                        <img
+                          src={src}
+                          alt={`Page ${i + 1}`}
+                          loading="lazy"
+                          style={{ height: 232, width: "auto", display: "block" }}
+                        />
+                      </a>
+                    );
+                  }
+                )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.35)",
+                }}
+              >
+                Report preview
+              </span>
+              <div
+                style={{
+                  minHeight: 200,
+                  borderRadius: 12,
+                  border: "1px dashed rgba(255,255,255,0.14)",
+                  backgroundColor: "rgba(255,255,255,0.02)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "rgba(255,255,255,0.28)",
+                  fontSize: 14,
+                  padding: 32,
+                }}
+              >
+                No report template for this app yet
+              </div>
+            </div>
+          )}
 
           {!useCase.authored && (
             <span style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
