@@ -146,6 +146,46 @@ function SignalIconBadge({
  * One Job to be Done, in the client's own field order:
  * Role | Job | Dataset | Parameters | AI Report Template.
  */
+function InlineLink({ href, label }: { href: string; label: string }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      // Without this the click would bubble to the card and open the popup as
+      // well — the point is that the link is a separate destination.
+      onClick={(e) => e.stopPropagation()}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 6,
+        margin: "-4px -8px",
+        padding: "4px 8px",
+        borderRadius: 6,
+        fontSize: 13,
+        textDecoration: "none",
+        color: hovered ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.55)",
+        backgroundColor: hovered ? "rgba(255,255,255,0.08)" : "transparent",
+        transition: "color 0.15s ease, background-color 0.15s ease",
+      }}
+    >
+      {label}
+      <span style={{ opacity: 0.55, fontSize: 11 }}>↗</span>
+    </a>
+  );
+}
+
+/**
+ * One Task / App, in the client's field order:
+ * Role | Title | Overview | Report Template | Dashboard.
+ *
+ * A div rather than a button: the card itself opens the popup, but the report
+ * and dashboard links inside it are their own destinations, and an anchor
+ * nested in a button is invalid. Keyboard behaviour is restored by hand.
+ */
 function UseCaseCard({
   useCase,
   title,
@@ -159,9 +199,16 @@ function UseCaseCard({
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -229,31 +276,25 @@ function UseCaseCard({
         </span>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        {useCase.reportTemplateUrl && (
-          <span
-            style={{
-              fontSize: 13,
-              color: hovered ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)",
-              transition: "color 0.15s ease",
-            }}
-          >
-            → Report Template
-          </span>
-        )}
-        {useCase.dashboardUrl && (
-          <span
-            style={{
-              fontSize: 13,
-              color: hovered ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)",
-              transition: "color 0.15s ease",
-            }}
-          >
-            → Dashboard
-          </span>
-        )}
-      </div>
-    </button>
+      {(useCase.reportTemplateUrl || useCase.dashboardUrl) && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 16,
+            flexWrap: "wrap",
+            marginTop: 2,
+          }}
+        >
+          {useCase.reportTemplateUrl && (
+            <InlineLink href={useCase.reportTemplateUrl} label="Report Template" />
+          )}
+          {useCase.dashboardUrl && (
+            <InlineLink href={useCase.dashboardUrl} label="Dashboard" />
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 

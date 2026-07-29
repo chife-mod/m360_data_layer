@@ -30,12 +30,11 @@ export type UseCase = {
   authored: boolean;
 };
 
-/**
- * ⚠️ Stand-in destination. The client wrote "URL" in the brief without giving
- * one and asked for a live link in the meantime ("живая ссылка, даже боджевая").
- * Swap for the real report/dashboard links before the call.
- */
-const PLACEHOLDER_URL = "https://chife-mod.github.io/sfg-templates-viewer/";
+// Real destinations from the client email of 2026-07-29. The pasted text only
+// carried the anchor word "URL"; the hrefs came from the message itself.
+const PUMB_MONTHLY_PULSE = "https://chife-mod.github.io/sf-pumb-monthly-pulse/";
+const VULCAIN_MONTHLY_PULSE = "https://chife-mod.github.io/sf-vulcain-monthly-pulse/";
+const UA_BANKS_DASHBOARD = "https://sf-bi.ai/4fqUseZ";
 
 /** Banking → Media. Client email of 2026-07-29, verbatim. */
 const bankingMediaApps: UseCase[] = [
@@ -45,7 +44,7 @@ const bankingMediaApps: UseCase[] = [
     title: "Analyze Bank Media Mentions",
     overview:
       "Build monthly / weekly / daily reports covering bank (s) mentions in global and local media.",
-    reportTemplateUrl: PLACEHOLDER_URL,
+    reportTemplateUrl: PUMB_MONTHLY_PULSE,
     authored: true,
   },
   {
@@ -53,8 +52,8 @@ const bankingMediaApps: UseCase[] = [
     role: "PR",
     title: "UA Banks Media Benchmarking",
     // Overview is N/A in the brief — deliberately absent.
-    reportTemplateUrl: PLACEHOLDER_URL,
-    dashboardUrl: PLACEHOLDER_URL,
+    reportTemplateUrl: VULCAIN_MONTHLY_PULSE,
+    dashboardUrl: UA_BANKS_DASHBOARD,
     authored: true,
   },
   {
@@ -76,7 +75,7 @@ const watchesMediaApps: UseCase[] = [
     title: "Identify Media & Journalists",
     overview:
       "Watch Media · My Universe (with ability to tune competitors).",
-    reportTemplateUrl: PLACEHOLDER_URL,
+    reportTemplateUrl: PUMB_MONTHLY_PULSE,
     authored: true,
   },
 ];
