@@ -250,15 +250,23 @@ function RoleTags({ roles }: { roles: string[] }) {
   );
 }
 
-/** InlineLink's button twin — same look, runs a handler instead of navigating. */
+/**
+ * InlineLink's button twin — runs a handler instead of navigating.
+ * `primary` is the one filled button in a row of outlined ones: Build Report
+ * is the action, the links are destinations.
+ */
 function InlineActionButton({
   label,
   icon,
   onClick,
+  primary = false,
+  height = 32,
 }: {
   label: string;
   icon: string;
   onClick: () => void;
+  primary?: boolean;
+  height?: number;
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -274,16 +282,29 @@ function InlineActionButton({
         display: "inline-flex",
         alignItems: "center",
         gap: 8,
-        height: 32,
+        height,
         padding: "0 14px",
         borderRadius: 8,
-        border: `1px solid ${
-          hovered ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.2)"
-        }`,
-        backgroundColor: hovered ? "rgba(255,255,255,0.07)" : "transparent",
+        border: primary
+          ? "1px solid transparent"
+          : `1px solid ${
+              hovered ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.2)"
+            }`,
+        backgroundColor: primary
+          ? hovered
+            ? "#ffffff"
+            : "rgba(255,255,255,0.92)"
+          : hovered
+            ? "rgba(255,255,255,0.07)"
+            : "transparent",
         fontSize: 13,
+        fontWeight: primary ? 500 : 400,
         lineHeight: 1,
-        color: hovered ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.75)",
+        color: primary
+          ? "#0b0e2b"
+          : hovered
+            ? "rgba(255,255,255,0.98)"
+            : "rgba(255,255,255,0.75)",
         cursor: "pointer",
         outline: "none",
         transition:
@@ -299,8 +320,11 @@ function InlineActionButton({
         height={16}
         draggable={false}
         style={{
-          filter: "invert(1)",
-          opacity: hovered ? 0.95 : 0.6,
+          // The icon strokes with currentColor, which renders black inside an
+          // <img>; inverting it makes it white for the outlined variant and is
+          // exactly wrong on the light primary fill.
+          filter: primary ? "none" : "invert(1)",
+          opacity: primary ? 0.85 : hovered ? 0.95 : 0.6,
           transition: "opacity 0.15s ease",
         }}
       />
@@ -476,6 +500,7 @@ function UseCaseCard({
           label="Build Report"
           icon="ui-build"
           onClick={onBuildReport}
+          primary
         />
         {useCase.reportTemplateUrl && (
           <InlineLink
@@ -548,12 +573,14 @@ function JobPopup({
   accent,
   datalakeLabel,
   onClose,
+  onBuildReport,
 }: {
   useCase: UseCase;
   title: string;
   accent: string;
   datalakeLabel: string;
   onClose: () => void;
+  onBuildReport: () => void;
 }) {
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
   const [mounted, setMounted] = useState(false);
@@ -731,16 +758,23 @@ function JobPopup({
         >
           {useCase.overview && <Field label="Overview" value={useCase.overview} />}
 
-          {(useCase.reportTemplateUrl || useCase.dashboardUrl) && (
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              {useCase.reportTemplateUrl && (
-                <LinkButton href={useCase.reportTemplateUrl} label="Report Templates" />
-              )}
-              {useCase.dashboardUrl && (
-                <LinkButton href={useCase.dashboardUrl} label="Dashboard" />
-              )}
-            </div>
-          )}
+          {/* One primary action, outlined destinations after it — same row
+              and order as the card: Build Report | Report Templates | Dashboard. */}
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <InlineActionButton
+              label="Build Report"
+              icon="ui-build"
+              onClick={onBuildReport}
+              primary
+              height={40}
+            />
+            {useCase.reportTemplateUrl && (
+              <LinkButton href={useCase.reportTemplateUrl} label="Report Templates" />
+            )}
+            {useCase.dashboardUrl && (
+              <LinkButton href={useCase.dashboardUrl} label="Dashboard" />
+            )}
+          </div>
 
           {/* The artifact itself — the whole reason this modal is large.
               Left edge lines up with the rest of the body; the strip then runs
@@ -1096,11 +1130,9 @@ function BuildReportPopup({
               marginTop: 8,
               height: 44,
               borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.5)",
-              backgroundColor: buildHovered
-                ? "rgba(255,255,255,0.08)"
-                : "rgba(255,255,255,0.03)",
-              color: "white",
+              border: "1px solid transparent",
+              backgroundColor: buildHovered ? "#ffffff" : "rgba(255,255,255,0.92)",
+              color: "#0b0e2b",
               fontSize: 14,
               fontWeight: 500,
               cursor: "pointer",
@@ -1525,6 +1557,11 @@ export function InsightPanel({
             accent={openJob.accent}
             datalakeLabel={openJob.datalakeLabel}
             onClose={() => setOpenJob(null)}
+            onBuildReport={() => {
+              // Swap modals rather than stack them.
+              setOpenBuilder(openJob);
+              setOpenJob(null);
+            }}
           />
         )}
       </AnimatePresence>
