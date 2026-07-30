@@ -28,65 +28,82 @@ function useIconSvg(iconName: string) {
 }
 
 /**
- * Drag-to-scroll for the report preview strip — grab it with the mouse and
- * throw it sideways, the way a finger works on a tablet.
+ * Drag-to-scroll for the report preview strip — grab it and throw it sideways,
+ * the way a finger works on a tablet.
  *
- * Two things it has to get right: scroll-snap has to be off while dragging or
- * it fights every move, and the click that ends a drag must not open the
- * report the pointer happens to be resting on.
+ * Three things this has to get right, each of which broke a naive version:
+ *   - The pages are <a> elements, and anchors are natively draggable, so
+ *     mousedown-and-move starts the browser's own link drag and the gesture
+ *     never reaches us. `dragstart` is cancelled.
+ *   - Move and release are listened for on the window, not the strip, so the
+ *     drag survives the pointer leaving the strip.
+ *   - The active flag lives in a ref. Read from state it goes stale inside the
+ *     listener closure and every move is ignored.
+ *
+ * Scroll-snap is suspended while dragging or it pulls the strip back on every
+ * move, and the click that ends a drag is swallowed so a swipe does not open
+ * whichever page the pointer happened to stop on.
  */
 function useDragScroll() {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [dragging, setDragging] = useState(false);
-  const state = useRef({ startX: 0, startScroll: 0, moved: false });
+  const st = useRef({ active: false, startX: 0, startScroll: 0, moved: false });
 
-  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Let the middle/right button and modified clicks behave normally.
-    if (e.button !== 0) return;
-    const el = ref.current;
-    if (!el) return;
-    state.current = { startX: e.clientX, startScroll: el.scrollLeft, moved: false };
-    setDragging(true);
-  };
+  useEffect(() => {
+    if (!node) return;
 
-  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    const el = ref.current;
-    if (!el || !dragging) return;
-    const dx = e.clientX - state.current.startX;
-    if (Math.abs(dx) > 4) {
-      state.current.moved = true;
-      // Only capture once it is clearly a drag, so plain clicks still land.
-      if (el.hasPointerCapture?.(e.pointerId) === false) {
-        el.setPointerCapture?.(e.pointerId);
-      }
-    }
-    el.scrollLeft = state.current.startScroll - dx;
-  };
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      st.current = {
+        active: true,
+        startX: e.clientX,
+        startScroll: node.scrollLeft,
+        moved: false,
+      };
+      setDragging(true);
+    };
 
-  const end = (e: React.PointerEvent<HTMLDivElement>) => {
-    ref.current?.releasePointerCapture?.(e.pointerId);
-    setDragging(false);
-  };
+    const onMove = (e: PointerEvent) => {
+      if (!st.current.active) return;
+      const dx = e.clientX - st.current.startX;
+      if (Math.abs(dx) > 3) st.current.moved = true;
+      node.scrollLeft = st.current.startScroll - dx;
+      e.preventDefault();
+    };
 
-  const onClickCapture = (e: React.MouseEvent) => {
-    if (state.current.moved) {
+    const onUp = () => {
+      if (!st.current.active) return;
+      st.current.active = false;
+      setDragging(false);
+    };
+
+    const onClickCapture = (e: MouseEvent) => {
+      if (!st.current.moved) return;
       e.preventDefault();
       e.stopPropagation();
-      state.current.moved = false;
-    }
-  };
+      st.current.moved = false;
+    };
 
-  return {
-    ref,
-    dragging,
-    handlers: {
-      onPointerDown,
-      onPointerMove,
-      onPointerUp: end,
-      onPointerCancel: end,
-      onClickCapture,
-    },
-  };
+    const onDragStart = (e: Event) => e.preventDefault();
+
+    node.addEventListener("pointerdown", onDown);
+    node.addEventListener("click", onClickCapture, true);
+    node.addEventListener("dragstart", onDragStart);
+    window.addEventListener("pointermove", onMove, { passive: false });
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+
+    return () => {
+      node.removeEventListener("pointerdown", onDown);
+      node.removeEventListener("click", onClickCapture, true);
+      node.removeEventListener("dragstart", onDragStart);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [node]);
+
+  return { setNode, dragging };
 }
 
 const BAR_COUNT = 15;
@@ -646,7 +663,18 @@ function JobPopup({
               iframes: a dozen iframes each booting the whole report would make
               the popup crawl. */}
           {useCase.reportPreview ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            // minWidth:0 on both this wrapper and the strip: as flex items they
+            // default to min-width:auto, so instead of overflowing they grow to
+            // fit 12 pages and overflow-x never engages — the strip looked right
+            // but had nothing to scroll, so dragging it did nothing.
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                minWidth: 0,
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -671,11 +699,11 @@ function JobPopup({
 
               <div
                 className="m360-scroll"
-                ref={strip.ref}
-                {...strip.handlers}
+                ref={strip.setNode}
                 style={{
                   display: "flex",
                   gap: 12,
+                  minWidth: 0,
                   overflowX: "auto",
                   paddingBottom: 14,
                   marginRight: -32,
@@ -701,6 +729,7 @@ function JobPopup({
                         href={useCase.reportTemplateUrl ?? "#"}
                         target="_blank"
                         rel="noopener noreferrer"
+                        draggable={false}
                         style={{
                           flex: "0 0 auto",
                           scrollSnapAlign: "start",
@@ -714,7 +743,9 @@ function JobPopup({
                         <img
                           src={src}
                           alt={`Page ${i + 1}`}
-                          loading="lazy"
+                          // The first few are visible the moment the popup
+                          // opens; lazy-loading them shows an empty strip first.
+                          loading={i < 3 ? "eager" : "lazy"}
                           draggable={false}
                           style={{ height: 232, width: "auto", display: "block" }}
                         />
