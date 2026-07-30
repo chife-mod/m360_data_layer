@@ -240,13 +240,17 @@ export function Select({
           onMouseLeave={() => setHovered(false)}
           style={{
             width: "100%",
-            height: 40,
+            // Tile is 36 with an equal 6px inset on the left, top and bottom —
+            // the same tile as the open list, not a shrunken copy of it.
+            height: 48,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: 10,
-            padding: "0 14px",
-            borderRadius: 8,
+            // 5px + 1px border = the same visual 6px inset the vertical
+            // centring produces, so the tile sits 6 from all three edges.
+            padding: "6px 12px 6px 5px",
+            borderRadius: 10,
             backgroundColor: CONTROL_FILL,
             border: `1px solid ${borderColor}`,
             cursor: disabled ? "not-allowed" : "pointer",
@@ -264,7 +268,7 @@ export function Select({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: 12,
               minWidth: 0,
             }}
           >
@@ -272,9 +276,9 @@ export function Select({
               <OptionTile
                 icon={selected.icon}
                 accent={selected.accent}
-                size={26}
-                iconSize={16}
-                radius={7}
+                size={36}
+                iconSize={20}
+                radius={10}
               />
             )}
             <span
