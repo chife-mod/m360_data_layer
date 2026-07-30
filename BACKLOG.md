@@ -133,7 +133,11 @@ inline the icons at build time instead of fetching them.
 and are why `next.config.ts` sets `ignoreBuildErrors`. Harmless today, but they
 mask real errors in anything new.
 
-### 4.5 Uncommitted changes that are not mine — **[client]**
-`knowledge-base/figma-export-guide.md` is deleted in the working tree and
-`.preview/` is untracked; both predate this work. Left alone deliberately —
-needs a yes/no from Oleg to commit or restore.
+### 4.5 Are the Figma export scripts still wanted? — **[open]**
+`scripts/export-figma-*.js` (11 files) predate this engagement. Nothing in the
+current workflow uses them — Figma comes through MCP now, and icons through
+`scripts/tabler-to-project-icon.py`. They still work and are documented by
+`knowledge-base/figma-export-guide.md`.
+
+If they are dead, remove the scripts **and** the guide together. Deleting one
+without the other is the only outcome worth avoiding.

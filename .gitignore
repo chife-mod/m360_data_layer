@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Cover image for this project's card on the SF Group dashboard.
+# It is a hard link to public/assets/frame-277-3520.png, which IS tracked —
+# so the picture lives in git already, just under its real name.
+/.preview/
