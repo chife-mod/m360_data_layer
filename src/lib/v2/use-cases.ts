@@ -15,7 +15,12 @@
 
 export type UseCase = {
   id: string;
-  role: string;
+  /**
+   * Role tags — brief of 2026-07-30 introduces multi-role apps
+   * ("Roles: [MARKETING] [PR] [CX] [BI] [C-LEVEL]"), so this is a list even
+   * where there is only one.
+   */
+  roles: string[];
   /**
    * `{type}` is replaced with the current Type selector label, so App #3 reads
    * "…but not My Bank" or "…but not My Payment System" depending on who is
@@ -43,6 +48,8 @@ const VULCAIN_MONTHLY_PULSE = "https://chife-mod.github.io/sf-vulcain-monthly-pu
 // Direct dashboard URL as supplied by the client on 2026-07-29. The email
 // carried the sf-bi.ai/4fqUseZ short link to the same place; this is the
 // unshortened one, so it does not depend on the shortener staying alive.
+const BENCHMARKING_360 =
+  "https://chife-mod.github.io/sf-mastercard-benchmarking360/";
 const UA_BANKS_DASHBOARD =
   "https://app.semanticforce.ai/?_gl=1*1p3dqyu*_gcl_au*MTk4NzYxOTYyNC4xNzgzOTI5NDgy#/dashboard/insights/custom/ua/banks_news?sign=beded70bddb60a228a1d38bfe5d14dbb722cd80d";
 
@@ -50,7 +57,7 @@ const UA_BANKS_DASHBOARD =
 const bankingMediaApps: UseCase[] = [
   {
     id: "banking-media-1",
-    role: "PR",
+    roles: ["PR"],
     title: "Analyze Bank Media Mentions",
     overview:
       "Build monthly / weekly / daily reports covering bank (s) mentions in global and local media.",
@@ -60,7 +67,7 @@ const bankingMediaApps: UseCase[] = [
   },
   {
     id: "banking-media-2",
-    role: "PR",
+    roles: ["PR"],
     title: "UA Banks Media Benchmarking",
     // Overview is N/A in the brief — deliberately absent.
     reportTemplateUrl: VULCAIN_MONTHLY_PULSE,
@@ -70,7 +77,7 @@ const bankingMediaApps: UseCase[] = [
   },
   {
     id: "banking-media-3",
-    role: "PR",
+    roles: ["PR"],
     title: "Discover Sources where Competitors Covered, but not My {type}",
     overview:
       "Create report providing sources, journalists and benchmarking related to key competitors.",
@@ -83,7 +90,7 @@ const bankingMediaApps: UseCase[] = [
 const watchesMediaApps: UseCase[] = [
   {
     id: "watches-media-pr",
-    role: "PR & Comm Team",
+    roles: ["PR & Comm Team"],
     title: "Identify Media & Journalists",
     overview:
       "Watch Media · My Universe (with ability to tune competitors).",
@@ -97,29 +104,48 @@ const watchesMediaApps: UseCase[] = [
 const placeholderApps: UseCase[] = [
   {
     id: "lorem-1",
-    role: "Lorem",
+    roles: ["Lorem"],
     title: "Lorem ipsum dolor sit amet consectetur",
     overview: "Adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
     authored: false,
   },
   {
     id: "lorem-2",
-    role: "Ipsum",
+    roles: ["Ipsum"],
     title: "Ut enim ad minim veniam quis nostrud",
     overview: "Exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
     authored: false,
   },
   {
     id: "lorem-3",
-    role: "Dolor",
+    roles: ["Dolor"],
     title: "Duis aute irure dolor in reprehenderit",
     authored: false,
   },
 ];
 
+/**
+ * Banking → Banks ("Egg 1"). Brief of 2026-07-30: the UA Banks
+ * Benchmarking 360 report embedded as an app, tagged for every team it
+ * serves. The lorem drafts stay behind it — the client fills them in one by
+ * one ("мы просто пойдём и каждому будем дописывать").
+ */
+const bankingBanksApps: UseCase[] = [
+  {
+    id: "banking-banks-benchmark",
+    roles: ["Marketing", "PR", "CX", "BI", "C-Level"],
+    title: "Benchmark UA Banks",
+    reportTemplateUrl: BENCHMARKING_360,
+    reportPreview: { dir: "benchmarking360", count: 3 },
+    authored: true,
+  },
+  ...placeholderApps,
+];
+
 /** Keyed `<setId>:<datalakeId>`. Only authored entries live here. */
 const authoredApps: Record<string, UseCase[]> = {
   "banking:media": bankingMediaApps,
+  "banking:banks": bankingBanksApps,
   "watches:media": watchesMediaApps,
 };
 

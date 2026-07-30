@@ -7,6 +7,7 @@ import type { SignalConfig } from "@/lib/v2/signals-data";
 import { getInsightDescription } from "@/lib/v2/signals-data";
 import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
 import { getUseCaseGroups, resolveTitle } from "@/lib/v2/use-cases";
+import { Select } from "./Select";
 import type { UseCase } from "@/lib/v2/use-cases";
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -224,6 +225,90 @@ function SignalIconBadge({
   );
 }
 
+/** Role chips, the way the brief writes them: [MARKETING] [PR] [CX]. */
+function RoleTags({ roles }: { roles: string[] }) {
+  return (
+    <>
+      {roles.map((r) => (
+        <span
+          key={r}
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.5)",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 4,
+            padding: "2px 6px",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {r}
+        </span>
+      ))}
+    </>
+  );
+}
+
+/** InlineLink's button twin — same look, runs a handler instead of navigating. */
+function InlineActionButton({
+  label,
+  icon,
+  onClick,
+}: {
+  label: string;
+  icon: string;
+  onClick: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        height: 32,
+        padding: "0 14px",
+        borderRadius: 8,
+        border: `1px solid ${
+          hovered ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.2)"
+        }`,
+        backgroundColor: hovered ? "rgba(255,255,255,0.07)" : "transparent",
+        fontSize: 13,
+        lineHeight: 1,
+        color: hovered ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.75)",
+        cursor: "pointer",
+        outline: "none",
+        transition:
+          "color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease",
+        whiteSpace: "nowrap",
+        fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+      }}
+    >
+      <img
+        src={getAssetPath(`/assets/icons/${icon}.svg`)}
+        alt=""
+        width={16}
+        height={16}
+        draggable={false}
+        style={{
+          filter: "invert(1)",
+          opacity: hovered ? 0.95 : 0.6,
+          transition: "opacity 0.15s ease",
+        }}
+      />
+      {label}
+    </button>
+  );
+}
+
 /**
  * One Job to be Done, in the client's own field order:
  * Role | Job | Dataset | Parameters | AI Report Template.
@@ -298,10 +383,12 @@ function UseCaseCard({
   useCase,
   title,
   onClick,
+  onBuildReport,
 }: {
   useCase: UseCase;
   title: string;
   onClick: () => void;
+  onBuildReport: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
@@ -340,21 +427,11 @@ function UseCaseCard({
         fontFamily: font,
       }}
     >
-      {/* Role sits where the draft chip used to — the client asked for "who
-          it is for" in that slot. Muted rather than accent-coloured, per the
-          same note. The draft chip survives only on placeholder apps, so
-          filler is still obvious at a glance. */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span
-          style={{
-            fontSize: 11,
-            letterSpacing: "0.06em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.45)",
-          }}
-        >
-          {useCase.role}
-        </span>
+      {/* Roles as chips, per the brief's own notation. Grey, not accent.
+          The draft chip survives only on placeholder apps, so filler is still
+          obvious at a glance. */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <RoleTags roles={useCase.roles} />
         {!useCase.authored && (
           <span
             style={{
@@ -384,32 +461,37 @@ function UseCaseCard({
         </span>
       )}
 
-      {(useCase.reportTemplateUrl || useCase.dashboardUrl) && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            flexWrap: "wrap",
-            marginTop: 2,
-          }}
-        >
-          {useCase.reportTemplateUrl && (
-            <InlineLink
-              href={useCase.reportTemplateUrl}
-              label="Report Template"
-              icon="ui-report-template"
-            />
-          )}
-          {useCase.dashboardUrl && (
-            <InlineLink
-              href={useCase.dashboardUrl}
-              label="Dashboard"
-              icon="ui-dashboard"
-            />
-          )}
-        </div>
-      )}
+      {/* Brief of 2026-07-30: Build Report | Report Templates | Dashboard,
+          Build Report first. */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          flexWrap: "wrap",
+          marginTop: 2,
+        }}
+      >
+        <InlineActionButton
+          label="Build Report"
+          icon="ui-build"
+          onClick={onBuildReport}
+        />
+        {useCase.reportTemplateUrl && (
+          <InlineLink
+            href={useCase.reportTemplateUrl}
+            label="Report Templates"
+            icon="ui-report-template"
+          />
+        )}
+        {useCase.dashboardUrl && (
+          <InlineLink
+            href={useCase.dashboardUrl}
+            label="Dashboard"
+            icon="ui-dashboard"
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -570,7 +652,7 @@ function JobPopup({
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
               <span
                 style={{
                   fontSize: 11,
@@ -579,8 +661,9 @@ function JobPopup({
                   color: accent,
                 }}
               >
-                {datalakeLabel} · {useCase.role}
+                {datalakeLabel}
               </span>
+              <RoleTags roles={useCase.roles} />
               {!useCase.authored && (
                 <span
                   style={{
@@ -651,7 +734,7 @@ function JobPopup({
           {(useCase.reportTemplateUrl || useCase.dashboardUrl) && (
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
               {useCase.reportTemplateUrl && (
-                <LinkButton href={useCase.reportTemplateUrl} label="Report Template" />
+                <LinkButton href={useCase.reportTemplateUrl} label="Report Templates" />
               )}
               {useCase.dashboardUrl && (
                 <LinkButton href={useCase.dashboardUrl} label="Dashboard" />
@@ -801,6 +884,240 @@ function JobPopup({
   );
 }
 
+/**
+ * Build Report — brief of 2026-07-30: "похожий диалог, но с тремя параметрами
+ * и кнопочкой". Same modal chrome as the template popup, three parameters
+ * (Bank / Period / Language), one button. Prototype behaviour: Build opens the
+ * app's report in a new tab, standing in for the real build pipeline.
+ *
+ * ⚠️ The option lists are demo data chosen by me, not by the client.
+ */
+const BUILDER_BANKS = [
+  "PUMB",
+  "PrivatBank",
+  "Oschadbank",
+  "Monobank",
+  "Raiffeisen Bank",
+  "UKRSIBBANK",
+].map((b) => ({ id: b, label: b }));
+
+const BUILDER_PERIODS = [
+  "June 2026",
+  "May 2026",
+  "April 2026",
+  "Q2 2026",
+  "H1 2026",
+].map((x) => ({ id: x, label: x }));
+
+const BUILDER_LANGUAGES = [
+  { id: "en", label: "English" },
+  { id: "uk", label: "Українська" },
+];
+
+function BuildReportPopup({
+  useCase,
+  title,
+  accent,
+  datalakeLabel,
+  onClose,
+}: {
+  useCase: UseCase;
+  title: string;
+  accent: string;
+  datalakeLabel: string;
+  onClose: () => void;
+}) {
+  const font = "var(--font-inter), Inter, system-ui, sans-serif";
+  const [mounted, setMounted] = useState(false);
+  const [bank, setBank] = useState(BUILDER_BANKS[0].id);
+  const [period, setPeriod] = useState(BUILDER_PERIODS[0].id);
+  const [language, setLanguage] = useState(BUILDER_LANGUAGES[0].id);
+  const [buildHovered, setBuildHovered] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
+  }, [onClose]);
+
+  const build = () => {
+    // Stand-in for the real pipeline: "building" the report means opening the
+    // finished one the parameters would have produced.
+    if (useCase.reportTemplateUrl) {
+      window.open(useCase.reportTemplateUrl, "_blank", "noopener,noreferrer");
+    }
+    onClose();
+  };
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 200,
+        backgroundColor: "rgba(4, 6, 24, 0.78)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 40,
+        fontFamily: font,
+      }}
+    >
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Build report — ${title}`}
+        initial={{ opacity: 0, y: 16, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.99 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(520px, 100%)",
+          backgroundColor: "#111539",
+          border: "1px solid rgba(255,255,255,0.14)",
+          borderRadius: 16,
+          boxShadow: "0 32px 80px rgba(0,0,0,0.55)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "visible",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 24,
+            padding: "24px 28px 18px 28px",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: accent,
+              }}
+            >
+              {datalakeLabel} · {title}
+            </span>
+            <h2
+              style={{
+                fontSize: 24,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: "white",
+                margin: 0,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              Build Report
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              flexShrink: 0,
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: "1px solid rgba(255,255,255,0.14)",
+              background: "transparent",
+              color: "rgba(255,255,255,0.6)",
+              cursor: "pointer",
+              fontSize: 18,
+              lineHeight: 1,
+              outline: "none",
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Parameters */}
+        <div
+          style={{
+            padding: "20px 28px 24px 28px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <Select
+            label="Bank"
+            options={BUILDER_BANKS}
+            value={bank}
+            onChange={setBank}
+          />
+          <Select
+            label="Period"
+            options={BUILDER_PERIODS}
+            value={period}
+            onChange={setPeriod}
+          />
+          <Select
+            label="Language"
+            options={BUILDER_LANGUAGES}
+            value={language}
+            onChange={setLanguage}
+          />
+
+          <button
+            type="button"
+            onClick={build}
+            onMouseEnter={() => setBuildHovered(true)}
+            onMouseLeave={() => setBuildHovered(false)}
+            style={{
+              marginTop: 8,
+              height: 44,
+              borderRadius: 8,
+              border: "1px solid rgba(255,255,255,0.5)",
+              backgroundColor: buildHovered
+                ? "rgba(255,255,255,0.08)"
+                : "rgba(255,255,255,0.03)",
+              color: "white",
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: "pointer",
+              outline: "none",
+              transition: "background-color 0.15s ease",
+              fontFamily: font,
+            }}
+          >
+            Build Report
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
+  );
+}
+
 type Props = {
   selectedSignals: SignalConfig[];
   singleSelect?: boolean;
@@ -833,10 +1150,16 @@ export function InsightPanel({
     accent: string;
     datalakeLabel: string;
   } | null>(null);
+  const [openBuilder, setOpenBuilder] = useState<{
+    useCase: UseCase;
+    accent: string;
+    datalakeLabel: string;
+  } | null>(null);
 
   // A popup for a job that is no longer on screen would be orphaned.
   useEffect(() => {
     setOpenJob(null);
+    setOpenBuilder(null);
   }, [activeTab, count]);
 
   // A job list for tiles that are no longer selected would be nonsense.
@@ -1158,6 +1481,13 @@ export function InsightPanel({
                               datalakeLabel: group.datalakeLabel,
                             })
                           }
+                          onBuildReport={() =>
+                            setOpenBuilder({
+                              useCase: uc,
+                              accent: group.color,
+                              datalakeLabel: group.datalakeLabel,
+                            })
+                          }
                         />
                       ))}
                     </div>
@@ -1195,6 +1525,19 @@ export function InsightPanel({
             accent={openJob.accent}
             datalakeLabel={openJob.datalakeLabel}
             onClose={() => setOpenJob(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {openBuilder && (
+          <BuildReportPopup
+            key={`build-${openBuilder.useCase.id}`}
+            useCase={openBuilder.useCase}
+            title={resolveTitle(openBuilder.useCase.title, typeLabel)}
+            accent={openBuilder.accent}
+            datalakeLabel={openBuilder.datalakeLabel}
+            onClose={() => setOpenBuilder(null)}
           />
         )}
       </AnimatePresence>
