@@ -26,8 +26,10 @@ const PANEL_WIDTH = 515;
 const BOARD_WIDTH = GRID_WIDTH + 5 + PANEL_WIDTH;
 
 export default function DataLayerV2() {
-  const [industryId, setIndustryId] = useState("watches");
-  const [typeId, setTypeId] = useState("brand");
+  // Default scope per the client (2026-07-30): the Mastercard demo opens on
+  // Banking as seen by a Payment System.
+  const [industryId, setIndustryId] = useState("banking");
+  const [typeId, setTypeId] = useState("payment-system");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [showAiOnly, setShowAiOnly] = useState(false);

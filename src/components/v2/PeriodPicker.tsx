@@ -19,6 +19,8 @@ type Props = {
   label: string;
   value: Period;
   onChange: (p: Period) => void;
+  /** Fires on every open/close — the host popup needs to know (see its refs). */
+  onOpenChange?: (open: boolean) => void;
 };
 
 const FONT = "var(--font-inter), Inter, system-ui, sans-serif";
@@ -249,8 +251,12 @@ function MonthGrid({
 
 // ── the picker ───────────────────────────────────────────────────────────────
 
-export function PeriodPicker({ label, value, onChange }: Props) {
-  const [open, setOpen] = useState(false);
+export function PeriodPicker({ label, value, onChange, onOpenChange }: Props) {
+  const [open, setOpenRaw] = useState(false);
+  const setOpen = (o: boolean) => {
+    setOpenRaw(o);
+    onOpenChange?.(o);
+  };
   const [hovered, setHovered] = useState(false);
   // While picking: `from` chosen, `to` not yet.
   const [pendingFrom, setPendingFrom] = useState<Date | null>(null);

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { SignalConfig } from "@/lib/v2/signals-data";
 import { getInsightDescription } from "@/lib/v2/signals-data";
 import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
-import { getUseCaseGroups, resolveTitle } from "@/lib/v2/use-cases";
+import { getUseCaseGroups, resolveTitle, PUMB_MONTHLY_PULSE } from "@/lib/v2/use-cases";
 import { Select } from "./Select";
 import { PeriodPicker, type Period } from "./PeriodPicker";
 import type { UseCase } from "@/lib/v2/use-cases";
@@ -205,19 +205,33 @@ function SignalIconBadge({
         opacity: { duration: 0.18 },
         delay: index * 0.05,
       }}
-      style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}
+      // Dark rounded tile rather than a bare glowing glyph — the naked 64px
+      // icons read cartoonish next to the data. The accent stays on the stroke,
+      // so the colour link to the board survives.
+      style={{
+        position: "relative",
+        width: 52,
+        height: 52,
+        flexShrink: 0,
+        borderRadius: 14,
+        backgroundColor: "rgba(7,10,40,0.55)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
       {svg && (
         <div
           style={{
-            width: 64,
-            height: 64,
+            width: 26,
+            height: 26,
             color: signal.color,
-            filter: "drop-shadow(0px -2px 3.9px #111539)",
+            lineHeight: 0,
           }}
           dangerouslySetInnerHTML={{
             __html: svg
-              .replace(/width="32"\s*height="32"/, 'width="64" height="64"')
+              .replace(/width="32"\s*height="32"/, 'width="26" height="26"')
               .replace(/viewBox="[^"]*"/, 'viewBox="0 0 32 32"'),
           }}
         />
@@ -778,9 +792,10 @@ function JobPopup({
           </div>
 
           {/* The artifact itself — the whole reason this modal is large.
-              Left edge lines up with the rest of the body; the strip then runs
-              past the modal's right edge so it visibly continues, which is what
-              invites the swipe. Pages are captured stills rather than live
+              The strip sits inside the body's 32px gutters on both sides — it
+              used to bleed past the right edge, which also ran its scrollbar
+              into the modal's corner. A cut-off page peeking at the edge still
+              signals there is more. Pages are captured stills rather than live
               iframes: a dozen iframes each booting the whole report would make
               the popup crawl. */}
           {useCase.reportPreview ? (
@@ -827,8 +842,6 @@ function JobPopup({
                   minWidth: 0,
                   overflowX: "auto",
                   paddingBottom: 14,
-                  marginRight: -32,
-                  paddingRight: 32,
                   // Snap fights the drag, so it only applies once the pointer
                   // is off the strip.
                   scrollSnapType: strip.dragging ? "none" : "x mandatory",
@@ -969,6 +982,12 @@ function BuildReportPopup({
   const [period, setPeriod] = useState<Period>(lastMonth);
   const [language, setLanguage] = useState(BUILDER_LANGUAGES[0].id);
   const [buildHovered, setBuildHovered] = useState(false);
+  // A backdrop click while the period panel is open must close only the
+  // panel, not the whole popup — dismissing a calendar should never cost the
+  // user the dialog. The panel closes itself on that same pointerdown; this
+  // pair of refs makes the overlay swallow the click that follows.
+  const pickerOpenRef = useRef(false);
+  const swallowCloseRef = useRef(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -986,11 +1005,10 @@ function BuildReportPopup({
   }, [onClose]);
 
   const build = () => {
-    // Stand-in for the real pipeline: "building" the report means opening the
-    // finished one the parameters would have produced.
-    if (useCase.reportTemplateUrl) {
-      window.open(useCase.reportTemplateUrl, "_blank", "noopener,noreferrer");
-    }
+    // Stand-in for the real pipeline: "building" opens the PUMB Monthly
+    // Pulse — the one finished single-bank report that exists, i.e. exactly
+    // what these parameters would have produced.
+    window.open(PUMB_MONTHLY_PULSE, "_blank", "noopener,noreferrer");
     onClose();
   };
 
@@ -1002,7 +1020,16 @@ function BuildReportPopup({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
-      onClick={onClose}
+      onPointerDownCapture={() => {
+        if (pickerOpenRef.current) swallowCloseRef.current = true;
+      }}
+      onClick={() => {
+        if (swallowCloseRef.current) {
+          swallowCloseRef.current = false;
+          return;
+        }
+        onClose();
+      }}
       style={{
         position: "fixed",
         inset: 0,
@@ -1110,7 +1137,14 @@ function BuildReportPopup({
             value={bank}
             onChange={setBank}
           />
-          <PeriodPicker label="Period" value={period} onChange={setPeriod} />
+          <PeriodPicker
+            label="Period"
+            value={period}
+            onChange={setPeriod}
+            onOpenChange={(o) => {
+              pickerOpenRef.current = o;
+            }}
+          />
           <Select
             label="Language"
             options={BUILDER_LANGUAGES}
@@ -1334,9 +1368,9 @@ export function InsightPanel({
                     flexWrap: "wrap",
                     gap: 8,
                     alignItems: "baseline",
-                    fontSize: 32,
+                    fontSize: 26,
                     fontWeight: 600,
-                    lineHeight: 1.05,
+                    lineHeight: 1.1,
                     width: "100%",
                     fontFamily:
                       "var(--font-inter), Inter, system-ui, sans-serif",

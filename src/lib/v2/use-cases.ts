@@ -43,7 +43,7 @@ export type UseCase = {
 
 // Real destinations from the client email of 2026-07-29. The pasted text only
 // carried the anchor word "URL"; the hrefs came from the message itself.
-const PUMB_MONTHLY_PULSE = "https://chife-mod.github.io/sf-pumb-monthly-pulse/";
+export const PUMB_MONTHLY_PULSE = "https://chife-mod.github.io/sf-pumb-monthly-pulse/";
 const VULCAIN_MONTHLY_PULSE = "https://chife-mod.github.io/sf-vulcain-monthly-pulse/";
 // Direct dashboard URL as supplied by the client on 2026-07-29. The email
 // carried the sf-bi.ai/4fqUseZ short link to the same place; this is the
