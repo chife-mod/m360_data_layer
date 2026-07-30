@@ -103,18 +103,20 @@ original watches set.
 
 ---
 
-## Known drift — Figma landing vs this prototype
+## Figma drift — RESOLVED (client decision, 2026-07-30)
 
-Recorded, not silently reconciled. Each needs a decision.
+**The code is the source of truth for this module, not the Figma landing.**
+Do not "fix" the prototype back toward the Figma section.
 
-1. **Tile 16.** Figma says *Trending offers*, the prototype says *Support Chats*.
-2. **Toggle copy.** Figma: *"Show only signals available in AI chats"* — V2 now uses this.
-   V1 still says *"Show only data sources available in LLMs"*.
-3. **Accent assignment.** In the Figma section Pricing reads green and Availability
-   purple; in the prototype Pricing is `#2563EB` and Availability `#FF8000`. The
-   palette matches, the per-tile assignment does not.
-4. **Naming.** The client brief renames the module to *data layer* / *datalakes*;
-   the Figma section still says *signals* / *sources*.
+1. **Tile 16** — stays *Support Chats* (Figma's *Trending offers* is outdated).
+2. **Toggle copy** — *"Show only datasets available in LLMs"* (client email
+   2026-07-29; newer than both the Figma text and the old V1 wording).
+3. **Accent assignment** — stays as in code (Pricing `#2563EB`,
+   Availability `#FF8000`).
+4. **Naming** — the module is the *data layer* (*datalakes*); Figma's
+   *signals / sources* wording is historical.
+5. **Ellipse 849 (accent glow)** — deliberately moved from Figma's
+   `top:102 / blur:40` to `118 / 32` so the glow stays under the tile label.
 
 ---
 

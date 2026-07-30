@@ -93,6 +93,8 @@ export const DATALAKE_SETS: Record<string, DatalakeSet> = {
 export type ViewerType = {
   id: string;
   label: string;
+  /** Icon name under public/assets/icons — shown in the Type selector. */
+  icon?: string;
 };
 
 export type Industry = {
@@ -100,6 +102,8 @@ export type Industry = {
   label: string;
   /** Which set of 16 datalakes this industry shows. */
   setId: string;
+  /** Icon name under public/assets/icons — shown in the Industry selector. */
+  icon?: string;
   /** "Who is looking" — drives the second selector. */
   types: ViewerType[];
 };
@@ -109,30 +113,33 @@ export const INDUSTRIES: Industry[] = [
     id: "watches",
     label: "Watches",
     setId: "watches",
+    icon: "ui-ind-watches",
     types: [
-      { id: "brand", label: "Brand" },
-      { id: "retailer", label: "Retailer" },
-      { id: "influencer", label: "Influencer" },
+      { id: "brand", label: "Brand", icon: "ui-type-brand" },
+      { id: "retailer", label: "Retailer", icon: "ui-type-retailer" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer" },
     ],
   },
   {
     id: "banking",
     label: "Banking",
     setId: "banking",
+    icon: "ui-ind-banking",
     types: [
-      { id: "bank", label: "Bank" },
-      { id: "payment-system", label: "Payment System" },
-      { id: "influencer", label: "Influencer" },
+      { id: "bank", label: "Bank", icon: "ui-type-bank" },
+      { id: "payment-system", label: "Payment System", icon: "ui-type-payment" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer" },
     ],
   },
   {
     id: "retail",
     label: "Retail",
     setId: "watches",
+    icon: "ui-ind-retail",
     types: [
-      { id: "retailer", label: "Retailer" },
-      { id: "brand", label: "Brand" },
-      { id: "influencer", label: "Influencer" },
+      { id: "retailer", label: "Retailer", icon: "ui-type-retailer" },
+      { id: "brand", label: "Brand", icon: "ui-type-brand" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer" },
     ],
   },
 ];

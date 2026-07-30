@@ -18,6 +18,8 @@ import { getAssetPath } from "@/lib/utils";
 export type SelectOption = {
   id: string;
   label: string;
+  /** Icon name under public/assets/icons, rendered at 18px. */
+  icon?: string;
 };
 
 type Props = {
@@ -139,10 +141,10 @@ export function Select({
         style={{
           fontFamily: FONT,
           fontSize: 11,
-          fontWeight: 400,
-          letterSpacing: "0.06em",
+          fontWeight: 600,
+          letterSpacing: "0.08em",
           textTransform: "uppercase",
-          color: "rgba(255,255,255,0.35)",
+          color: "rgba(255,255,255,0.55)",
         }}
       >
         {label}
@@ -163,12 +165,12 @@ export function Select({
           onMouseLeave={() => setHovered(false)}
           style={{
             width: "100%",
-            height: 36,
+            height: 40,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             gap: 10,
-            padding: "0 12px",
+            padding: "0 14px",
             borderRadius: 8,
             backgroundColor: CONTROL_FILL,
             border: `1px solid ${borderColor}`,
@@ -177,20 +179,39 @@ export function Select({
             transition: "border-color 0.15s ease",
             fontFamily: FONT,
             fontSize: 14,
-            fontWeight: 400,
+            fontWeight: 500,
             lineHeight: "20px",
-            color: disabled ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.92)",
+            color: disabled ? "rgba(255,255,255,0.25)" : "rgba(255,255,255,0.95)",
             textAlign: "left",
           }}
         >
           <span
             style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              minWidth: 0,
             }}
           >
-            {selected?.label ?? "—"}
+            {selected?.icon && (
+              <img
+                src={getAssetPath(`/assets/icons/${selected.icon}.svg`)}
+                alt=""
+                width={18}
+                height={18}
+                draggable={false}
+                style={{ flexShrink: 0, filter: "invert(1)", opacity: 0.75 }}
+              />
+            )}
+            <span
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {selected?.label ?? "—"}
+            </span>
           </span>
 
           <motion.img
@@ -263,7 +284,7 @@ export function Select({
                         alignItems: "center",
                         justifyContent: "space-between",
                         gap: 8,
-                        height: 34,
+                        height: 36,
                         padding: "0 10px",
                         border: "none",
                         borderRadius: 6,
@@ -284,12 +305,35 @@ export function Select({
                     >
                       <span
                         style={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          minWidth: 0,
                         }}
                       >
-                        {option.label}
+                        {option.icon && (
+                          <img
+                            src={getAssetPath(`/assets/icons/${option.icon}.svg`)}
+                            alt=""
+                            width={16}
+                            height={16}
+                            draggable={false}
+                            style={{
+                              flexShrink: 0,
+                              filter: "invert(1)",
+                              opacity: isSelected ? 0.9 : 0.55,
+                            }}
+                          />
+                        )}
+                        <span
+                          style={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {option.label}
+                        </span>
                       </span>
 
                       {isSelected && (

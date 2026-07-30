@@ -128,7 +128,7 @@ export default function DataLayerV2() {
             Split the same way as the board underneath: the first block is
             exactly the grid's width, so Reset lands on the grid's right edge;
             the second is the insight panel's width, so the switch lands on the
-            module's right edge. Both blocks are 36 high — the select box
+            module's right edge. Both blocks are 40 high — the select box
             height — so everything shares one baseline. */}
         <div
           style={{
@@ -151,7 +151,11 @@ export default function DataLayerV2() {
             <div style={{ display: "flex", gap: 12 }}>
               <Select
                 label="Industry"
-                options={INDUSTRIES.map((i) => ({ id: i.id, label: i.label }))}
+                options={INDUSTRIES.map((i) => ({
+                  id: i.id,
+                  label: i.label,
+                  icon: i.icon,
+                }))}
                 value={industryId}
                 onChange={handleIndustryChange}
                 minWidth={190}
@@ -170,7 +174,7 @@ export default function DataLayerV2() {
             <div
               style={{
                 minWidth: 150,
-                height: 36,
+                height: 40,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "flex-end",
@@ -241,7 +245,7 @@ export default function DataLayerV2() {
           <div
             style={{
               width: PANEL_WIDTH,
-              height: 36,
+              height: 40,
               display: "flex",
               alignItems: "center",
               justifyContent: "flex-end",
