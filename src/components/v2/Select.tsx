@@ -18,8 +18,12 @@ import { getAssetPath } from "@/lib/utils";
 export type SelectOption = {
   id: string;
   label: string;
-  /** Icon name under public/assets/icons, rendered at 18px. */
+  /** Icon name under public/assets/icons. */
   icon?: string;
+  /** Tile colour; the icon sits on this at ~15% opacity. */
+  accent?: string;
+  /** One-line subtitle under the label in the open list. */
+  hint?: string;
 };
 
 type Props = {
@@ -32,6 +36,77 @@ type Props = {
 };
 
 const SURFACE = "#111539";
+const NEUTRAL_ACCENT = "#9FA9FF";
+
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/**
+ * Rounded colour-coded tile with the option's icon — the project icons stroke
+ * with currentColor, so inlining the SVG (rather than an <img>) is what lets
+ * the glyph take the accent colour.
+ */
+function OptionTile({
+  icon,
+  accent = NEUTRAL_ACCENT,
+  size,
+  iconSize,
+  radius,
+}: {
+  icon: string;
+  accent?: string;
+  size: number;
+  iconSize: number;
+  radius: number;
+}) {
+  const [svg, setSvg] = useState("");
+
+  useEffect(() => {
+    let live = true;
+    fetch(getAssetPath(`/assets/icons/${icon}.svg`))
+      .then((r) => r.text())
+      .then((t) => {
+        if (live) setSvg(t);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [icon]);
+
+  return (
+    <span
+      aria-hidden
+      style={{
+        width: size,
+        height: size,
+        borderRadius: radius,
+        backgroundColor: hexToRgba(accent, 0.15),
+        color: accent,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >
+      {svg && (
+        <span
+          style={{ width: iconSize, height: iconSize, display: "block", lineHeight: 0 }}
+          dangerouslySetInnerHTML={{
+            __html: svg.replace(
+              /width="32"\s*height="32"/,
+              `width="${iconSize}" height="${iconSize}"`
+            ),
+          }}
+        />
+      )}
+    </span>
+  );
+}
 const CONTROL_FILL = "#070a28";
 const BORDER_IDLE = "rgba(255,255,255,0.12)";
 const BORDER_HOVER = "rgba(159,169,255,0.55)";
@@ -194,13 +269,12 @@ export function Select({
             }}
           >
             {selected?.icon && (
-              <img
-                src={getAssetPath(`/assets/icons/${selected.icon}.svg`)}
-                alt=""
-                width={18}
-                height={18}
-                draggable={false}
-                style={{ flexShrink: 0, filter: "invert(1)", opacity: 0.75 }}
+              <OptionTile
+                icon={selected.icon}
+                accent={selected.accent}
+                size={26}
+                iconSize={16}
+                radius={7}
               />
             )}
             <span
@@ -247,7 +321,11 @@ export function Select({
             position: "absolute",
             top: "calc(100% + 6px)",
             left: 0,
-            right: 0,
+            // Wider than the trigger when the two-line rows need it — capped so
+            // Payment System-length hints wrap the panel, not the screen.
+            minWidth: "100%",
+            width: "max-content",
+            maxWidth: 340,
             zIndex: 60,
             margin: 0,
             padding: 4,
@@ -284,8 +362,7 @@ export function Select({
                         alignItems: "center",
                         justifyContent: "space-between",
                         gap: 8,
-                        height: 36,
-                        padding: "0 10px",
+                        padding: "8px 10px",
                         border: "none",
                         borderRadius: 6,
                         cursor: "pointer",
@@ -307,32 +384,52 @@ export function Select({
                         style={{
                           display: "flex",
                           alignItems: "center",
-                          gap: 10,
+                          gap: 12,
                           minWidth: 0,
                         }}
                       >
                         {option.icon && (
-                          <img
-                            src={getAssetPath(`/assets/icons/${option.icon}.svg`)}
-                            alt=""
-                            width={16}
-                            height={16}
-                            draggable={false}
-                            style={{
-                              flexShrink: 0,
-                              filter: "invert(1)",
-                              opacity: isSelected ? 0.9 : 0.55,
-                            }}
+                          <OptionTile
+                            icon={option.icon}
+                            accent={option.accent}
+                            size={36}
+                            iconSize={20}
+                            radius={10}
                           />
                         )}
                         <span
                           style={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 2,
+                            minWidth: 0,
                           }}
                         >
-                          {option.label}
+                          <span
+                            style={{
+                              fontWeight: 500,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {option.label}
+                          </span>
+                          {option.hint && (
+                            <span
+                              style={{
+                                fontSize: 12,
+                                lineHeight: "16px",
+                                fontWeight: 400,
+                                color: "rgba(255,255,255,0.4)",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {option.hint}
+                            </span>
+                          )}
                         </span>
                       </span>
 

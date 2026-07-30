@@ -155,6 +155,10 @@ export default function DataLayerV2() {
                   id: i.id,
                   label: i.label,
                   icon: i.icon,
+                  accent: i.accent,
+                  // Factual subtitle — the industry's viewer types, no copy
+                  // invented for it.
+                  hint: i.types.map((t) => t.label).join(" · "),
                 }))}
                 value={industryId}
                 onChange={handleIndustryChange}

@@ -95,6 +95,10 @@ export type ViewerType = {
   label: string;
   /** Icon name under public/assets/icons — shown in the Type selector. */
   icon?: string;
+  /** Tile colour in the selector — reuses the module's lake accents. */
+  accent?: string;
+  /** One-line subtitle under the name in the selector. */
+  hint?: string;
 };
 
 export type Industry = {
@@ -104,6 +108,8 @@ export type Industry = {
   setId: string;
   /** Icon name under public/assets/icons — shown in the Industry selector. */
   icon?: string;
+  /** Tile colour in the selector — reuses the module's lake accents. */
+  accent?: string;
   /** "Who is looking" — drives the second selector. */
   types: ViewerType[];
 };
@@ -114,10 +120,11 @@ export const INDUSTRIES: Industry[] = [
     label: "Watches",
     setId: "watches",
     icon: "ui-ind-watches",
+    accent: "#FBBF24",
     types: [
-      { id: "brand", label: "Brand", icon: "ui-type-brand" },
-      { id: "retailer", label: "Retailer", icon: "ui-type-retailer" },
-      { id: "influencer", label: "Influencer", icon: "ui-type-influencer" },
+      { id: "brand", label: "Brand", icon: "ui-type-brand", accent: "#46FEC3", hint: "Manufacturer perspective" },
+      { id: "retailer", label: "Retailer", icon: "ui-type-retailer", accent: "#F472B6", hint: "Seller perspective" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#9333EA", hint: "Creator perspective" },
     ],
   },
   {
@@ -125,10 +132,11 @@ export const INDUSTRIES: Industry[] = [
     label: "Banking",
     setId: "banking",
     icon: "ui-ind-banking",
+    accent: "#46FEC3",
     types: [
-      { id: "bank", label: "Bank", icon: "ui-type-bank" },
-      { id: "payment-system", label: "Payment System", icon: "ui-type-payment" },
-      { id: "influencer", label: "Influencer", icon: "ui-type-influencer" },
+      { id: "bank", label: "Bank", icon: "ui-type-bank", accent: "#46FEC3", hint: "Institution perspective" },
+      { id: "payment-system", label: "Payment System", icon: "ui-type-payment", accent: "#84CC16", hint: "Scheme perspective" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#9333EA", hint: "Creator perspective" },
     ],
   },
   {
@@ -136,10 +144,11 @@ export const INDUSTRIES: Industry[] = [
     label: "Retail",
     setId: "watches",
     icon: "ui-ind-retail",
+    accent: "#F472B6",
     types: [
-      { id: "retailer", label: "Retailer", icon: "ui-type-retailer" },
-      { id: "brand", label: "Brand", icon: "ui-type-brand" },
-      { id: "influencer", label: "Influencer", icon: "ui-type-influencer" },
+      { id: "retailer", label: "Retailer", icon: "ui-type-retailer", accent: "#F472B6", hint: "Seller perspective" },
+      { id: "brand", label: "Brand", icon: "ui-type-brand", accent: "#46FEC3", hint: "Manufacturer perspective" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#9333EA", hint: "Creator perspective" },
     ],
   },
 ];
