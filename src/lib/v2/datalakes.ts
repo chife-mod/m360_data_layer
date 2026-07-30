@@ -124,7 +124,7 @@ export const INDUSTRIES: Industry[] = [
     types: [
       { id: "brand", label: "Brand", icon: "ui-type-brand", accent: "#46FEC3", hint: "Manufacturer perspective" },
       { id: "retailer", label: "Retailer", icon: "ui-type-retailer", accent: "#F472B6", hint: "Seller perspective" },
-      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#A85AEE", hint: "Creator perspective" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#9333EA", hint: "Creator perspective" },
     ],
   },
   {
@@ -136,7 +136,7 @@ export const INDUSTRIES: Industry[] = [
     types: [
       { id: "bank", label: "Bank", icon: "ui-type-bank", accent: "#46FEC3", hint: "Institution perspective" },
       { id: "payment-system", label: "Payment System", icon: "ui-type-payment", accent: "#84CC16", hint: "Scheme perspective" },
-      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#A85AEE", hint: "Creator perspective" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#9333EA", hint: "Creator perspective" },
     ],
   },
   {
@@ -148,7 +148,7 @@ export const INDUSTRIES: Industry[] = [
     types: [
       { id: "retailer", label: "Retailer", icon: "ui-type-retailer", accent: "#F472B6", hint: "Seller perspective" },
       { id: "brand", label: "Brand", icon: "ui-type-brand", accent: "#46FEC3", hint: "Manufacturer perspective" },
-      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#A85AEE", hint: "Creator perspective" },
+      { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#9333EA", hint: "Creator perspective" },
     ],
   },
 ];

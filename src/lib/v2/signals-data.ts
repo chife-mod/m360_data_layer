@@ -43,7 +43,7 @@ export const signalConfigs: Record<string, SignalConfig> = {
     id: "pricing",
     label: "Pricing",
     icon: "pricing",
-    color: "#477CEE",
+    color: "#2563EB",
     recommendedWith: ["availability", "retailers"],
     descriptionSingle:
       "Track price changes, discount activity, and competitive pricing dynamics across retailers and regions in real time.",
@@ -61,7 +61,7 @@ export const signalConfigs: Record<string, SignalConfig> = {
     id: "social",
     label: "Social",
     icon: "social",
-    color: "#A85AEE",
+    color: "#9333EA",
     recommendedWith: ["influencers", "reviews"],
     descriptionSingle:
       "Measure brand and product activity across social platforms to detect engagement spikes and emerging conversations.",
@@ -106,7 +106,7 @@ export const signalConfigs: Record<string, SignalConfig> = {
     id: "novelties",
     label: "Novelties",
     icon: "novelties",
-    color: "#7C74DA",
+    color: "#6258D8",
     recommendedWith: ["products", "pricing"],
     descriptionSingle:
       "Detect new product launches, assortment changes, and competitive SKU expansion across retailers.",
@@ -124,7 +124,7 @@ export const signalConfigs: Record<string, SignalConfig> = {
     id: "evisibility",
     label: "E-visibility",
     icon: "evisibility",
-    color: "#9763F1",
+    color: "#7C3AED",
     recommendedWith: ["seo", "retailers"],
     descriptionSingle:
       "Measure product discoverability across search, category listings, and AI-driven surfaces.",

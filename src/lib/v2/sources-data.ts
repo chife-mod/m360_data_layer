@@ -32,20 +32,20 @@ export const sourcesGrid: SourceItem[][] = [
   [
     { id: "brands",      label: "Brands",          icon: "brands",       color: "#46FEC3" },
     { id: "media",       label: "Media",            icon: "media",        color: "#F43F5E" },
-    { id: "pricing",     label: "Pricing",          icon: "pricing",      color: "#477CEE" },
+    { id: "pricing",     label: "Pricing",          icon: "pricing",      color: "#2563EB" },
     { id: "categories",  label: "Categories",       icon: "categories",   color: "#FBBF24" },
   ],
   [
-    { id: "social",      label: "Social",           icon: "social",       color: "#A85AEE" },
+    { id: "social",      label: "Social",           icon: "social",       color: "#9333EA" },
     { id: "availability",label: "Availability",     icon: "availability", color: "#FF8000" },
     { id: "products",    label: "Products",         icon: "products",     color: "#06B6D4" },
     { id: "influencers", label: "Influencers",      icon: "influencers",  color: "#EC4899" },
   ],
   [
     { id: "ads",         label: "Ads",              icon: "ads",          color: "#10B981" },
-    { id: "novelties",   label: "Novelties",        icon: "novelties",    color: "#7C74DA" },
+    { id: "novelties",   label: "Novelties",        icon: "novelties",    color: "#6258D8" },
     { id: "newsletters", label: "Newsletters",      icon: "newsletters",  color: "#FB923C" },
-    { id: "evisibility", label: "E-visibility",     icon: "evisibility",  color: "#9763F1" },
+    { id: "evisibility", label: "E-visibility",     icon: "evisibility",  color: "#7C3AED" },
   ],
   [
     { id: "retailers",   label: "Retailers",        icon: "retailers",    color: "#F472B6" },

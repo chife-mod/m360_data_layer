@@ -62,7 +62,7 @@ export const bankingDatalakes: Datalake[] = [
     id: "kols-finance",
     label: "KOLs: Finance",
     icon: "bk-kols-finance",
-    color: "#477CEE",
+    color: "#2563EB",
     recommendedWith: ["media", "kols-celebrities", "owned-some"],
     // Real copy — client email, 2026-07-30.
     descriptionSingle:
@@ -94,7 +94,7 @@ export const bankingDatalakes: Datalake[] = [
     id: "reviews-branches",
     label: "Reviews: Branches",
     icon: "bk-reviews-branches",
-    color: "#7C74DA",
+    color: "#6258D8",
     recommendedWith: ["reviews-banks", "branches-atms", "reviews-apps"],
     // Real copy — client email, 2026-07-30 (second round).
     descriptionSingle:
@@ -114,7 +114,7 @@ export const bankingDatalakes: Datalake[] = [
     id: "branches-atms",
     label: "Branches & ATMs",
     icon: "bk-branches-atms",
-    color: "#9763F1",
+    color: "#7C3AED",
     recommendedWith: ["reviews-branches", "banks", "payment-systems"],
     descriptionSingle: LOREM_D,
   },
@@ -124,7 +124,7 @@ export const bankingDatalakes: Datalake[] = [
     id: "owned-some",
     label: "Owned: SoMe",
     icon: "bk-owned-some",
-    color: "#A85AEE",
+    color: "#9333EA",
     recommendedWith: ["owned-blogs", "owned-ads", "kols-celebrities"],
     descriptionSingle: LOREM_A,
   },

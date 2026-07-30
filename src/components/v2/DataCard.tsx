@@ -76,7 +76,13 @@ export function DataCard({
 
   const accentColor = source.color;
   const iconColor = isSelected ? accentColor : "rgba(255, 255, 255, 1)";
-  const textColor = isSelected ? accentColor : "rgba(255, 255, 255, 1)";
+  // The label stays white when selected. Accent on 14px text sat right on the
+  // WCAG AA threshold (4.5:1) while white is 17.6:1, and selection is already
+  // carried by the border, the glow, the dot and the icon — recolouring the
+  // text was a fifth signal, and the most fragile one. The tile's colour link
+  // to the panel survives on the icon, dot and glow, which are graphics and so
+  // only owe 3:1.
+  const textColor = "rgba(255, 255, 255, 1)";
 
   useEffect(() => {
     let live = true;
