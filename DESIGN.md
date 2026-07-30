@@ -38,8 +38,9 @@ stay consistent with it instead of drifting into their own look.
 `0.7` card label · `0.35` field label · `0.2` disabled.
 
 ### Datalake accents
-16 accents, one per tile, applied to icon + label + dot + bottom glow **only in the
-selected state**. Deliberately shuffled so neighbouring tiles contrast.
+16 accents, one per tile, applied to icon + dot + bottom glow **only in the
+selected state** — never to the label, see below. Deliberately shuffled so
+neighbouring tiles contrast.
 
 ```
 #46FEC3  #F43F5E  #2563EB  #FBBF24
@@ -133,7 +134,7 @@ Do not "fix" the prototype back toward the Figma section.
 1. **Tile 16** — stays *Support Chats* (Figma's *Trending offers* is outdated).
 2. **Toggle copy** — *"Show only datasets available in LLMs"* (client email
    2026-07-29; newer than both the Figma text and the old V1 wording).
-3. **Accent assignment** — stays as in code (Pricing `#477CEE`,
+3. **Accent assignment** — stays as in code (Pricing `#2563EB`,
    Availability `#FF8000`).
 4. **Naming** — the module is the *data layer* (*datalakes*); Figma's
    *signals / sources* wording is historical.
