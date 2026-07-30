@@ -53,6 +53,8 @@ const BENCHMARKING_360 =
 const INFLUENCER_PULSE =
   "https://chife-mod.github.io/sf-aayed-influencer-pulse/";
 const KOLS_FINANCE_DASHBOARD = "https://sf-bi.ai/4yOUvZE";
+const REVIEWS_SITES_DASHBOARD = "https://sf-bi.ai/4bPUieM";
+const REVIEWS_APPS_DASHBOARD = "https://sf-bi.ai/4xetb5B";
 const KOLS_CELEBRITIES_DASHBOARD = "https://sf-bi.ai/4yOUVPI";
 const UA_BANKS_DASHBOARD =
   "https://app.semanticforce.ai/?_gl=1*1p3dqyu*_gcl_au*MTk4NzYxOTYyNC4xNzgzOTI5NDgy#/dashboard/insights/custom/ua/banks_news?sign=beded70bddb60a228a1d38bfe5d14dbb722cd80d";
@@ -162,11 +164,58 @@ const kolsCelebritiesApps: UseCase[] = [
 ];
 
 /** Keyed `<setId>:<datalakeId>`. Only authored entries live here. */
+/**
+ * Banking → the Reviews row — client email of 2026-07-30 (second round).
+ *
+ * All three are dashboards, not decks, so there is no preview strip: the URLs
+ * are live BI views behind app.semanticforce.ai.
+ *
+ * Reviews: Banks and Reviews: Branches point at the SAME dashboard
+ * (sf-bi.ai/4bPUieM) — as written in the brief. Flagged with the client in
+ * case one of them was meant to be its own view.
+ */
+const reviewsBanksApps: UseCase[] = [
+  {
+    id: "banking-reviews-banks-benchmark",
+    roles: ["CX", "Marketing"],
+    title: "Benchmark banks in review sites",
+    overview: "Understand drivers of positivity and negativity.",
+    dashboardUrl: REVIEWS_SITES_DASHBOARD,
+    authored: true,
+  },
+];
+
+const reviewsBranchesApps: UseCase[] = [
+  {
+    id: "banking-reviews-branches-benchmark",
+    roles: ["CX", "Marketing"],
+    title: "Benchmark Bank Branches & ATMs",
+    overview: "Understand drivers of positivity and negativity.",
+    dashboardUrl: REVIEWS_SITES_DASHBOARD,
+    authored: true,
+  },
+];
+
+const reviewsAppsApps: UseCase[] = [
+  {
+    id: "banking-reviews-apps-benchmark",
+    roles: ["CX", "Marketing", "Dev"],
+    title: "Benchmark Apps",
+    overview:
+      "Understand drivers of positivity and negativity. Track perception of new features and more.",
+    dashboardUrl: REVIEWS_APPS_DASHBOARD,
+    authored: true,
+  },
+];
+
 const authoredApps: Record<string, UseCase[]> = {
   "banking:media": bankingMediaApps,
   "banking:banks": bankingBanksApps,
   "banking:kols-finance": kolsFinanceApps,
   "banking:kols-celebrities": kolsCelebritiesApps,
+  "banking:reviews-banks": reviewsBanksApps,
+  "banking:reviews-branches": reviewsBranchesApps,
+  "banking:reviews-apps": reviewsAppsApps,
   "watches:media": watchesMediaApps,
 };
 

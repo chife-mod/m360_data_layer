@@ -86,7 +86,9 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-reviews-banks",
     color: "#10B981",
     recommendedWith: ["banks", "reviews-apps", "reviews-branches"],
-    descriptionSingle: LOREM_A,
+    // Real copy — client email, 2026-07-30 (second round).
+    descriptionSingle:
+      "Analyze reviews related to 50+ major Ukrainian banks across 8 major review sites such as MinFin, Vidhuk, Banki.ua and others.",
   },
   {
     id: "reviews-branches",
@@ -94,7 +96,9 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-reviews-branches",
     color: "#4338CA",
     recommendedWith: ["reviews-banks", "branches-atms", "reviews-apps"],
-    descriptionSingle: LOREM_B,
+    // Real copy — client email, 2026-07-30 (second round).
+    descriptionSingle:
+      "Analyze reviews related to branches of 50+ Ukrainian banks on Google Maps and other review sites.",
   },
   {
     id: "reviews-apps",
@@ -102,7 +106,9 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-reviews-apps",
     color: "#FB923C",
     recommendedWith: ["reviews-banks", "products-services", "reviews-branches"],
-    descriptionSingle: LOREM_C,
+    // Real copy — client email, 2026-07-30 (second round).
+    descriptionSingle:
+      "Analyze reviews related to mobile apps of 50+ Ukrainian banks (Google Play and Apple Store).",
   },
   {
     id: "branches-atms",
