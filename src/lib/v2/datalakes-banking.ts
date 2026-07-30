@@ -12,29 +12,18 @@
  * Rows 2 and 3 swapped on 2026-07-30 ("Reviews after KOLs") — the client's
  * own reordering of his four blocks. Each lake keeps its colour.
  *
- * ⚠️ ALL COPY BELOW IS LOREM IPSUM, DELIBERATELY.
- * Only the labels come from the client. Lorem is used rather than plausible
- * English so that the client can tell at a glance which text is his and which
- * was never written — readable filler would be mistaken for approved copy.
- * Replace each string as the real text arrives; anything still in Latin is
- * still outstanding.
- *
- * Labels, ids, icons, colours and relations are real. Only the prose is filler.
+ * Copy: every overview here is the client's own text, or an empty string where
+ * he has not written one yet. No filler — lorem was removed on 2026-07-30
+ * ("пускай будет пусто"), because an empty panel states the truth and invented
+ * prose does not. Datasets still awaiting copy: Branches & ATMs, the four
+ * Owned channels, Products & Services, Regulators, Payment Systems,
+ * Search Demand.
  *
  * Colours reuse the watches palette in the same grid positions, so neighbouring
  * tiles keep the contrast the original set was tuned for.
  */
 
 import type { Datalake } from "./datalakes";
-
-const LOREM_A =
-  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-const LOREM_B =
-  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.";
-const LOREM_C =
-  "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
-const LOREM_D =
-  "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
 export const bankingDatalakes: Datalake[] = [
   // ── Row 1 — institutions and voices ────────────────────────────────────────
@@ -116,7 +105,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-branches-atms",
     color: "#7C3AED",
     recommendedWith: ["reviews-branches", "banks", "payment-systems"],
-    descriptionSingle: LOREM_D,
+    descriptionSingle: "",
   },
 
   // ── Row 3 — owned channels ─────────────────────────────────────────────────
@@ -126,7 +115,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-owned-some",
     color: "#9333EA",
     recommendedWith: ["owned-blogs", "owned-ads", "kols-celebrities"],
-    descriptionSingle: LOREM_A,
+    descriptionSingle: "",
   },
   {
     id: "owned-blogs",
@@ -134,7 +123,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-owned-blogs",
     color: "#FF8000",
     recommendedWith: ["owned-some", "owned-newsletters", "search-demand"],
-    descriptionSingle: LOREM_B,
+    descriptionSingle: "",
   },
   {
     id: "owned-ads",
@@ -142,7 +131,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-owned-ads",
     color: "#06B6D4",
     recommendedWith: ["owned-some", "owned-newsletters", "payment-systems"],
-    descriptionSingle: LOREM_C,
+    descriptionSingle: "",
   },
   {
     id: "owned-newsletters",
@@ -150,7 +139,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-owned-newsletters",
     color: "#EC4899",
     recommendedWith: ["owned-blogs", "owned-ads", "products-services"],
-    descriptionSingle: LOREM_D,
+    descriptionSingle: "",
   },
 
   // ── Row 4 — products, rules, demand ────────────────────────────────────────
@@ -160,7 +149,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-products-services",
     color: "#F472B6",
     recommendedWith: ["banks", "payment-systems", "reviews-apps"],
-    descriptionSingle: LOREM_A,
+    descriptionSingle: "",
   },
   {
     id: "regulators",
@@ -168,7 +157,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-regulators",
     color: "#00D4FF",
     recommendedWith: ["banks", "media", "payment-systems"],
-    descriptionSingle: LOREM_B,
+    descriptionSingle: "",
   },
   {
     id: "payment-systems",
@@ -176,7 +165,7 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-payment-systems",
     color: "#84CC16",
     recommendedWith: ["products-services", "regulators", "branches-atms"],
-    descriptionSingle: LOREM_C,
+    descriptionSingle: "",
   },
   {
     id: "search-demand",
@@ -184,41 +173,27 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-search-demand",
     color: "#FF4560",
     recommendedWith: ["owned-blogs", "products-services", "media"],
-    descriptionSingle: LOREM_D,
+    descriptionSingle: "",
   },
 ];
 
 const key = (ids: string[]) => [...ids].sort().join("+");
 
-/** ⚠️ Lorem — see the file header. */
-export const bankingPairs: Record<string, string> = {
-  [key(["banks", "media"])]: `${LOREM_A} ${LOREM_B}`,
-  [key(["banks", "reviews-banks"])]: `${LOREM_B} ${LOREM_C}`,
-  [key(["products-services", "payment-systems"])]: `${LOREM_C} ${LOREM_D}`,
-  [key(["media", "regulators"])]: `${LOREM_D} ${LOREM_A}`,
-  [key(["reviews-apps", "products-services"])]: `${LOREM_A} ${LOREM_C}`,
-  [key(["owned-ads", "owned-some"])]: `${LOREM_B} ${LOREM_D}`,
-  [key(["branches-atms", "reviews-branches"])]: `${LOREM_C} ${LOREM_A}`,
-  [key(["kols-finance", "media"])]: `${LOREM_D} ${LOREM_B}`,
-  [key(["search-demand", "products-services"])]: `${LOREM_A} ${LOREM_D}`,
-};
+/**
+ * Pair copy — none written yet. An unwritten combination shows nothing rather
+ * than filler (client, 2026-07-30: "пускай будет пусто").
+ */
+export const bankingPairs: Record<string, string> = {};
 
-/** ⚠️ Lorem — see the file header. */
-export const bankingTriples: Record<string, string> = {
-  [key(["banks", "media", "regulators"])]: `${LOREM_A} ${LOREM_B} ${LOREM_C}`,
-  [key(["products-services", "payment-systems", "regulators"])]: `${LOREM_B} ${LOREM_C} ${LOREM_D}`,
-  [key(["reviews-banks", "reviews-apps", "reviews-branches"])]: `${LOREM_C} ${LOREM_D} ${LOREM_A}`,
-  [key(["owned-some", "owned-blogs", "owned-ads"])]: `${LOREM_D} ${LOREM_A} ${LOREM_B}`,
-};
+/** Triple copy — none written yet. Same rule as pairs. */
+export const bankingTriples: Record<string, string> = {};
 
 /**
- * Shown for combinations nobody has written copy for.
- *
- * The watches set composes an English sentence from the labels; banking must
- * not, or an unwritten combination would read as finished copy and undo the
- * point of using lorem everywhere else.
+ * Shown for combinations nobody has written copy for: deliberately empty.
+ * An empty string is not "no fallback" — it is an explicit instruction to show
+ * nothing, which `getDescription` honours (see the `!== undefined` check there).
  */
-export const bankingFallback = `${LOREM_B} ${LOREM_C}`;
+export const bankingFallback = "";
 
 /**
  * Which banking datalakes are surfaced when the "available in AI chats" toggle

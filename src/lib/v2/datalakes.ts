@@ -237,7 +237,9 @@ export function getDescription(set: DatalakeSet, selectedIds: string[]): string 
       : set.tripleDescriptions[comboKey(selectedIds)];
 
   if (authored) return authored;
-  if (set.fallbackDescription) return set.fallbackDescription;
+  // An explicit "" means the set wants nothing shown for unwritten
+  // combinations — distinct from the field being absent.
+  if (set.fallbackDescription !== undefined) return set.fallbackDescription;
 
   const labels = selectedIds
     .map((id) => getDatalake(set, id)?.label)

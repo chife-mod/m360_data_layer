@@ -1475,7 +1475,9 @@ export function InsightPanel({
                 })}
               </div>
 
-              {activeTab === "overview" && (
+              {/* No paragraph at all when there is no copy — an empty <p> would
+                  still take its line-height and leave a phantom gap. */}
+              {activeTab === "overview" && description && (
                 <motion.p
                   layout
                   transition={{

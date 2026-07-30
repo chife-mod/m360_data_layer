@@ -20,9 +20,13 @@ Source: calls of 2026-07-29 and 2026-07-30 ("мы просто пойдём и �
 Written so far: Banks, Media, KOLs: Finance, KOLs: Celebrities, Reviews: Banks,
 Reviews: Branches, Reviews: Apps.
 
-Still lorem — **9 of 16**: Branches & ATMs, Owned: SoMe, Owned: Blogs,
+Still **empty — 9 of 16**: Branches & ATMs, Owned: SoMe, Owned: Blogs,
 Owned: Ads, Owned: Newsletters, Products & Services, Regulators,
 Payment Systems, Search Demand.
+
+Lorem was removed on 2026-07-30 ("пускай будет пусто") — these datasets now
+show a title, the tabs and nothing else. The gap is the status report: what is
+blank has not been written.
 
 Vsevolod said he was writing "последний слой" (the bottom row) right after the
 2026-07-30 call.
@@ -33,9 +37,9 @@ datasets are in that position (same list as 1.1, minus whatever arrives with
 the bottom row).
 
 ### 1.3 Combination copy for banking — **[client]**
-Pair and triple descriptions in `datalakes-banking.ts` are still lorem. Only
-single-dataset overviews have real text. Any two- or three-dataset selection in
-Banking shows filler.
+`bankingPairs` and `bankingTriples` are empty objects: no two- or three-dataset
+combination in Banking has copy, so selecting two datasets shows the titles and
+an empty panel. Watches still has its authored pair/triple copy.
 
 ### 1.4 Copy that is mine, not the client's — **[open]**
 Written by me to keep the prototype presentable, never reviewed by him:
