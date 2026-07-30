@@ -5,9 +5,12 @@
  * 4x4 grid, so the order here IS the grid order. Do not re-sort.
  *
  *   Banks / Media / KOLs: Finance / KOLs: Celebrities
- *   Owned: SoMe / Owned: Blogs / Owned: Ads / Owned: Newsletters
  *   Reviews: Banks / Reviews: Branches / Reviews: Banking Apps / Branches & ATMs
+ *   Owned: SoMe / Owned: Blogs / Owned: Ads / Owned: Newsletters
  *   Products & Services / Regulators / Payment Systems / Search Demand
+ *
+ * Rows 2 and 3 swapped on 2026-07-30 ("Reviews after KOLs") — the client's
+ * own reordering of his four blocks. Each lake keeps its colour.
  *
  * ⚠️ ALL COPY BELOW IS LOREM IPSUM, DELIBERATELY.
  * Only the labels come from the client. Lorem is used rather than plausible
@@ -41,7 +44,9 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-banks",
     color: "#46FEC3",
     recommendedWith: ["media", "reviews-banks", "products-services"],
-    descriptionSingle: LOREM_A,
+    // Real copy — client email, 2026-07-30.
+    descriptionSingle:
+      "Information regarding 50+ major Ukrainian banks, branches, executives, etc.",
   },
   {
     id: "media",
@@ -59,7 +64,9 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-kols-finance",
     color: "#2563EB",
     recommendedWith: ["media", "kols-celebrities", "owned-some"],
-    descriptionSingle: LOREM_C,
+    // Real copy — client email, 2026-07-30.
+    descriptionSingle:
+      "Track over 100 Ukrainian financial influencers covering banking, payments, investments and more.",
   },
   {
     id: "kols-celebrities",
@@ -67,44 +74,12 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-kols-celebrities",
     color: "#FBBF24",
     recommendedWith: ["kols-finance", "owned-some", "media"],
-    descriptionSingle: LOREM_D,
+    // Real copy — client email, 2026-07-30.
+    descriptionSingle:
+      "Track major Ukrainian celebrities in social media and understand how they cover banking, payments, investments and more.",
   },
 
-  // ── Row 2 — owned channels ─────────────────────────────────────────────────
-  {
-    id: "owned-some",
-    label: "Owned: SoMe",
-    icon: "bk-owned-some",
-    color: "#9333EA",
-    recommendedWith: ["owned-blogs", "owned-ads", "kols-celebrities"],
-    descriptionSingle: LOREM_A,
-  },
-  {
-    id: "owned-blogs",
-    label: "Owned: Blogs",
-    icon: "bk-owned-blogs",
-    color: "#FF8000",
-    recommendedWith: ["owned-some", "owned-newsletters", "search-demand"],
-    descriptionSingle: LOREM_B,
-  },
-  {
-    id: "owned-ads",
-    label: "Owned: Ads",
-    icon: "bk-owned-ads",
-    color: "#06B6D4",
-    recommendedWith: ["owned-some", "owned-newsletters", "payment-systems"],
-    descriptionSingle: LOREM_C,
-  },
-  {
-    id: "owned-newsletters",
-    label: "Owned: Newsletters",
-    icon: "bk-owned-newsletters",
-    color: "#EC4899",
-    recommendedWith: ["owned-blogs", "owned-ads", "products-services"],
-    descriptionSingle: LOREM_D,
-  },
-
-  // ── Row 3 — customer experience ────────────────────────────────────────────
+  // ── Row 2 — customer experience ────────────────────────────────────────────
   {
     id: "reviews-banks",
     label: "Reviews: Banks",
@@ -135,6 +110,40 @@ export const bankingDatalakes: Datalake[] = [
     icon: "bk-branches-atms",
     color: "#7C3AED",
     recommendedWith: ["reviews-branches", "banks", "payment-systems"],
+    descriptionSingle: LOREM_D,
+  },
+
+  // ── Row 3 — owned channels ─────────────────────────────────────────────────
+  {
+    id: "owned-some",
+    label: "Owned: SoMe",
+    icon: "bk-owned-some",
+    color: "#9333EA",
+    recommendedWith: ["owned-blogs", "owned-ads", "kols-celebrities"],
+    descriptionSingle: LOREM_A,
+  },
+  {
+    id: "owned-blogs",
+    label: "Owned: Blogs",
+    icon: "bk-owned-blogs",
+    color: "#FF8000",
+    recommendedWith: ["owned-some", "owned-newsletters", "search-demand"],
+    descriptionSingle: LOREM_B,
+  },
+  {
+    id: "owned-ads",
+    label: "Owned: Ads",
+    icon: "bk-owned-ads",
+    color: "#06B6D4",
+    recommendedWith: ["owned-some", "owned-newsletters", "payment-systems"],
+    descriptionSingle: LOREM_C,
+  },
+  {
+    id: "owned-newsletters",
+    label: "Owned: Newsletters",
+    icon: "bk-owned-newsletters",
+    color: "#EC4899",
+    recommendedWith: ["owned-blogs", "owned-ads", "products-services"],
     descriptionSingle: LOREM_D,
   },
 

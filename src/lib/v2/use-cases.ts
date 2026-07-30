@@ -50,6 +50,10 @@ const VULCAIN_MONTHLY_PULSE = "https://chife-mod.github.io/sf-vulcain-monthly-pu
 // unshortened one, so it does not depend on the shortener staying alive.
 const BENCHMARKING_360 =
   "https://chife-mod.github.io/sf-mastercard-benchmarking360/";
+const INFLUENCER_PULSE =
+  "https://chife-mod.github.io/sf-aayed-influencer-pulse/";
+const KOLS_FINANCE_DASHBOARD = "https://sf-bi.ai/4yOUvZE";
+const KOLS_CELEBRITIES_DASHBOARD = "https://sf-bi.ai/4yOUVPI";
 const UA_BANKS_DASHBOARD =
   "https://app.semanticforce.ai/?_gl=1*1p3dqyu*_gcl_au*MTk4NzYxOTYyNC4xNzgzOTI5NDgy#/dashboard/insights/custom/ua/banks_news?sign=beded70bddb60a228a1d38bfe5d14dbb722cd80d";
 
@@ -100,30 +104,6 @@ const watchesMediaApps: UseCase[] = [
   },
 ];
 
-/** Placeholder apps, used wherever the client has not written real ones. */
-const placeholderApps: UseCase[] = [
-  {
-    id: "lorem-1",
-    roles: ["Lorem"],
-    title: "Lorem ipsum dolor sit amet consectetur",
-    overview: "Adipiscing elit, sed do eiusmod tempor incididunt ut labore.",
-    authored: false,
-  },
-  {
-    id: "lorem-2",
-    roles: ["Ipsum"],
-    title: "Ut enim ad minim veniam quis nostrud",
-    overview: "Exercitation ullamco laboris nisi ut aliquip ex ea commodo.",
-    authored: false,
-  },
-  {
-    id: "lorem-3",
-    roles: ["Dolor"],
-    title: "Duis aute irure dolor in reprehenderit",
-    authored: false,
-  },
-];
-
 /**
  * Banking → Banks ("Egg 1"). Brief of 2026-07-30: the UA Banks
  * Benchmarking 360 report embedded as an app, tagged for every team it
@@ -139,13 +119,54 @@ const bankingBanksApps: UseCase[] = [
     reportPreview: { dir: "benchmarking360", count: 3 },
     authored: true,
   },
-  ...placeholderApps,
+];
+
+/** Banking → KOLs — client email of 2026-07-30, verbatim. */
+const kolsFinanceApps: UseCase[] = [
+  {
+    id: "banking-kols-finance-benchmark",
+    roles: ["PR", "Marketing"],
+    title: "Influencers Benchmarking",
+    // No overview in the brief — just the dashboard.
+    dashboardUrl: KOLS_FINANCE_DASHBOARD,
+    authored: true,
+  },
+  {
+    id: "banking-kols-finance-analytics",
+    roles: ["PR", "Marketing"],
+    title: "Influencer Analytics",
+    overview: "Analyze Influencer Activity.",
+    reportTemplateUrl: INFLUENCER_PULSE,
+    reportPreview: { dir: "influencer-pulse", count: 10 },
+    authored: true,
+  },
+];
+
+const kolsCelebritiesApps: UseCase[] = [
+  {
+    id: "banking-kols-celebrities-benchmark",
+    roles: ["PR", "Marketing"],
+    title: "Influencers Benchmarking",
+    dashboardUrl: KOLS_CELEBRITIES_DASHBOARD,
+    authored: true,
+  },
+  {
+    id: "banking-kols-celebrities-analytics",
+    roles: ["PR", "Marketing"],
+    title: "Influencer Analytics",
+    overview: "Analyze Influencer Activity.",
+    reportTemplateUrl: INFLUENCER_PULSE,
+    reportPreview: { dir: "influencer-pulse", count: 10 },
+    authored: true,
+  },
 ];
 
 /** Keyed `<setId>:<datalakeId>`. Only authored entries live here. */
 const authoredApps: Record<string, UseCase[]> = {
   "banking:media": bankingMediaApps,
   "banking:banks": bankingBanksApps,
+  "banking:kols-finance": kolsFinanceApps,
+  "banking:kols-celebrities": kolsCelebritiesApps,
   "watches:media": watchesMediaApps,
 };
 
@@ -173,6 +194,8 @@ export function getUseCaseGroups(
     datalakeId: d.id,
     datalakeLabel: d.label,
     color: d.color,
-    useCases: authoredApps[`${setId}:${d.id}`] ?? placeholderApps,
+    // No lorem stand-ins any more (client, 2026-07-30) — a lake with nothing
+    // written simply has an empty list, and the tab says [0].
+    useCases: authoredApps[`${setId}:${d.id}`] ?? [],
   }));
 }

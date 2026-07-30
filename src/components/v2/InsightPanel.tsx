@@ -941,9 +941,11 @@ function JobPopup({
  * ⚠️ The option lists are demo data chosen by me, not by the client.
  */
 const BUILDER_BANKS = [
-  { id: "PUMB", label: "PUMB", image: "/assets/banks/pumb.png" },
-  { id: "PrivatBank", label: "PrivatBank", image: "/assets/banks/privatbank.png" },
+  // Oschadbank first = the default. The client vetoed PUMB as the default
+  // ("странный банк для демо") and named Oschad or Privat, 2026-07-30.
   { id: "Oschadbank", label: "Oschadbank", image: "/assets/banks/oschadbank.png" },
+  { id: "PrivatBank", label: "PrivatBank", image: "/assets/banks/privatbank.png" },
+  { id: "PUMB", label: "PUMB", image: "/assets/banks/pumb.png" },
   { id: "Monobank", label: "Monobank", image: "/assets/banks/monobank.png" },
   { id: "Raiffeisen Bank", label: "Raiffeisen Bank", image: "/assets/banks/raiffeisen.png" },
   { id: "UKRSIBBANK", label: "UKRSIBBANK", image: "/assets/banks/ukrsibbank.png" },
@@ -1231,6 +1233,7 @@ export function InsightPanel({
   }, [count]);
 
   const useCaseGroups = getUseCaseGroups(setId, selectedSignals);
+  const totalApps = useCaseGroups.reduce((n, g) => n + g.useCases.length, 0);
 
   return (
     <div
@@ -1445,7 +1448,9 @@ export function InsightPanel({
                         transition: "color 0.15s ease",
                       }}
                     >
-                      {tab === "overview" ? "Overview" : "Tasks & Apps"}
+                      {tab === "overview"
+                        ? "Overview"
+                        : `Tasks & Apps [${totalApps}]`}
                       {isActive && (
                         <motion.span
                           layoutId="tab-underline"
@@ -1512,6 +1517,18 @@ export function InsightPanel({
                     paddingRight: 10,
                   }}
                 >
+                  {totalApps === 0 && (
+                    <span
+                      style={{
+                        fontSize: 13,
+                        color: "rgba(255,255,255,0.35)",
+                        fontFamily:
+                          "var(--font-inter), Inter, system-ui, sans-serif",
+                      }}
+                    >
+                      No apps for this dataset yet.
+                    </span>
+                  )}
                   {useCaseGroups.map((group) => (
                     <div
                       key={group.datalakeId}
