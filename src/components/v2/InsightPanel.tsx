@@ -8,6 +8,7 @@ import { getInsightDescription } from "@/lib/v2/signals-data";
 import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
 import { getUseCaseGroups, resolveTitle } from "@/lib/v2/use-cases";
 import { Select } from "./Select";
+import { PeriodPicker, type Period } from "./PeriodPicker";
 import type { UseCase } from "@/lib/v2/use-cases";
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -927,21 +928,22 @@ function JobPopup({
  * ⚠️ The option lists are demo data chosen by me, not by the client.
  */
 const BUILDER_BANKS = [
-  "PUMB",
-  "PrivatBank",
-  "Oschadbank",
-  "Monobank",
-  "Raiffeisen Bank",
-  "UKRSIBBANK",
-].map((b) => ({ id: b, label: b }));
+  { id: "PUMB", label: "PUMB", image: "/assets/banks/pumb.png" },
+  { id: "PrivatBank", label: "PrivatBank", image: "/assets/banks/privatbank.png" },
+  { id: "Oschadbank", label: "Oschadbank", image: "/assets/banks/oschadbank.png" },
+  { id: "Monobank", label: "Monobank", image: "/assets/banks/monobank.png" },
+  { id: "Raiffeisen Bank", label: "Raiffeisen Bank", image: "/assets/banks/raiffeisen.png" },
+  { id: "UKRSIBBANK", label: "UKRSIBBANK", image: "/assets/banks/ukrsibbank.png" },
+];
 
-const BUILDER_PERIODS = [
-  "June 2026",
-  "May 2026",
-  "April 2026",
-  "Q2 2026",
-  "H1 2026",
-].map((x) => ({ id: x, label: x }));
+/** Default period: last full month. */
+function lastMonth(): Period {
+  const now = new Date();
+  return {
+    from: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+    to: new Date(now.getFullYear(), now.getMonth(), 0),
+  };
+}
 
 const BUILDER_LANGUAGES = [
   { id: "en", label: "English" },
@@ -964,7 +966,7 @@ function BuildReportPopup({
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
   const [mounted, setMounted] = useState(false);
   const [bank, setBank] = useState(BUILDER_BANKS[0].id);
-  const [period, setPeriod] = useState(BUILDER_PERIODS[0].id);
+  const [period, setPeriod] = useState<Period>(lastMonth);
   const [language, setLanguage] = useState(BUILDER_LANGUAGES[0].id);
   const [buildHovered, setBuildHovered] = useState(false);
 
@@ -1108,12 +1110,7 @@ function BuildReportPopup({
             value={bank}
             onChange={setBank}
           />
-          <Select
-            label="Period"
-            options={BUILDER_PERIODS}
-            value={period}
-            onChange={setPeriod}
-          />
+          <PeriodPicker label="Period" value={period} onChange={setPeriod} />
           <Select
             label="Language"
             options={BUILDER_LANGUAGES}

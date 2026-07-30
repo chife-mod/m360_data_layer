@@ -18,8 +18,10 @@ import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
 export type SelectOption = {
   id: string;
   label: string;
-  /** Icon name under public/assets/icons. */
+  /** Icon name under public/assets/icons — stroke SVG, tinted by `accent`. */
   icon?: string;
+  /** Raster logo path (e.g. a bank favicon) — shown on a white tile instead. */
+  image?: string;
   /** Tile colour; the icon sits on this at ~15% opacity. */
   accent?: string;
   /** One-line subtitle under the label in the open list. */
@@ -52,12 +54,14 @@ function hexToRgba(hex: string, alpha: number): string {
  */
 function OptionTile({
   icon,
+  image,
   accent = NEUTRAL_ACCENT,
   size,
   iconSize,
   radius,
 }: {
-  icon: string;
+  icon?: string;
+  image?: string;
   accent?: string;
   size: number;
   iconSize: number;
@@ -66,6 +70,7 @@ function OptionTile({
   const [svg, setSvg] = useState("");
 
   useEffect(() => {
+    if (!icon) return;
     let live = true;
     fetchSvgAsset(`/assets/icons/${icon}.svg`).then((t) => {
       if (live) setSvg(t);
@@ -74,6 +79,36 @@ function OptionTile({
       live = false;
     };
   }, [icon]);
+
+  // Brand logos keep their own colours, so they sit on a white tile the way
+  // the benchmarking deck presents them — not on the accent tint.
+  if (image) {
+    return (
+      <span
+        aria-hidden
+        style={{
+          width: size,
+          height: size,
+          borderRadius: radius,
+          backgroundColor: "#ffffff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          overflow: "hidden",
+        }}
+      >
+        <img
+          src={getAssetPath(image)}
+          alt=""
+          width={iconSize + 2}
+          height={iconSize + 2}
+          draggable={false}
+          style={{ display: "block", objectFit: "contain" }}
+        />
+      </span>
+    );
+  }
 
   return (
     <span
@@ -244,9 +279,13 @@ export function Select({
             alignItems: "center",
             justifyContent: "space-between",
             gap: 10,
-            // 5px + 1px border = the same visual 6px inset the vertical
-            // centring produces, so the tile sits 6 from all three edges.
-            padding: "6px 12px 6px 5px",
+            // With a tile: 5px + 1px border = the same visual 6px inset the
+            // vertical centring produces. Without one there is no tile to hug
+            // the edge, so the label gets a normal 14px inset.
+            padding:
+              selected?.icon || selected?.image
+                ? "6px 12px 6px 5px"
+                : "6px 12px 6px 14px",
             borderRadius: 10,
             backgroundColor: CONTROL_FILL,
             border: `1px solid ${borderColor}`,
@@ -269,9 +308,10 @@ export function Select({
               minWidth: 0,
             }}
           >
-            {selected?.icon && (
+            {(selected?.icon || selected?.image) && (
               <OptionTile
                 icon={selected.icon}
+                image={selected.image}
                 accent={selected.accent}
                 size={36}
                 iconSize={20}
@@ -363,7 +403,7 @@ export function Select({
                         alignItems: "center",
                         justifyContent: "space-between",
                         gap: 8,
-                        padding: "8px 10px",
+                        padding: "8px 12px",
                         border: "none",
                         borderRadius: 6,
                         cursor: "pointer",
@@ -389,9 +429,10 @@ export function Select({
                           minWidth: 0,
                         }}
                       >
-                        {option.icon && (
+                        {(option.icon || option.image) && (
                           <OptionTile
                             icon={option.icon}
+                            image={option.image}
                             accent={option.accent}
                             size={36}
                             iconSize={20}
