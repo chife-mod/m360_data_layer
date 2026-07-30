@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { getAssetPath } from "@/lib/utils";
+import { fetchSvgAsset } from "@/lib/utils";
 import type { SourceItem } from "@/lib/v2/sources-data";
 import { cardStyles } from "@/lib/v2/card-styles";
 
@@ -79,10 +79,13 @@ export function DataCard({
   const textColor = isSelected ? accentColor : "rgba(255, 255, 255, 1)";
 
   useEffect(() => {
-    fetch(getAssetPath(`/assets/icons/${source.icon}.svg`))
-      .then((res) => res.text())
-      .then(setIconSvg)
-      .catch((err) => console.error(`Failed to load icon ${source.icon}:`, err));
+    let live = true;
+    fetchSvgAsset(`/assets/icons/${source.icon}.svg`).then((svg) => {
+      if (live) setIconSvg(svg);
+    });
+    return () => {
+      live = false;
+    };
   }, [source.icon]);
 
   const processedIcon = iconSvg

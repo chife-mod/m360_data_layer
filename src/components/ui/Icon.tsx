@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getAssetPath } from "@/lib/utils";
+import { fetchSvgAsset } from "@/lib/utils";
 
 type IconProps = {
   name: string;
@@ -15,16 +15,15 @@ export function Icon({ name, size = 22, className = "", color }: IconProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(getAssetPath(`/assets/icons/${name}.svg`))
-      .then((res) => res.text())
-      .then((text) => {
-        setSvgContent(text);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(`Failed to load icon ${name}:`, err);
-        setLoading(false);
-      });
+    let live = true;
+    fetchSvgAsset(`/assets/icons/${name}.svg`).then((text) => {
+      if (!live) return;
+      setSvgContent(text);
+      setLoading(false);
+    });
+    return () => {
+      live = false;
+    };
   }, [name]);
 
   if (loading) {

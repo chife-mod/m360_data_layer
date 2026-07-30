@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { getAssetPath } from "@/lib/utils";
+import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
 
 /**
  * Compact dark dropdown, built on the module's existing tokens rather than a
@@ -67,12 +67,9 @@ function OptionTile({
 
   useEffect(() => {
     let live = true;
-    fetch(getAssetPath(`/assets/icons/${icon}.svg`))
-      .then((r) => r.text())
-      .then((t) => {
-        if (live) setSvg(t);
-      })
-      .catch(() => {});
+    fetchSvgAsset(`/assets/icons/${icon}.svg`).then((t) => {
+      if (live) setSvg(t);
+    });
     return () => {
       live = false;
     };

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { getAssetPath } from "@/lib/utils";
+import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
 import { cardStyles as baseStyles, type CardStyleDef } from "@/lib/card-styles";
 
 const GREEN = "rgba(70, 254, 195, 1)";
@@ -159,9 +159,7 @@ export default function CardDemoPage() {
   const [iconSvg, setIconSvg] = useState("");
 
   useEffect(() => {
-    fetch(getAssetPath("/assets/icons/brands.svg"))
-      .then((r) => r.text())
-      .then(setIconSvg);
+    fetchSvgAsset("/assets/icons/brands.svg").then(setIconSvg);
   }, []);
 
   return (

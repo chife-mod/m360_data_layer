@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SignalConfig } from "@/lib/v2/signals-data";
 import { getInsightDescription } from "@/lib/v2/signals-data";
-import { getAssetPath } from "@/lib/utils";
+import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
 import { getUseCaseGroups, resolveTitle } from "@/lib/v2/use-cases";
 import type { UseCase } from "@/lib/v2/use-cases";
 
@@ -19,10 +19,13 @@ function hexToRgba(hex: string, alpha: number): string {
 function useIconSvg(iconName: string) {
   const [svg, setSvg] = useState("");
   useEffect(() => {
-    fetch(getAssetPath(`/assets/icons/${iconName}.svg`))
-      .then((res) => res.text())
-      .then(setSvg)
-      .catch(() => { });
+    let live = true;
+    fetchSvgAsset(`/assets/icons/${iconName}.svg`).then((t) => {
+      if (live) setSvg(t);
+    });
+    return () => {
+      live = false;
+    };
   }, [iconName]);
   return svg;
 }
