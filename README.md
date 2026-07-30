@@ -14,6 +14,10 @@ production — `http://localhost:3000/` alone returns a 404.
 `/v2` still resolves — it redirects to the root, so links shared before the
 swap keep working.
 
+**Picking this up after a break?** Read *WHERE THINGS STAND* at the top of
+[history/HISTORY.md](history/HISTORY.md) — current state, content status and the
+next step — then [BACKLOG.md](BACKLOG.md) for what is agreed but unbuilt.
+
 Design basis and tokens: [DESIGN.md](DESIGN.md) · change log: [history/HISTORY.md](history/HISTORY.md)
 
 **Deploy** is manual — GitHub Pages serves the `gh-pages` branch:

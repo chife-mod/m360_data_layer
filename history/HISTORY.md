@@ -2,6 +2,96 @@
 
 ---
 
+## WHERE THINGS STAND — 2026-07-30, end of day
+
+**Live:** https://chife-mod.github.io/m360_data_layer/ · local `npm run dev` ->
+`http://localhost:3000/m360_data_layer` (the basePath applies in dev too; the
+bare root 404s). Frozen first version at `/v1`, launcher at `/dashboard`.
+`/v2` redirects to `/`.
+
+Deploy is manual: `npm run build` -> publish `out/` to the `gh-pages` branch.
+Nothing in CI does this.
+
+**What the module is now.** Industry (Watches / Banking / Retail) and Type
+selectors scope a 4x4 board of 16 datasets. Selecting up to 3 datasets drives
+the right-hand panel, which has two tabs: **Overview** (the dataset's copy plus
+the bar chart) and **Tasks & Apps [n]** (the apps for that selection). An app
+card carries role tags, a title, a description, and one primary action —
+**Build Report** — beside outlined links to **Report Templates** and
+**Dashboard**. Build Report opens a three-parameter popup (Bank / Period /
+Language, the period being a Toggl-style range picker); clicking the card
+instead opens the template popup with a drag-scrollable strip of the report's
+real captured pages.
+
+**Content status — Banking, the set that matters.** 7 of 16 datasets have the
+client's copy: Banks, Media, KOLs: Finance, KOLs: Celebrities, Reviews: Banks,
+Reviews: Branches, Reviews: Apps. The other 9 are deliberately **empty**, not
+filler. Apps exist for Banks (1), both KOLs (2 each) and all three Reviews
+(1 each) — 9 in total. Watches keeps its original copy from February; Retail
+points at the watches set on purpose.
+
+**Immediate next step:** Vsevolod is writing the bottom row — Products &
+Services, Regulators, Payment Systems, Search Demand, plus Branches & ATMs and
+the four Owned channels. Everything else outstanding is in
+[BACKLOG.md](../BACKLOG.md).
+
+**Two standing rules** that cost real time to establish, both in
+[DESIGN.md](../DESIGN.md): the code — not the Figma landing — is the source of
+truth for this module, and an accent colour never colours body-sized text
+(which is why selected tiles keep white labels).
+
+---
+
+## 2026-07-30 — Second and third client rounds
+
+Two calls and two emails on the day of the Mastercard demo. In order:
+
+### Layout and defaults
+- Banking rows 2 and 3 swapped: Reviews now follows KOLs, Owned drops to third.
+- Board opens on **Banking / Payment System** — what the demo needs.
+- Build Report defaults to **Oschadbank**; the client vetoed PUMB as a demo
+  default and monobank for the Mastercard audience.
+- `Tasks & Apps [n]` carries the app count; `[0]` plus a one-line empty state
+  where nothing is written.
+
+### Content
+- Banks, KOLs: Finance, KOLs: Celebrities overviews.
+- Reviews: Banks / Branches / Apps — overviews and one app each.
+- KOLs get two apps each: Influencers Benchmarking (dashboard) and Influencer
+  Analytics (report + 10-page preview strip).
+- Benchmark UA Banks lands on the Banks dataset with all five role tags.
+- **All lorem removed.** Unwritten copy is an empty string and the panel renders
+  no paragraph at all — an empty `<p>` would still claim its line-height.
+
+### Build Report
+New popup in the template popup's chrome: Bank / Period / Language and one
+button. Period is a hand-rolled Toggl-style range picker — shortcut rail, two
+month grids with ISO week numbers, free start/end selection. Submit opens the
+PUMB Monthly Pulse, standing in for the pipeline. Dismissing the calendar with
+a backdrop click no longer costs the whole dialog.
+
+### Visual
+- One primary button per row, two secondary.
+- Panel header calmed: 52px dark tiles with 26px strokes instead of naked 64px
+  glowing icons; title 32 -> 26.
+- Inner glow eased; the accent glow dropped below the tile label so a selected
+  tile stops losing contrast on its own name.
+- Selector options became colour-coded tiles with subtitles, reusing the board's
+  accents so the colour coding stays one system. Bank options carry the banks'
+  own favicons on white tiles.
+- **Contrast pass.** `Reviews: Branches` measured 2.23:1 and failed even the
+  3:1 bar. Fixed at the root: labels stay white, so the accent only owes 3:1 and
+  three of the four colours went back to their Figma originals.
+
+### The unicorn
+During a Pages redeploy the icon requests returned GitHub's HTML error page, and
+every icon loader injected it unchecked — the client watched GitHub's error
+mascot render inside the tiles. All seven fetch-and-inject sites now go through
+`fetchSvgAsset`, which requires a parseable lone `<svg>` and yields "" for
+anything else.
+
+---
+
 ## 2026-07-30 — The working version moves to the root
 
 `/v2` -> `/`, and the frozen first version moves `/` -> `/v1`. It is no longer
