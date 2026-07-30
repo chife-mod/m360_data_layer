@@ -42,11 +42,28 @@ stay consistent with it instead of drifting into their own look.
 selected state**. Deliberately shuffled so neighbouring tiles contrast.
 
 ```
-#46FEC3  #F43F5E  #2563EB  #FBBF24
-#9333EA  #FF8000  #06B6D4  #EC4899
-#10B981  #4338CA  #FB923C  #7C3AED
+#46FEC3  #F43F5E  #477CEE  #FBBF24
+#A85AEE  #FF8000  #06B6D4  #EC4899
+#10B981  #7C74DA  #FB923C  #9763F1
 #F472B6  #00D4FF  #84CC16  #FF4560
 ```
+
+**Every accent clears WCAG AA (4.5:1) on `#111539`.** The tile label is 14px,
+so the strict bar applies, not the 3:1 large-text one. Four colours were
+lifted on 2026-07-30 after `Reviews: Branches` turned out to be unreadable —
+its old `#4338CA` measured **2.23:1**, failing even 3:1:
+
+| was | now | old ratio | new |
+|---|---|---|---|
+| `#2563EB` | `#477CEE` | 3.41 | 4.53 |
+| `#4338CA` | `#7C74DA` | 2.23 | 4.51 |
+| `#7C3AED` | `#9763F1` | 3.10 | 4.51 |
+| `#9333EA` | `#A85AEE` | 3.28 | 4.51 |
+
+Hue is preserved in each case — only lightness moved. **Adding an accent?
+Check it against `#111539` first; below 4.5:1 it does not go in.** Worst in the
+set is now 4.51:1; closest adjacent pair on the grid is 60 in RGB distance, so
+neighbours still read apart.
 
 Every datalake set reuses this palette **in the same grid positions**, so switching
 industry keeps the board's colour rhythm.
@@ -111,7 +128,7 @@ Do not "fix" the prototype back toward the Figma section.
 1. **Tile 16** — stays *Support Chats* (Figma's *Trending offers* is outdated).
 2. **Toggle copy** — *"Show only datasets available in LLMs"* (client email
    2026-07-29; newer than both the Figma text and the old V1 wording).
-3. **Accent assignment** — stays as in code (Pricing `#2563EB`,
+3. **Accent assignment** — stays as in code (Pricing `#477CEE`,
    Availability `#FF8000`).
 4. **Naming** — the module is the *data layer* (*datalakes*); Figma's
    *signals / sources* wording is historical.
