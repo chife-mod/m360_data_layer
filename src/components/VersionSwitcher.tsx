@@ -20,8 +20,8 @@ type Version = {
 };
 
 const VERSIONS: Version[] = [
-  { id: "v1", label: "V1", href: "/" },
-  { id: "v2", label: "V2", href: "/v2" },
+  { id: "v1", label: "V1", href: "/v1" },
+  { id: "v2", label: "V2", href: "/" },
 ];
 
 function Segment({

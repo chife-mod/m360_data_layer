@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-07-30 — The working version moves to the root
+
+`/v2` -> `/`, and the frozen first version moves `/` -> `/v1`. It is no longer
+"version two of something", it is the data layer, and the URL should say so.
+
+`/v2` is kept as a redirect stub: that link had been shared around all day, and
+without it every copy would 404.
+
+Dashboard cards renamed to **M360 Data Layer** and **Data Layer V1**.
+
+---
+
 ## 2026-07-28 — V2: industry / type selectors + banking datalakes
 
 Client brief (email + meeting, 2026-07-28). Deadline driver: Mastercard call 2026-07-30.

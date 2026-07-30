@@ -16,21 +16,21 @@ import {
 
 const MODULES = [
   {
-    id: "signal-selector-v2",
-    title: "Signal Selector V2",
+    id: "data-layer",
+    title: "M360 Data Layer",
     description:
-      "Current working version. Own component tree and data — every change here is isolated from V1.",
-    href: "/v2",
+      "The module. Industry and Type selectors, 16 datalakes per industry, Overview and Tasks & Apps.",
+    href: "/",
     status: "wip" as const,
     Icon: Zap,
     accent: "#00e59b",
   },
   {
-    id: "signal-selector-v1",
-    title: "Signal Selector V1",
+    id: "data-layer-v1",
+    title: "Data Layer V1",
     description:
-      "Frozen reference. Kept intact for side-by-side comparison and rollback. Interactive picker with 16 signal types.",
-    href: "/",
+      "Frozen first version, kept for comparison and rollback. The original 16-signal picker before industries existed.",
+    href: "/v1",
     status: "live" as const,
     Icon: History,
     accent: "#646eca",

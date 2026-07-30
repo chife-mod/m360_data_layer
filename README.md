@@ -7,9 +7,12 @@ production — `http://localhost:3000/` alone returns a 404.
 
 | | Local | Production |
 |---|---|---|
-| **Data Layer V2** (current) | [/m360_data_layer/v2](http://localhost:3000/m360_data_layer/v2) | [chife-mod.github.io/m360_data_layer/v2](https://chife-mod.github.io/m360_data_layer/v2) |
-| **V1** (frozen reference) | [/m360_data_layer](http://localhost:3000/m360_data_layer) | [chife-mod.github.io/m360_data_layer](https://chife-mod.github.io/m360_data_layer) |
+| **Data Layer** (the module) | [/m360_data_layer](http://localhost:3000/m360_data_layer) | [chife-mod.github.io/m360_data_layer](https://chife-mod.github.io/m360_data_layer) |
+| **V1** (frozen reference) | [/m360_data_layer/v1](http://localhost:3000/m360_data_layer/v1) | [chife-mod.github.io/m360_data_layer/v1](https://chife-mod.github.io/m360_data_layer/v1) |
 | **Dashboard** | [/m360_data_layer/dashboard](http://localhost:3000/m360_data_layer/dashboard) | [chife-mod.github.io/m360_data_layer/dashboard](https://chife-mod.github.io/m360_data_layer/dashboard) |
+
+`/v2` still resolves — it redirects to the root, so links shared before the
+swap keep working.
 
 Design basis and tokens: [DESIGN.md](DESIGN.md) · change log: [history/HISTORY.md](history/HISTORY.md)
 
