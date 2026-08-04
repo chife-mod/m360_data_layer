@@ -352,10 +352,11 @@ export function DataCard({
               alignItems: "flex-start",
               justifyContent: "flex-end",
               gap: 6,
-              // 2px insets centre the 24px circle 14px from the corner — the
-              // mirror of the dot's anchor in the left corner; the rest pads
-              // the hit zone so the label and near-misses still register.
-              padding: "2px 2px 14px 14px",
+              // 8px insets — the same edge gap the indicator dot keeps in the
+              // left corner, so both corners breathe identically (client,
+              // 2026-08-04). The bottom/left padding widens the hit zone so
+              // the label and near-misses still register.
+              padding: "8px 8px 14px 14px",
               cursor: "pointer",
               // The whole affordance rides tile hover — before that the tile
               // is clean, after a click it is gone again.
@@ -391,10 +392,6 @@ export function DataCard({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: comboMode === "add" ? 16 : 14,
-                fontWeight: 400,
-                lineHeight: 1,
-                fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
                 color: "rgba(255,255,255,0.95)",
                 backgroundColor: cornerHovered
                   ? "rgba(255,255,255,0.18)"
@@ -407,7 +404,27 @@ export function DataCard({
                 transition: `background-color ${STATE_MS}ms ease, border-color ${STATE_MS}ms ease`,
               }}
             >
-              {comboMode === "add" ? "+" : "×"}
+              {/* Drawn glyphs, not text: a font "+" carries its own line
+                  metrics and never sits optically centred in the circle. */}
+              {comboMode === "add" ? (
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path
+                    d="M5 1V9M1 5H9"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              ) : (
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path
+                    d="M2 2L8 8M8 2L2 8"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              )}
             </span>
           </div>
         )}

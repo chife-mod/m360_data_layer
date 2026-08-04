@@ -37,6 +37,12 @@ export type DatalakeSource = {
   domain: string;
   /** Monthly intake, e.g. "3 400 reviews / mo". Sample data until wired. */
   monthlyVolume: string;
+  /**
+   * Real favicon under public/assets/sources, shown on a white tile the way
+   * bank logos are (client, 2026-08-04: "у источников всегда реальные
+   * логотипы"). Absent -> initial-letter fallback.
+   */
+  image?: string;
 };
 
 export type DatalakeInsight = {

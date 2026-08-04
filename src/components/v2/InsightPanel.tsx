@@ -104,9 +104,10 @@ function useDragScroll() {
 }
 
 /**
- * Small uppercase heading each panel section starts with — the tab bar's
- * replacement. Tabs died on 2026-08-03 ("минимальное время до шашлыка"): the
- * panel is one scroll now, and these are its landmarks.
+ * Heading each panel section starts with — the tab bar's replacement. Tabs
+ * died on 2026-08-03 ("минимальное время до шашлыка"): the panel is one
+ * scroll now, and these are its landmarks. Landmarks must read as landmarks
+ * (client, 2026-08-04): 18px, plain white — not a whispered uppercase label.
  */
 function SectionHeading({
   label,
@@ -126,10 +127,10 @@ function SectionHeading({
     >
       <span
         style={{
-          fontSize: 11,
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
-          color: "rgba(255,255,255,0.35)",
+          fontSize: 18,
+          fontWeight: 600,
+          lineHeight: 1.2,
+          color: "#ffffff",
           fontFamily: FONT,
         }}
       >
@@ -184,24 +185,53 @@ function SourceRow({
         fontFamily: FONT,
       }}
     >
-      <span
-        aria-hidden
-        style={{
-          width: 26,
-          height: 26,
-          borderRadius: 7,
-          flexShrink: 0,
-          backgroundColor: hexToRgba(accent, 0.14),
-          color: accent,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 12,
-          fontWeight: 600,
-        }}
-      >
-        {source.name[0]}
-      </span>
+      {/* Real favicon on a white tile — the same presentation bank logos get
+          in the builder (client, 2026-08-04: "у источников всегда реальные
+          логотипы"). The initial is only the no-asset fallback. */}
+      {source.image ? (
+        <span
+          aria-hidden
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 7,
+            flexShrink: 0,
+            backgroundColor: "#ffffff",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
+          <img
+            src={getAssetPath(source.image)}
+            alt=""
+            width={18}
+            height={18}
+            draggable={false}
+            style={{ display: "block", objectFit: "contain" }}
+          />
+        </span>
+      ) : (
+        <span
+          aria-hidden
+          style={{
+            width: 26,
+            height: 26,
+            borderRadius: 7,
+            flexShrink: 0,
+            backgroundColor: hexToRgba(accent, 0.14),
+            color: accent,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 12,
+            fontWeight: 600,
+          }}
+        >
+          {source.name[0]}
+        </span>
+      )}
       <span
         style={{
           fontSize: 14,
@@ -223,26 +253,20 @@ function SourceRow({
         {source.domain}
       </span>
       <span style={{ flex: "1 1 auto" }} />
+      {/* Last element on purpose — the volume sits flush on the section's
+          right edge, the same line "top 5 of 8" ends on. The hover arrow that
+          used to follow it reserved width and read as the value shifting
+          (client, 2026-08-04); the row hover pill already says "clickable". */}
       <span
         style={{
           fontSize: 12,
-          color: "rgba(255,255,255,0.55)",
+          color: hovered ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.55)",
           whiteSpace: "nowrap",
           fontVariantNumeric: "tabular-nums",
+          transition: "color 0.15s ease",
         }}
       >
         {source.monthlyVolume}
-      </span>
-      <span
-        aria-hidden
-        style={{
-          fontSize: 11,
-          color: "rgba(255,255,255,0.9)",
-          opacity: hovered ? 0.6 : 0,
-          transition: "opacity 0.15s ease",
-        }}
-      >
-        ↗
       </span>
     </a>
   );

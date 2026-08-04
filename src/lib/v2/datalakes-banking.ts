@@ -84,11 +84,11 @@ export const bankingDatalakes: Datalake[] = [
     //    copy; the rest of the list and every volume figure are SAMPLE data
     //    chosen by me, not by him — flagged in BACKLOG.md §1.4.
     sources: [
-      { name: "MinFin", domain: "minfin.com.ua", monthlyVolume: "3 400 / mo" },
-      { name: "Vidhuk", domain: "vidhuk.in.ua", monthlyVolume: "1 850 / mo" },
-      { name: "Banki.ua", domain: "banki.ua", monthlyVolume: "1 320 / mo" },
-      { name: "Finance.ua", domain: "finance.ua", monthlyVolume: "780 / mo" },
-      { name: "Bankchart", domain: "bankchart.com.ua", monthlyVolume: "510 / mo" },
+      { name: "MinFin", domain: "minfin.com.ua", monthlyVolume: "3 400 / mo", image: "/assets/sources/minfin.png" },
+      { name: "Vidhuk", domain: "vidhuk.ua", monthlyVolume: "1 850 / mo", image: "/assets/sources/vidhuk.png" },
+      { name: "Banki.ua", domain: "banki.ua", monthlyVolume: "1 320 / mo", image: "/assets/sources/banki.png" },
+      { name: "Finance.ua", domain: "finance.ua", monthlyVolume: "780 / mo", image: "/assets/sources/finance.png" },
+      { name: "Bankchart", domain: "bankchart.com.ua", monthlyVolume: "510 / mo", image: "/assets/sources/bankchart.png" },
     ],
     sourcesTotal: 8,
     // ── Weekly insights — sample findings in the shape the client sketched on
