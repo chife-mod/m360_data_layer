@@ -182,6 +182,18 @@ and has not raised it since; every demo so far has been desktop.
 exactly as written in the brief of 2026-07-30. Possibly deliberate, possibly a
 copy-paste — worth one line of confirmation.
 
+### 4.3a Pages can silently skip builds — **[us]**
+2026-08-04, caught by Vsevolod's-side Oleg: three consecutive pushes to
+`gh-pages` never got built — the Pages builder sat on an older commit with
+no error anywhere, and the site served stale bundles while `git ls-remote`
+looked perfectly deployed. Cure that worked: request a build by hand —
+`gh api -X POST repos/chife-mod/m360_data_layer/pages/builds` — then poll
+`/pages/builds/latest` until `status: built` on the expected commit.
+Lesson for every future deploy: **verify the served artifact** (new CSS/JS
+hash answering 200), not the branch head. Real fix worth considering:
+deploy via an Actions workflow (like the other chife-mod repos) instead of
+branch-triggered Pages builds.
+
 ### 4.3 Deploy window shows a bare board — **[us]**
 While GitHub Pages rebuilds (~1 min) the icon requests can fail, and tiles
 render without icons for that window. No longer catastrophic — the loader
