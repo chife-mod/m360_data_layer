@@ -100,6 +100,37 @@ export const bankingDatalakes: Datalake[] = [
       { name: "Bankchart", domain: "bankchart.com.ua", monthlyVolume: "510 / mo", image: "/assets/sources/bankchart.png" },
     ],
     sourcesTotal: 8,
+    // ── Enrichment — the lingu-model layer (client call, 2026-08-04: show
+    //    "сколько аспектов распознаётся, сколько брендов"). The 258 is the
+    //    aspects figure he quoted on the call; the brands and persons counts
+    //    are SAMPLE data chosen by me — flagged in BACKLOG.md §1.4.
+    enrichment: [
+      { id: "aspects", label: "Aspects", detail: "258 detected" },
+      { id: "brands", label: "Brands", detail: "52 tracked" },
+      { id: "persons", label: "Persons", detail: "129 identified" },
+    ],
+    // ── Custom prompts — the three from the client email of 2026-08-04
+    //    ("Summary / Summary: NEG / Summary: POZ"); the goal line from the
+    //    same email: продаём и встраиваем козла — the AI chat sold through
+    //    the lake. Labels are his; the full prompt texts are mine (sample),
+    //    flagged in BACKLOG.md §1.4.
+    prompts: [
+      {
+        id: "summary",
+        label: "Summary",
+        text: "Give me a summary of what reviewers said about my bank this month.",
+      },
+      {
+        id: "summary-neg",
+        label: "Summary: NEG",
+        text: "Summarize the negative reviews about my bank this month — the top complaints and where they are growing.",
+      },
+      {
+        id: "summary-poz",
+        label: "Summary: POZ",
+        text: "Summarize the positive reviews about my bank this month — what customers praise most.",
+      },
+    ],
     // ── Weekly insights — sample findings in the shape the client sketched on
     //    the 2026-08-03 call: the negativity leaders mirror his own words
     //    ("по объёмам печали у нас есть явные три лидера"), the other two show

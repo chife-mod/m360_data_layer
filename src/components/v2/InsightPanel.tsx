@@ -5,7 +5,9 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import type {
   Datalake,
+  DatalakeEnrichment,
   DatalakeInsight,
+  DatalakePrompt,
   DatalakeSource,
 } from "@/lib/v2/datalakes";
 import { getInsightDescription } from "@/lib/v2/signals-data";
@@ -22,6 +24,7 @@ import {
   onHistoryChange,
   type HistoryEvent,
   type HistoryEventType,
+  type HistoryFormat,
 } from "@/lib/v2/history";
 import {
   ALL_ROLES,
@@ -194,6 +197,164 @@ const sectionStyle: React.CSSProperties = {
   flexDirection: "column",
   gap: 10,
 };
+
+// ── Collapse ──────────────────────────────────────────────────────────────────
+//
+// Client call, 2026-08-04: the panel serves two audiences — the newcomer who
+// needs everything visible, and the person on their 200th visit who knows the
+// lake's sources by heart and does not want to scroll past them again. So
+// every section folds on its heading, and the fold is remembered per lake per
+// section ("хотя бы какой-то стейт") — in localStorage, like the journal.
+
+const COLLAPSED_KEY = "m360.collapsed.v1";
+
+function loadCollapsedMap(): Record<string, boolean> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(COLLAPSED_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function persistCollapsed(key: string, collapsed: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    const map = loadCollapsedMap();
+    if (collapsed) map[key] = true;
+    else delete map[key];
+    window.localStorage.setItem(COLLAPSED_KEY, JSON.stringify(map));
+  } catch {
+    // Blocked storage: the fold still works, it just resets next visit.
+  }
+}
+
+/**
+ * A panel section that folds. The whole heading row is the toggle — a 44px
+ * strip beats a 16px chevron as a target — and the chevron narrates the
+ * state: down = open, right = folded. Collapsed, the heading (and its count
+ * aside) stays as the summary line.
+ *
+ * These sections mount client-side only (nothing renders without a
+ * selection), so reading localStorage in the state initializer is safe and
+ * beats an effect: the section first paints already in its remembered state,
+ * with no post-mount snap.
+ */
+function CollapsibleSection({
+  storageKey,
+  label,
+  aside,
+  gap = 10,
+  children,
+}: {
+  storageKey: string;
+  label: string;
+  aside?: React.ReactNode;
+  /** Space between heading and body, and between the body's children. */
+  gap?: number;
+  children: React.ReactNode;
+}) {
+  const [collapsed, setCollapsed] = useState(
+    () => loadCollapsedMap()[storageKey] === true
+  );
+  const [headHovered, setHeadHovered] = useState(false);
+
+  // The one case with no remount: growing a combination past two lakes swaps
+  // the Tasks & Apps storage key in place.
+  useEffect(() => {
+    setCollapsed(loadCollapsedMap()[storageKey] === true);
+  }, [storageKey]);
+
+  const toggle = () => {
+    setCollapsed((c) => {
+      persistCollapsed(storageKey, !c);
+      return !c;
+    });
+  };
+
+  return (
+    <section
+      style={{
+        borderTop: "1px solid rgba(255,255,255,0.08)",
+        paddingTop: 16,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={!collapsed}
+        onClick={toggle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggle();
+          }
+        }}
+        onMouseEnter={() => setHeadHovered(true)}
+        onMouseLeave={() => setHeadHovered(false)}
+        style={{ cursor: "pointer", outline: "none" }}
+      >
+        <SectionHeading
+          label={label}
+          aside={
+            <span
+              style={{ display: "inline-flex", alignItems: "center", gap: 10 }}
+            >
+              {aside}
+              <motion.svg
+                width={16}
+                height={16}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth={1.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                animate={{ rotate: collapsed ? -90 : 0 }}
+                transition={{ duration: 0.2 }}
+                style={{
+                  opacity: headHovered ? 0.85 : 0.4,
+                  transition: "opacity 0.15s ease",
+                  flexShrink: 0,
+                }}
+                aria-hidden
+              >
+                <path d="M6 9l6 6l6 -6" />
+              </motion.svg>
+            </span>
+          }
+        />
+      </div>
+      <motion.div
+        initial={false}
+        animate={{
+          height: collapsed ? 0 : "auto",
+          opacity: collapsed ? 0 : 1,
+        }}
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+        style={{ overflow: "hidden" }}
+      >
+        {/* The heading-to-body gap lives INSIDE the animated wrapper — as a
+            flex gap on the section it would survive the fold as a phantom
+            10px. */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap,
+            paddingTop: gap,
+          }}
+        >
+          {children}
+        </div>
+      </motion.div>
+    </section>
+  );
+}
 
 /** 15px inline glyph, Tabler geometry, stroked with currentColor. */
 function ChipIcon({ children }: { children: React.ReactNode }) {
@@ -510,35 +671,465 @@ function SourcesSection({
   sources,
   total,
   accent,
+  storageKey,
 }: {
   sources: DatalakeSource[];
   total?: number;
   accent: string;
+  storageKey: string;
 }) {
   return (
-    <section style={{ ...sectionStyle, gap: 6 }}>
-      <SectionHeading
-        label="Sources"
-        aside={
-          total !== undefined && total > sources.length ? (
-            <span
-              style={{
-                fontSize: 12.5,
-                color: "rgba(255,255,255,0.4)",
-                fontFamily: FONT,
-              }}
-            >
-              top {sources.length} of {total}
-            </span>
-          ) : undefined
-        }
-      />
+    <CollapsibleSection
+      storageKey={storageKey}
+      label="Sources"
+      gap={6}
+      aside={
+        total !== undefined && total > sources.length ? (
+          <span
+            style={{
+              fontSize: 12.5,
+              color: "rgba(255,255,255,0.4)",
+              fontFamily: FONT,
+            }}
+          >
+            top {sources.length} of {total}
+          </span>
+        ) : undefined
+      }
+    >
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         {sources.map((s) => (
           <SourceRow key={s.domain} source={s} accent={accent} />
         ))}
       </div>
-    </section>
+    </CollapsibleSection>
+  );
+}
+
+/**
+ * Sample chip — the same honesty marker Insights wears: authored shapes,
+ * figures the client has not supplied.
+ */
+function SampleChip() {
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        color: "rgba(255,255,255,0.3)",
+        border: "1px solid rgba(255,255,255,0.15)",
+        borderRadius: 4,
+        padding: "1px 5px",
+        fontFamily: FONT,
+      }}
+    >
+      sample
+    </span>
+  );
+}
+
+/**
+ * Enrichment — what the lake's linguistic model recognises on top of raw
+ * intake (client call, 2026-08-04): aspects, brands, persons, each with its
+ * count. Plain rows, no links — the numbers are the message.
+ */
+function EnrichmentSection({
+  enrichment,
+  storageKey,
+}: {
+  enrichment: DatalakeEnrichment[];
+  storageKey: string;
+}) {
+  return (
+    <CollapsibleSection
+      storageKey={storageKey}
+      label="Enrichment"
+      gap={6}
+      aside={<SampleChip />}
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {enrichment.map((e) => (
+          <div
+            key={e.id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "5px 0",
+              fontFamily: FONT,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 14,
+                color: "rgba(255,255,255,0.92)",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {e.label}
+            </span>
+            <span style={{ flex: "1 1 auto" }} />
+            <span
+              style={{
+                fontSize: 13,
+                color: "rgba(255,255,255,0.6)",
+                whiteSpace: "nowrap",
+                fontVariantNumeric: "tabular-nums",
+              }}
+            >
+              {e.detail}
+            </span>
+          </div>
+        ))}
+      </div>
+    </CollapsibleSection>
+  );
+}
+
+const ICON_PLAY = <path d="M7 4v16l13 -8z" />;
+
+/**
+ * One custom prompt — a row that runs it. The row is the whole affordance:
+ * hover shows the Run pill, click opens the chat. Same hover language as
+ * SourceRow so the panel keeps one idea of "this line is clickable".
+ */
+function PromptRow({
+  prompt,
+  onRun,
+}: {
+  prompt: DatalakePrompt;
+  onRun: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onRun}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onRun();
+        }
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "5px 10px",
+        margin: "0 -10px",
+        borderRadius: 8,
+        cursor: "pointer",
+        outline: "none",
+        backgroundColor: hovered ? "rgba(255,255,255,0.05)" : "transparent",
+        transition: "background-color 0.15s ease",
+        fontFamily: FONT,
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          flexShrink: 0,
+          border: "1px solid rgba(255,255,255,0.16)",
+          color: "rgba(255,255,255,0.7)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <svg
+          width={12}
+          height={12}
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={1.75}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {ICON_PLAY}
+        </svg>
+      </span>
+      <span
+        style={{
+          fontSize: 14,
+          color: "rgba(255,255,255,0.92)",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+        }}
+      >
+        {prompt.label}
+      </span>
+      <span style={{ flex: "1 1 auto" }} />
+      <span
+        style={{
+          height: 22,
+          padding: "0 8px",
+          borderRadius: 6,
+          border: "1px solid rgba(255,255,255,0.25)",
+          color: "rgba(255,255,255,0.85)",
+          fontSize: 12,
+          lineHeight: "20px",
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 0.15s ease",
+          flexShrink: 0,
+        }}
+      >
+        Run
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Prompts — the lake's custom prompts, one click from the panel (client
+ * email, 2026-08-04: "продаём и встраиваем козла"). Deliberately a separate
+ * section from Tasks & Apps: a task produces an artifact, a prompt produces
+ * an answer.
+ */
+function PromptsSection({
+  prompts,
+  onRun,
+  storageKey,
+}: {
+  prompts: DatalakePrompt[];
+  onRun: (prompt: DatalakePrompt) => void;
+  storageKey: string;
+}) {
+  return (
+    <CollapsibleSection
+      storageKey={storageKey}
+      label="Prompts"
+      gap={6}
+      aside={
+        <span
+          style={{
+            fontSize: 12.5,
+            color: "rgba(255,255,255,0.4)",
+            fontFamily: FONT,
+          }}
+        >
+          runs in AI chat
+        </span>
+      }
+    >
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {prompts.map((p) => (
+          <PromptRow key={p.id} prompt={p} onRun={() => onRun(p)} />
+        ))}
+      </div>
+    </CollapsibleSection>
+  );
+}
+
+/**
+ * The prompt "running" — a chat-shaped modal: the prompt goes out as the
+ * user's message, the answer area stays a shimmer. Deliberately no invented
+ * answer (the no-filler rule of 2026-07-30 applies to AI output too): the
+ * mock shows WHERE the answer arrives, the real chat is M360's to wire.
+ */
+function PromptPopup({
+  prompt,
+  accent,
+  datalakeLabel,
+  onClose,
+}: {
+  prompt: DatalakePrompt;
+  accent: string;
+  datalakeLabel: string;
+  onClose: () => void;
+}) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
+  }, [onClose]);
+
+  if (!mounted) return null;
+
+  const shimmer: React.CSSProperties = {
+    height: 12,
+    borderRadius: 6,
+    background:
+      "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%)",
+    backgroundSize: "400px 100%",
+    animation: "m360-shimmer 1.4s linear infinite",
+  };
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 200,
+        backgroundColor: "rgba(4, 6, 24, 0.78)",
+        backdropFilter: "blur(8px)",
+        WebkitBackdropFilter: "blur(8px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 40,
+        fontFamily: FONT,
+      }}
+    >
+      <style>{`@keyframes m360-shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }`}</style>
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`AI chat — ${prompt.label}`}
+        initial={{ opacity: 0, y: 16, scale: 0.985 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 10, scale: 0.99 }}
+        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(520px, 100%)",
+          backgroundColor: "#111539",
+          border: "1px solid rgba(255,255,255,0.14)",
+          borderRadius: 16,
+          boxShadow: "0 32px 80px rgba(0,0,0,0.55)",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 24,
+            padding: "24px 28px 18px 28px",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
+            <span
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                color: accent,
+              }}
+            >
+              {datalakeLabel} · AI chat
+            </span>
+            <h2
+              style={{
+                fontSize: 24,
+                fontWeight: 600,
+                lineHeight: 1.2,
+                color: "white",
+                margin: 0,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {prompt.label}
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            style={{
+              flexShrink: 0,
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: "1px solid rgba(255,255,255,0.14)",
+              background: "transparent",
+              color: "rgba(255,255,255,0.6)",
+              cursor: "pointer",
+              fontSize: 18,
+              lineHeight: 1,
+              outline: "none",
+            }}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* The exchange: prompt sent, answer loading */}
+        <div
+          style={{
+            padding: "22px 28px 26px 28px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          <div
+            style={{
+              alignSelf: "flex-end",
+              maxWidth: "88%",
+              padding: "10px 14px",
+              borderRadius: "12px 12px 4px 12px",
+              backgroundColor: "rgba(255,255,255,0.08)",
+              fontSize: 14,
+              lineHeight: 1.5,
+              color: "rgba(255,255,255,0.92)",
+            }}
+          >
+            {prompt.text}
+          </div>
+
+          <div
+            style={{
+              alignSelf: "flex-start",
+              width: "88%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              padding: "12px 14px",
+              borderRadius: "12px 12px 12px 4px",
+              border: "1px solid rgba(255,255,255,0.08)",
+              backgroundColor: "rgba(255,255,255,0.02)",
+            }}
+          >
+            <span style={{ ...shimmer, width: "100%" }} />
+            <span style={{ ...shimmer, width: "92%" }} />
+            <span style={{ ...shimmer, width: "58%" }} />
+          </div>
+
+          <span
+            style={{
+              fontSize: 12.5,
+              lineHeight: 1.45,
+              color: "rgba(255,255,255,0.4)",
+            }}
+          >
+            The assistant answers here from this lake's data — wired to the
+            live AI chat in M360.
+          </span>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
   );
 }
 
@@ -690,34 +1281,25 @@ function InsightCard({ insight }: { insight: DatalakeInsight }) {
   );
 }
 
-function InsightsSection({ insights }: { insights: DatalakeInsight[] }) {
+function InsightsSection({
+  insights,
+  storageKey,
+}: {
+  insights: DatalakeInsight[];
+  storageKey: string;
+}) {
   return (
-    <section style={sectionStyle}>
-      <SectionHeading
-        label="Insights · Weekly"
-        aside={
-          // The figures are authored samples, not measurements — the chip keeps
-          // that honest on screen the way "draft" does for apps.
-          <span
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.3)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: 4,
-              padding: "1px 5px",
-              fontFamily: FONT,
-            }}
-          >
-            sample
-          </span>
-        }
-      />
+    // The figures are authored samples, not measurements — the chip keeps
+    // that honest on screen the way "draft" does for apps.
+    <CollapsibleSection
+      storageKey={storageKey}
+      label="Insights · Weekly"
+      aside={<SampleChip />}
+    >
       {insights.map((i) => (
         <InsightCard key={i.id} insight={i} />
       ))}
-    </section>
+    </CollapsibleSection>
   );
 }
 
@@ -733,6 +1315,15 @@ const HISTORY_TYPE_LABEL: Record<HistoryEventType, string> = {
   dashboard_opened: "Dashboard",
   template_opened: "Template",
   explorer_opened: "Explorer",
+};
+
+/** Chip text per artifact format — the email's own list, uppercased. */
+const HISTORY_FORMAT_LABEL: Record<HistoryFormat, string> = {
+  xlsx: "XLSX",
+  pdf: "PDF",
+  ppt: "PPT",
+  video: "VIDEO",
+  audio: "AUDIO",
 };
 
 /**
@@ -812,6 +1403,25 @@ function HistoryRow({
       >
         {sub}
       </span>
+      {/* The artifact's format — Excel / PDF / PPT / Video / Audio (client
+          email, 2026-08-04). Web surfaces carry no chip. */}
+      {event.format && (
+        <span
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.55)",
+            border: "1px solid rgba(255,255,255,0.18)",
+            borderRadius: 4,
+            padding: "1px 5px",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+          }}
+        >
+          {HISTORY_FORMAT_LABEL[event.format]}
+        </span>
+      )}
       <span style={{ flex: "1 1 auto" }} />
       <span
         style={{
@@ -859,30 +1469,33 @@ function HistoryRow({
 function HistorySection({
   events,
   onRebuild,
+  storageKey,
 }: {
   events: HistoryEvent[];
   onRebuild: (event: HistoryEvent) => void;
+  storageKey: string;
 }) {
   const shown = events.slice(0, 5);
   const earlier = events.length - shown.length;
   return (
-    <section style={{ ...sectionStyle, gap: 6 }}>
-      <SectionHeading
-        label="History"
-        aside={
-          // Honest about where the journal lives: localStorage. In the real
-          // M360 it belongs server-side behind the account.
-          <span
-            style={{
-              fontSize: 12.5,
-              color: "rgba(255,255,255,0.4)",
-              fontFamily: FONT,
-            }}
-          >
-            this device
-          </span>
-        }
-      />
+    <CollapsibleSection
+      storageKey={storageKey}
+      label="History"
+      gap={6}
+      aside={
+        // Honest about where the journal lives: localStorage. In the real
+        // M360 it belongs server-side behind the account.
+        <span
+          style={{
+            fontSize: 12.5,
+            color: "rgba(255,255,255,0.4)",
+            fontFamily: FONT,
+          }}
+        >
+          this device
+        </span>
+      }
+    >
       {events.length === 0 ? (
         <span
           style={{
@@ -918,7 +1531,7 @@ function HistorySection({
           )}
         </div>
       )}
-    </section>
+    </CollapsibleSection>
   );
 }
 
@@ -2001,11 +2614,15 @@ export function InsightPanel({
     journalDatasetIds?: string[];
   } | null>(null);
 
+  /** A prompt mid-"run" — the chat-shaped popup. */
+  const [openPrompt, setOpenPrompt] = useState<DatalakePrompt | null>(null);
+
   // A popup for a job that is no longer on screen would be orphaned — the
   // selection changing or the role flipping both rebuild the list behind it.
   useEffect(() => {
     setOpenJob(null);
     setOpenBuilder(null);
+    setOpenPrompt(null);
   }, [count, roleId]);
 
   // With a role picked, the role is a lens over everything — a selected
@@ -2037,6 +2654,14 @@ export function InsightPanel({
   // combination selected, whose sources would they be? Single selection only.
   const single = count === 1 ? selectedSignals[0] : null;
 
+  // Collapse state is remembered per set, per selection, per section — the
+  // 200th visit to Reviews: Banks keeps ITS folds, not the board's.
+  const selKey = selectedSignals
+    .map((s) => s.id)
+    .sort()
+    .join("+");
+  const sectionKey = (section: string) => `${setId}:${selKey}:${section}`;
+
   // ── Output history ──────────────────────────────────────────────────────
   // The journal lives in localStorage (see lib/v2/history.ts); the panel just
   // mirrors it and appends on real outputs.
@@ -2064,6 +2689,9 @@ export function InsightPanel({
       title,
       url,
       params,
+      // The build pipeline's artifact is the report document — PDF until the
+      // real pipeline reports what it actually produced.
+      format: type === "report_built" ? "pdf" : undefined,
     });
   };
 
@@ -2472,13 +3100,26 @@ export function InsightPanel({
                   sources={single.sources}
                   total={single.sourcesTotal}
                   accent={single.color}
+                  storageKey={sectionKey("sources")}
+                />
+              )}
+
+              {/* Enrichment — right after Sources, per the client's ordering
+                  ("после sources раздел enrichment", 2026-08-04). */}
+              {!llmBlocked && single?.enrichment && (
+                <EnrichmentSection
+                  enrichment={single.enrichment}
+                  storageKey={sectionKey("enrichment")}
                 />
               )}
 
               {/* Tasks & Apps — the tab became a section; the count stays. */}
               {!llmBlocked && (
-              <section style={{ ...sectionStyle, gap: 12 }}>
-                <SectionHeading label={`Tasks & Apps [${totalApps}]`} />
+              <CollapsibleSection
+                storageKey={sectionKey("apps")}
+                label={`Tasks & Apps [${totalApps}]`}
+                gap={12}
+              >
                 {totalApps === 0 && (
                   <span
                     style={{
@@ -2542,13 +3183,27 @@ export function InsightPanel({
                     ))}
                   </div>
                 ))}
-              </section>
+              </CollapsibleSection>
+              )}
+
+              {/* Prompts — after Tasks & Apps, per the client's ordering
+                  ("после Tasks & Apps сделать херню под названием промты",
+                  2026-08-04). Pilot: Reviews: Banks. */}
+              {!llmBlocked && single?.prompts && (
+                <PromptsSection
+                  prompts={single.prompts}
+                  onRun={setOpenPrompt}
+                  storageKey={sectionKey("prompts")}
+                />
               )}
 
               {/* Weekly insights — "я домотал до низа, я вижу бац-инсайт"
                   (client call, 2026-08-03). Pilot: Reviews: Banks. */}
               {!llmBlocked && single?.insights && (
-                <InsightsSection insights={single.insights} />
+                <InsightsSection
+                  insights={single.insights}
+                  storageKey={sectionKey("insights")}
+                />
               )}
 
               {/* Output history closes the column. Piloted on the Sources
@@ -2558,6 +3213,7 @@ export function InsightPanel({
                 <HistorySection
                   events={datasetHistory}
                   onRebuild={handleRebuild}
+                  storageKey={sectionKey("history")}
                 />
               )}
             </motion.div>
@@ -2593,6 +3249,18 @@ export function InsightPanel({
                 openJob.journalDatasetIds
               )
             }
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {openPrompt && single && (
+          <PromptPopup
+            key={`prompt-${openPrompt.id}`}
+            prompt={openPrompt}
+            accent={single.color}
+            datalakeLabel={single.label}
+            onClose={() => setOpenPrompt(null)}
           />
         )}
       </AnimatePresence>

@@ -18,6 +18,14 @@ export type HistoryEventType =
   | "template_opened"
   | "explorer_opened";
 
+/**
+ * The artifact's format — the client email of 2026-08-04 names the set:
+ * "History | Excel / PDF / PPT / Video / Audio". Web surfaces (dashboards,
+ * templates, explorers) carry no format; built artifacts do, and the same
+ * report can exist as a deck, a video or an audio brief.
+ */
+export type HistoryFormat = "xlsx" | "pdf" | "ppt" | "video" | "audio";
+
 export type HistoryEvent = {
   id: string;
   /** Epoch ms. */
@@ -35,6 +43,8 @@ export type HistoryEvent = {
   url?: string;
   /** Build Report parameters, ISO dates — what "Rebuild" refills. */
   params?: { bank: string; from: string; to: string; language: string };
+  /** Artifact format chip — absent for web surfaces. */
+  format?: HistoryFormat;
 };
 
 const KEY = "m360.history.v1";
@@ -104,6 +114,7 @@ type SeedSpec = {
   /** How long ago the output "happened". */
   agoMs: number;
   params?: HistoryEvent["params"];
+  format?: HistoryFormat;
 };
 
 /** Last full month as ISO bounds — what the seeded reports were "built" for. */
@@ -118,17 +129,35 @@ function lastMonthIso(): { from: string; to: string } {
 const HOUR = 3_600_000;
 const DAY = 24 * HOUR;
 
+/**
+ * True when the stored journal is nothing but an older generation of seeds —
+ * every id is ours and none carries a format, which the current seeds do.
+ * Such a journal is safe to reseed: real outputs never match this shape.
+ */
+function isStaleSeedJournal(entries: HistoryEvent[]): boolean {
+  return (
+    entries.length > 0 &&
+    entries.every((e) => e.id.startsWith("seed-")) &&
+    !entries.some((e) => e.format)
+  );
+}
+
 export function seedHistoryIfEmpty(): void {
   if (typeof window === "undefined") return;
-  if (loadHistory().length > 0) return;
+  const existing = loadHistory();
+  if (existing.length > 0 && !isStaleSeedJournal(existing)) return;
 
   // Imported lazily to keep module init cheap and dependency-light.
   // (Static import would also be fine — no cycle — but nothing outside the
   // seed needs use-cases here.)
   import("./use-cases").then(({ findUseCase, PUMB_MONTHLY_PULSE }) => {
-    if (loadHistory().length > 0) return; // real output raced the seed — keep it
+    const raced = loadHistory();
+    if (raced.length > 0 && !isStaleSeedJournal(raced)) return; // real output raced the seed — keep it
 
     const m = lastMonthIso();
+    // Formats picked so the pilot lake's top rows show the artifact spread
+    // the email names — the same benchmark exists as PDF, XLSX and video,
+    // which is exactly the "one report, many shapes" story.
     const seeds: SeedSpec[] = [
       {
         type: "report_built",
@@ -136,12 +165,21 @@ export function seedHistoryIfEmpty(): void {
         useCaseId: "banking-reviews-banks-benchmark",
         agoMs: 26 * 60_000,
         params: { bank: "Oschadbank", from: m.from, to: m.to, language: "en" },
+        format: "pdf",
       },
       {
         type: "dashboard_opened",
         datasetIds: ["media"],
         useCaseId: "banking-media-2",
         agoMs: 3 * HOUR,
+      },
+      {
+        type: "report_built",
+        datasetIds: ["reviews-banks"],
+        useCaseId: "banking-reviews-banks-benchmark",
+        agoMs: 9 * HOUR,
+        params: { bank: "Monobank", from: m.from, to: m.to, language: "en" },
+        format: "xlsx",
       },
       {
         type: "dashboard_opened",
@@ -155,6 +193,15 @@ export function seedHistoryIfEmpty(): void {
         useCaseId: "banking-media-1",
         agoMs: 2 * DAY + 5 * HOUR,
         params: { bank: "PrivatBank", from: m.from, to: m.to, language: "uk" },
+        format: "ppt",
+      },
+      {
+        type: "report_built",
+        datasetIds: ["reviews-banks"],
+        useCaseId: "banking-reviews-banks-benchmark",
+        agoMs: 3 * DAY + 4 * HOUR,
+        params: { bank: "Oschadbank", from: m.from, to: m.to, language: "uk" },
+        format: "video",
       },
       {
         type: "dashboard_opened",
@@ -167,6 +214,14 @@ export function seedHistoryIfEmpty(): void {
         datasetIds: ["reviews-branches"],
         useCaseId: "banking-reviews-branches-benchmark",
         agoMs: 5 * DAY + 7 * HOUR,
+      },
+      {
+        type: "report_built",
+        datasetIds: ["media"],
+        useCaseId: "banking-media-2",
+        agoMs: 5 * DAY + 9 * HOUR,
+        params: { bank: "PrivatBank", from: m.from, to: m.to, language: "en" },
+        format: "audio",
       },
       {
         type: "template_opened",
@@ -194,7 +249,9 @@ export function seedHistoryIfEmpty(): void {
             ? uc.dashboardUrl
             : uc.reportTemplateUrl;
       entries.push({
-        id: `seed-${s.useCaseId}-${s.type}`,
+        // Format joins the id: the same use case now seeds as PDF, XLSX and
+        // video, and ids must not collide.
+        id: `seed-${s.useCaseId}-${s.type}-${s.format ?? "web"}`,
         ts: now - s.agoMs,
         type: s.type,
         setId: "banking",
@@ -203,6 +260,7 @@ export function seedHistoryIfEmpty(): void {
         title: uc.title,
         url,
         params: s.params,
+        format: s.format,
       });
     }
     if (entries.length === 0) return;

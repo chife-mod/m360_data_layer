@@ -45,6 +45,30 @@ export type DatalakeSource = {
   image?: string;
 };
 
+/**
+ * One row of the Enrichment section — what the lake's linguistic model
+ * detects on top of the raw intake (client call, 2026-08-04: "сколько
+ * аспектов распознаётся, сколько брендов распознаётся"). `detail` is the
+ * figure with its verb, e.g. "258 detected".
+ */
+export type DatalakeEnrichment = {
+  id: string;
+  label: string;
+  detail: string;
+};
+
+/**
+ * One custom prompt of a lake — the AI chat's canned questions, surfaced on
+ * the panel so they are one click away (client call, 2026-08-04: "могу его
+ * запускать прямо отсюда"). `label` is the short name from his email
+ * ("Summary: NEG"); `text` is the full prompt the chat receives.
+ */
+export type DatalakePrompt = {
+  id: string;
+  label: string;
+  text: string;
+};
+
 export type DatalakeInsight = {
   id: string;
   tone: "negative" | "positive" | "neutral";
@@ -89,6 +113,18 @@ export type Datalake = {
   sources?: DatalakeSource[];
   /** How many sources the dataset really has — drives "top 5 of N". */
   sourcesTotal?: number;
+  /**
+   * The lake's enrichment layer — aspects / brands / persons the linguistic
+   * model recognises. Piloted on the same dataset as Sources; absent means
+   * the section is not rendered.
+   */
+  enrichment?: DatalakeEnrichment[];
+  /**
+   * Custom prompts worked out for this lake — the AI chat's per-lake
+   * repertoire, shown after Tasks & Apps. Prompts answer, tasks produce
+   * artifacts — that is why they are separate sections (client, 2026-08-04).
+   */
+  prompts?: DatalakePrompt[];
   /**
    * Weekly insights block — 2–3 sample findings so the overview ends with a
    * live reason to come back ("я зайду сюда через день — у меня будет новый
