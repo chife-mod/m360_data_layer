@@ -15,7 +15,12 @@ through git if a direction dies (agreed 2026-08-04).
 
 **What the module is now.** Industry (Watches / Banking / Retail, plus four
 DISABLED roadmap industries) and Type selectors scope a 4x4 board of 16
-datasets. **Clicking a tile selects that tile** — single-select swap, even on
+datasets. **The Ask bar** sits between the controls and the board — the
+always-visible chat door: picked lakes appear in it as context chips and the
+placeholder rewrites itself; Enter opens the right-hand **chat drawer**
+(mock: question bubble + honest shimmer), which the panel's prompt rows
+share, and which re-scopes live as tiles are clicked. **Clicking a tile
+selects that tile** — single-select swap, even on
 a compatibility-dimmed tile; combinations (up to 3) are built from the tile's
 top-right **corner zone**: "+" adds, the dot/"×" removes. **Reset** (top row)
 returns the whole stage — industry, type, role, LLM toggle, selection — to
@@ -58,6 +63,38 @@ think-first item not yet advanced. Everything else outstanding is in
 [DESIGN.md](../DESIGN.md): the code — not the Figma landing — is the source of
 truth for this module, and an accent colour never colours body-sized text
 (which is why selected tiles keep white labels).
+
+---
+
+## 2026-08-04 (night) — The chat door: Ask bar over the board, one drawer for every entry
+
+Source: Oleg's health-check of the whole direction ("может, просто дать
+человеку окно чата?") — the answer built the same evening as a mock, so
+the hypothesis is checkable on a live prototype instead of in words.
+
+**The reasoning that picked this shape.** Chat-only fails three ways: a
+blank canvas does not sell (the board answers "what is in here?" in ten
+seconds), a chat without a map is the чёрный ящик Oleg named, and chat
+answers are non-deterministic where subscriptions need repeatable
+artifacts. But chat wins the long tail and the zero-threshold entry. So:
+canvas + chat, not chat instead of canvas — the board becomes the chat's
+**scope**. A corner FAB (the pharma prototype's «козёл») was considered
+and rejected for this module: "стикер, приклеенный к углу — не видишь,
+как он реагирует на выбор".
+
+**Built:** an **Ask bar** between the controls and the board — always
+visible, spark icon, the picked lakes mirrored as colour-dot context
+chips, placeholder rewriting itself ("Ask across all Banking lakes…" →
+"Ask about Reviews: Banks + Media…"). Enter / Ask opens the **chat
+drawer** from the right (the height a thread needs): scope line, the
+question as an outgoing bubble, the answer an honest shimmer + the
+"wired to the live AI chat in M360" caption, follow-up composer at the
+bottom. **No backdrop on purpose** — the board stays clickable and
+re-scopes the open chat live, which is the demo's key beat. An empty
+drawer offers openers: a single picked lake lends its own custom prompts,
+otherwise two generic examples (my copy, BACKLOG §1.4). The panel's
+prompt rows now run through this same drawer — the standalone prompt
+popup died; one chat channel, not two.
 
 ---
 

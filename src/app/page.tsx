@@ -13,6 +13,7 @@ import {
 } from "@/lib/v2/datalakes";
 import { DataCard } from "@/components/v2/DataCard";
 import { InsightPanel } from "@/components/v2/InsightPanel";
+import { AskBar, ChatDrawer } from "@/components/v2/AskChat";
 import { seedHistoryIfEmpty } from "@/lib/v2/history";
 import {
   ALL_ROLES,
@@ -48,6 +49,19 @@ export default function DataLayerV2() {
   // Role & Tasks view (client email 2026-08-03, "Advanced"): "я пиарщик —
   // что я могу решить?". "All roles" keeps the module exactly as it was.
   const [roleId, setRoleId] = useState(ALL_ROLES);
+
+  // The chat door (Oleg's hypothesis check, 2026-08-04): the Ask bar above
+  // the board and the lake prompts both open one drawer. `chatNonce` marks
+  // each ask so repeating the same question still appends.
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatSeed, setChatSeed] = useState("");
+  const [chatNonce, setChatNonce] = useState(0);
+
+  const openChat = useCallback((question: string) => {
+    setChatSeed(question);
+    if (question) setChatNonce((n) => n + 1);
+    setChatOpen(true);
+  }, []);
 
   const industry = useMemo(() => getIndustry(industryId), [industryId]);
   const set = useMemo(() => getDatalakeSet(industryId), [industryId]);
@@ -379,6 +393,16 @@ export default function DataLayerV2() {
           </div>
         </div>
 
+        {/* ── The chat door — always visible, scoped by the selection ──────
+            A corner FAB hides the reaction to picking tiles ("стикер,
+            приклеенный к углу"); the bar mirrors it live: picked lakes
+            become context chips, the placeholder rewrites itself. */}
+        <AskBar
+          selected={selectedDatalakes}
+          industryLabel={industry.label}
+          onAsk={openChat}
+        />
+
         {/* ── Grid + insight panel ─────────────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "stretch", gap: 5 }}>
           <div
@@ -465,9 +489,22 @@ export default function DataLayerV2() {
             typeLabel={
               industry.types.find((t) => t.id === typeId)?.label ?? ""
             }
+            onRunPrompt={(p) => openChat(p.text)}
           />
         </div>
       </div>
+
+      {/* One chat channel for every entry point — bar, prompt rows. No
+          backdrop on purpose: the board stays clickable and re-scopes the
+          open chat live. */}
+      <ChatDrawer
+        open={chatOpen}
+        context={selectedDatalakes}
+        industryLabel={industry.label}
+        seed={chatSeed}
+        seedNonce={chatNonce}
+        onClose={() => setChatOpen(false)}
+      />
 
       <VersionSwitcher current="v2" />
     </main>

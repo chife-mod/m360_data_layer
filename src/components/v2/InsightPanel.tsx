@@ -900,210 +900,6 @@ function PromptsSection({
   );
 }
 
-/**
- * The prompt "running" — a chat-shaped modal: the prompt goes out as the
- * user's message, the answer area stays a shimmer. Deliberately no invented
- * answer (the no-filler rule of 2026-07-30 applies to AI output too): the
- * mock shows WHERE the answer arrives, the real chat is M360's to wire.
- */
-function PromptPopup({
-  prompt,
-  accent,
-  datalakeLabel,
-  onClose,
-}: {
-  prompt: DatalakePrompt;
-  accent: string;
-  datalakeLabel: string;
-  onClose: () => void;
-}) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", onKey);
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previous;
-    };
-  }, [onClose]);
-
-  if (!mounted) return null;
-
-  const shimmer: React.CSSProperties = {
-    height: 12,
-    borderRadius: 6,
-    background:
-      "linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%)",
-    backgroundSize: "400px 100%",
-    animation: "m360-shimmer 1.4s linear infinite",
-  };
-
-  return createPortal(
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.18, ease: "easeOut" }}
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        backgroundColor: "rgba(4, 6, 24, 0.78)",
-        backdropFilter: "blur(8px)",
-        WebkitBackdropFilter: "blur(8px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 40,
-        fontFamily: FONT,
-      }}
-    >
-      <style>{`@keyframes m360-shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }`}</style>
-      <motion.div
-        role="dialog"
-        aria-modal="true"
-        aria-label={`AI chat — ${prompt.label}`}
-        initial={{ opacity: 0, y: 16, scale: 0.985 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: 10, scale: 0.99 }}
-        transition={{ duration: 0.22, ease: [0.25, 0.46, 0.45, 0.94] }}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "min(520px, 100%)",
-          backgroundColor: "#111539",
-          border: "1px solid rgba(255,255,255,0.14)",
-          borderRadius: 16,
-          boxShadow: "0 32px 80px rgba(0,0,0,0.55)",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 24,
-            padding: "24px 28px 18px 28px",
-            borderBottom: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
-            <span
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.06em",
-                textTransform: "uppercase",
-                color: accent,
-              }}
-            >
-              {datalakeLabel} · AI chat
-            </span>
-            <h2
-              style={{
-                fontSize: 24,
-                fontWeight: 600,
-                lineHeight: 1.2,
-                color: "white",
-                margin: 0,
-                letterSpacing: "-0.01em",
-              }}
-            >
-              {prompt.label}
-            </h2>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            style={{
-              flexShrink: 0,
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              border: "1px solid rgba(255,255,255,0.14)",
-              background: "transparent",
-              color: "rgba(255,255,255,0.6)",
-              cursor: "pointer",
-              fontSize: 18,
-              lineHeight: 1,
-              outline: "none",
-            }}
-          >
-            ×
-          </button>
-        </div>
-
-        {/* The exchange: prompt sent, answer loading */}
-        <div
-          style={{
-            padding: "22px 28px 26px 28px",
-            display: "flex",
-            flexDirection: "column",
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              alignSelf: "flex-end",
-              maxWidth: "88%",
-              padding: "10px 14px",
-              borderRadius: "12px 12px 4px 12px",
-              backgroundColor: "rgba(255,255,255,0.08)",
-              fontSize: 14,
-              lineHeight: 1.5,
-              color: "rgba(255,255,255,0.92)",
-            }}
-          >
-            {prompt.text}
-          </div>
-
-          <div
-            style={{
-              alignSelf: "flex-start",
-              width: "88%",
-              display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              padding: "12px 14px",
-              borderRadius: "12px 12px 12px 4px",
-              border: "1px solid rgba(255,255,255,0.08)",
-              backgroundColor: "rgba(255,255,255,0.02)",
-            }}
-          >
-            <span style={{ ...shimmer, width: "100%" }} />
-            <span style={{ ...shimmer, width: "92%" }} />
-            <span style={{ ...shimmer, width: "58%" }} />
-          </div>
-
-          <span
-            style={{
-              fontSize: 12.5,
-              lineHeight: 1.45,
-              color: "rgba(255,255,255,0.4)",
-            }}
-          >
-            The assistant answers here from this lake's data — wired to the
-            live AI chat in M360.
-          </span>
-        </div>
-      </motion.div>
-    </motion.div>,
-    document.body
-  );
-}
-
 const TONE_COLORS: Record<DatalakeInsight["tone"], string> = {
   negative: "#F43F5E",
   positive: "#46FEC3",
@@ -2587,6 +2383,11 @@ type Props = {
   roleId?: string;
   /** The active set — the role view walks every lake's apps, not a selection. */
   set?: DatalakeSet;
+  /**
+   * Runs a lake prompt in the page-level chat drawer — one chat channel for
+   * the Ask bar and the prompt rows alike (2026-08-04).
+   */
+  onRunPrompt?: (prompt: DatalakePrompt) => void;
 };
 
 /**
@@ -2610,6 +2411,7 @@ export function InsightPanel({
   typeLabel = "",
   roleId = ALL_ROLES,
   set,
+  onRunPrompt,
 }: Props) {
   const count = selectedSignals.length;
   const description =
@@ -2632,15 +2434,11 @@ export function InsightPanel({
     journalDatasetIds?: string[];
   } | null>(null);
 
-  /** A prompt mid-"run" — the chat-shaped popup. */
-  const [openPrompt, setOpenPrompt] = useState<DatalakePrompt | null>(null);
-
   // A popup for a job that is no longer on screen would be orphaned — the
   // selection changing or the role flipping both rebuild the list behind it.
   useEffect(() => {
     setOpenJob(null);
     setOpenBuilder(null);
-    setOpenPrompt(null);
   }, [count, roleId]);
 
   // With a role picked, the role is a lens over everything — a selected
@@ -3216,7 +3014,7 @@ export function InsightPanel({
               {!llmBlocked && single?.prompts && (
                 <PromptsSection
                   prompts={single.prompts}
-                  onRun={setOpenPrompt}
+                  onRun={(p) => onRunPrompt?.(p)}
                   storageKey={sectionKey("prompts")}
                 />
               )}
@@ -3273,18 +3071,6 @@ export function InsightPanel({
                 openJob.journalDatasetIds
               )
             }
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {openPrompt && single && (
-          <PromptPopup
-            key={`prompt-${openPrompt.id}`}
-            prompt={openPrompt}
-            accent={single.color}
-            datalakeLabel={single.label}
-            onClose={() => setOpenPrompt(null)}
           />
         )}
       </AnimatePresence>

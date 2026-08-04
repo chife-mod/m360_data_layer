@@ -68,6 +68,10 @@ Written by me to keep the prototype presentable, never reviewed by him:
 - **Facts-strip tooltip copy** (`components/v2/InsightPanel.tsx`): the
   Zero-Day definition paraphrases his own explanation; the archive and
   explorer tooltips are mine.
+- **Chat-drawer opener questions** (`components/v2/AskChat.tsx`): the two
+  generic suggestions ("What changed across these lakes this week?", "Who
+  drives the most negative buzz this month?") are mine; a single picked
+  lake shows its own prompts instead.
 
 ---
 
