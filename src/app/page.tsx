@@ -393,16 +393,6 @@ export default function DataLayerV2() {
           </div>
         </div>
 
-        {/* ── The chat door — always visible, scoped by the selection ──────
-            A corner FAB hides the reaction to picking tiles ("стикер,
-            приклеенный к углу"); the bar mirrors it live: picked lakes
-            become context chips, the placeholder rewrites itself. */}
-        <AskBar
-          selected={selectedDatalakes}
-          industryLabel={industry.label}
-          onAsk={openChat}
-        />
-
         {/* ── Grid + insight panel ─────────────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "stretch", gap: 5 }}>
           <div
@@ -492,6 +482,18 @@ export default function DataLayerV2() {
             onRunPrompt={(p) => openChat(p.text)}
           />
         </div>
+
+        {/* ── The chat door — visible, but UNDER the board (Oleg,
+            2026-08-04): controls scope the tiles, so nothing may wedge
+            between them; below the grid the bar reads as a chat composer
+            (the convention every messenger set), not as a search box that
+            would pretend to filter tiles. Picked lakes still mirror in as
+            context chips, the placeholder still rewrites itself. */}
+        <AskBar
+          selected={selectedDatalakes}
+          industryLabel={industry.label}
+          onAsk={openChat}
+        />
       </div>
 
       {/* One chat channel for every entry point — bar, prompt rows. No

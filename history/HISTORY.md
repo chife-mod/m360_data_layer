@@ -15,8 +15,10 @@ through git if a direction dies (agreed 2026-08-04).
 
 **What the module is now.** Industry (Watches / Banking / Retail, plus four
 DISABLED roadmap industries) and Type selectors scope a 4x4 board of 16
-datasets. **The Ask bar** sits between the controls and the board — the
-always-visible chat door: picked lakes appear in it as context chips and the
+datasets. **The Ask bar** sits under the board — the always-visible chat
+door, placed below so the controls-scope-the-tiles pair stays unbroken and
+the bar reads as a composer, not a search box: picked lakes appear in it
+as context chips and the
 placeholder rewrites itself; Enter opens the right-hand **chat drawer**
 (mock: question bubble + honest shimmer), which the panel's prompt rows
 share, and which re-scopes live as tiles are clicked. **Clicking a tile
@@ -82,10 +84,15 @@ canvas + chat, not chat instead of canvas — the board becomes the chat's
 and rejected for this module: "стикер, приклеенный к углу — не видишь,
 как он реагирует на выбор".
 
-**Built:** an **Ask bar** between the controls and the board — always
-visible, spark icon, the picked lakes mirrored as colour-dot context
-chips, placeholder rewriting itself ("Ask across all Banking lakes…" →
-"Ask about Reviews: Banks + Media…"). Enter / Ask opens the **chat
+**Built:** an **Ask bar** — always visible, spark icon, the picked lakes
+mirrored as colour-dot context chips, placeholder rewriting itself ("Ask
+across all Banking lakes…" → "Ask about Reviews: Banks + Media…"). First
+placed between the controls and the board; moved **under the board** the
+same night (Oleg): the controls scope the tiles and nothing may wedge
+into that pair, below the grid the bar reads as a chat composer — the
+convention messengers set — instead of a search box pretending to filter
+tiles, and the hierarchy stays honest: витрина first, chat as the
+addition. Enter / Ask opens the **chat
 drawer** from the right (the height a thread needs): scope line, the
 question as an outgoing bubble, the answer an honest shimmer + the
 "wired to the live AI chat in M360" caption, follow-up composer at the
