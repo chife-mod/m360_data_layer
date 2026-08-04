@@ -54,12 +54,18 @@ points at the watches set on purpose. The Reviews: Banks sources list and
 weekly insights are **sample data flagged in BACKLOG §1.4** — shapes he asked
 for, figures he has not supplied.
 
-**Immediate next step:** show him the 2026-08-04 letter built (evening
-session below: lake passport, enrichment, prompts, history formats, folds,
-full Reset); he still owes the bottom-row overviews and real figures behind
-every "sample" chip. The LLM-coverage argument (§2.8) remains the one
-think-first item not yet advanced. Everything else outstanding is in
-[BACKLOG.md](../BACKLOG.md).
+**Immediate next step:** show him the 2026-08-04 builds — the letter
+(lake passport, enrichment, prompts, history formats, folds, full Reset,
+tile micro-marks) **and the chat door** (Ask bar under the board + the
+drawer; it exists to check the "просто дать окно чата" hypothesis on a
+live prototype). He still owes the bottom-row overviews and real figures
+behind every "sample" chip. The LLM-coverage argument (§2.8) remains the
+one think-first item not yet advanced. **Ops:** GitHub Pages now skips
+branch-push builds routinely — every deploy needs the manual-build ritual
+(BACKLOG §4.3a); moving publication to an Actions workflow is the
+standing fix, agreed direction, not yet built. Design patterns settled
+this day are recorded in [DESIGN.md](../DESIGN.md) → "Patterns settled
+2026-08-04". Everything else outstanding is in [BACKLOG.md](../BACKLOG.md).
 
 **Two standing rules** that cost real time to establish, both in
 [DESIGN.md](../DESIGN.md): the code — not the Figma landing — is the source of

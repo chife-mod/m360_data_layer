@@ -22,8 +22,9 @@ stay consistent with it instead of drifting into their own look.
 | Token | Value | Used for |
 |---|---|---|
 | Canvas / card fill | `#111539` | Section background and card fill — the same value, cards separate by border and glow, not by fill |
-| Control fill | `#070a28` | Toggle track, select control |
-| Panel | `#111539` | Insight panel, dropdown surface |
+| Control fill | `#070a28` | Toggle track, select control, Ask bar and chat composer inputs |
+| Panel | `#111539` | Insight panel, dropdown surface, chat drawer |
+| Tooltip | `#1b2050` | Fact-chip hover tooltips — one step lighter than the panel so it reads as floating |
 
 ### Interaction
 | Token | Value | Used for |
@@ -140,14 +141,14 @@ original watches set.
 - **Select** — 36 high, radius 8, 1px border, panel offset 6, option 34 high, radius 6.
   Options may be `disabled`: muted, keyboard-skipped, click keeps the list open.
 - **Insight panel** — 515×532, radius 12. Since 2026-08-03 the inside is **one
-  scroll column**, no tabs and no icon badges: title → overview text → Sources
-  → Tasks & Apps [n] → Insights · Weekly → History. Section headings are
+  scroll column**, no tabs and no icon badges: title → overview text →
+  **facts strip** → Sources → Enrichment → Tasks & Apps [n] → Prompts →
+  Insights · Weekly → History. Section headings are
   **18px/600 plain white** — landmarks, not whispers (2026-08-04); sections
   open with a `rgba(255,255,255,0.08)` hairline. Source rows carry the site's
   real favicon on a 26px white tile (assets under `public/assets/sources/`),
   and the volume column ends flush on the same right edge as the heading's
-  aside — nothing moves on hover. History rows follow the same row anatomy
-  (type icon · title · parameters · relative time, Rebuild on hover). The
+  aside — nothing moves on hover. The
   decorative bar chart at the panel's foot was removed on 2026-08-03 ("он
   весёлый, но он не функция").
 - **Panel type floor** (2026-08-04, "двенадцатый — это уже слишком
@@ -155,6 +156,52 @@ original watches set.
   14–15px. 12–12.5px is reserved for footnotes, chips and timestamps only,
   and never below `rgba(255,255,255,0.4)` — small AND faint was failing the
   4.5:1 AA bar (12px at 0.35 alpha ≈ 3.2:1 on `#111539`).
+
+---
+
+## Patterns settled 2026-08-04
+
+Approaches this build established; reuse them instead of re-deciding.
+
+- **Folding sections.** Every panel section collapses on its whole heading
+  row (44px target beats a 16px chevron); the chevron points **up = open,
+  down = folded** — the sideways disclosure arrow read wrong. Fold state
+  persists in localStorage (`m360.collapsed.v1`) per *set : selection :
+  section*. The heading-to-body gap lives INSIDE the height-animated
+  wrapper, or the fold leaves a phantom flex gap.
+- **Fact chips + tile micro-marks.** Lake-level facts (archive depth,
+  zero-day, explorer) appear twice, same glyphs both times (shared
+  `fact-icons.tsx`): as 28px chips with 240px hover tooltips under the
+  panel overview, and as a quiet 10–11px glyph row on the tile's bottom
+  edge — indicators only, `pointer-events: none`, riding the label's
+  opacity. The tile teases, the panel explains and links.
+- **Mini-chip.** One shape for sample / draft / artifact-format markers:
+  10px uppercase, `0.04em`, radius 4, `1px 5px` padding, bordered
+  `rgba(255,255,255,0.15–0.18)`. Format chips sit in a **fixed 52px
+  column, left-aligned** (ragged left edges wander) with the timestamp in
+  its own 76px right-aligned column.
+- **Journal rows are two-line cards.** Title line (icon · title · format
+  column · time column), parameter line indented to the title's left edge,
+  Rebuild surfacing there on hover. Their hover pill extends **±14px**
+  with matching inner padding — wider than the one-line rows' ±10px —
+  so content never sits on the pill's edge.
+- **Honesty rules.** Any figure the client has not supplied wears the
+  `sample` chip. AI output is never invented: a prompt "runs" as an
+  outgoing bubble plus a **shimmer** answer and the caption naming what
+  wires it up in the real M360.
+- **The chat door.** The Ask bar sits **under the board** (a composer, the
+  messenger convention — above the grid it reads as a search box, and the
+  controls-scope-the-tiles pair must stay unbroken; a corner FAB hides the
+  scope reaction entirely). Bar: 52 high, radius 12, `#070a28`, focus
+  border `rgba(159,169,255,0.7)`; picked lakes mirror in as radius-7
+  colour-dot chips and the placeholder rewrites itself. The drawer slides
+  from the right (min(440px, 92vw), `#111539`), **no backdrop** — the
+  board stays clickable and re-scopes the open chat live. One chat
+  channel: the bar and the panel's prompt rows open the same drawer.
+- **Scrollbars.** `.m360-scroll` hides WebKit stepper buttons (Windows
+  drew them clipped by the panel's corner radius) and the panel's scroll
+  column sits 4px off the panel edges — padding returns the 4px, so
+  content never moved.
 
 ---
 
@@ -179,6 +226,9 @@ Do not "fix" the prototype back toward the Figma section.
 
 1. **Never restyle V1.** It is the frozen reference. V2 owns `components/v2` + `lib/v2`.
 2. **No new palette entries** without adding them here first.
-3. **Icons come from Tabler through the script** — no hand-drawn SVG, no second icon set.
+3. **Icons come from Tabler** — card icons (32px assets) through the script;
+   small inline UI glyphs (≤16px, stroked with currentColor) live as Tabler
+   path constants in `components/v2/fact-icons.tsx`. No hand-drawn SVG, no
+   second icon set, no third home for glyphs.
 4. **Fixed 776px board is desktop-only.** Responsive behaviour is not designed yet;
    the control row already collapses, the grid does not.

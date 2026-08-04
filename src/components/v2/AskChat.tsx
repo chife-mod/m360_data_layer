@@ -439,7 +439,7 @@ export function ChatDrawer({
                     style={{
                       textAlign: "left",
                       padding: "9px 12px",
-                      borderRadius: 9,
+                      borderRadius: 8,
                       border: "1px solid rgba(255,255,255,0.14)",
                       background: "rgba(255,255,255,0.02)",
                       color: "rgba(255,255,255,0.8)",
@@ -495,7 +495,7 @@ export function ChatDrawer({
                 flex: "1 1 auto",
                 height: 38,
                 padding: "0 12px",
-                borderRadius: 9,
+                borderRadius: 8,
                 border: "1px solid rgba(255,255,255,0.14)",
                 background: "#070a28",
                 outline: "none",
@@ -511,7 +511,7 @@ export function ChatDrawer({
               style={{
                 height: 38,
                 padding: "0 14px",
-                borderRadius: 9,
+                borderRadius: 8,
                 border: "1px solid transparent",
                 backgroundColor: "rgba(255,255,255,0.92)",
                 color: "#0b0e2b",
