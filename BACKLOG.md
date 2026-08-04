@@ -100,12 +100,15 @@ Source: call of 2026-07-30. Long-horizon: feed the 16 datasets to a model, state
 your goals, get told what to do; scenario analysis. Explicitly "future", noted
 so it is not lost.
 
-### 2.6 Role & Tasks centric view — **[us, think first]**
-Source: email + call of 2026-08-03 ("Advanced"). Flip the module's axis: today
-everything hangs off datasets; he wants a view that starts from the viewer —
-"я PR-manager, какие задачи я могу решить?" — and lists tasks/apps across all
-lakes for that role. The role tags on apps already exist, so the data side is
-a pivot, not new content. Explicitly "начать думать", not build.
+### 2.6 Role & Tasks centric view — **draft built (2026-08-04)**
+Source: email + call of 2026-08-03 ("Advanced"), asked as "начать думать" —
+in this project thinking happens as a working draft. Built: a Role selector
+(options harvested from app role tags), the board as the role's coverage
+map when nothing is selected, a Role view in the panel (tasks grouped by
+lake, fully live), and the role as a lens over a selected dataset's apps.
+Open: Vsevolod has not seen it; role list will grow as he writes apps for
+the remaining nine datasets; a role-coloured accent system was deliberately
+NOT invented (roles stay neutral until he wants them branded).
 
 ### 2.7 History of outputs — **built (2026-08-04)**
 Source: the 2026-08-03 call ("рано пока"), unparked by Oleg the next day.

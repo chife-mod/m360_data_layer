@@ -23,6 +23,8 @@ import {
   type HistoryEvent,
   type HistoryEventType,
 } from "@/lib/v2/history";
+import { ALL_ROLES, getRoleTasks, filterByRole } from "@/lib/v2/roles";
+import type { DatalakeSet } from "@/lib/v2/datalakes";
 import { Select } from "./Select";
 import { PeriodPicker, type Period } from "./PeriodPicker";
 import type { UseCase } from "@/lib/v2/use-cases";
@@ -1750,6 +1752,14 @@ type Props = {
   setId?: string;
   /** Current Type selector label — some app titles depend on it. */
   typeLabel?: string;
+  /**
+   * Role & Tasks view (2026-08-04): the picked role, "all" for none. With a
+   * role and NO selection the panel flips its axis — tasks first, grouped by
+   * lake; with a selection the role filters that dataset's apps.
+   */
+  roleId?: string;
+  /** The active set — the role view walks every lake's apps, not a selection. */
+  set?: DatalakeSet;
 };
 
 /**
@@ -1771,6 +1781,8 @@ export function InsightPanel({
   llmBlocked = false,
   setId = "watches",
   typeLabel = "",
+  roleId = ALL_ROLES,
+  set,
 }: Props) {
   const count = selectedSignals.length;
   const description =
@@ -1780,6 +1792,8 @@ export function InsightPanel({
     useCase: UseCase;
     accent: string;
     datalakeLabel: string;
+    /** Journal context when opened outside a selection (role view). */
+    journalDatasetIds?: string[];
   } | null>(null);
   const [openBuilder, setOpenBuilder] = useState<{
     useCase: UseCase;
@@ -1787,16 +1801,41 @@ export function InsightPanel({
     datalakeLabel: string;
     /** Present when opened from a journal entry's Rebuild. */
     initial?: BuildInitial;
+    /** Journal context when opened outside a selection (role view). */
+    journalDatasetIds?: string[];
   } | null>(null);
 
-  // A popup for a job that is no longer on screen would be orphaned.
+  // A popup for a job that is no longer on screen would be orphaned — the
+  // selection changing or the role flipping both rebuild the list behind it.
   useEffect(() => {
     setOpenJob(null);
     setOpenBuilder(null);
-  }, [count]);
+  }, [count, roleId]);
 
-  const useCaseGroups = getUseCaseGroups(setId, selectedSignals);
+  // With a role picked, the role is a lens over everything — a selected
+  // dataset shows only that role's apps, and the count says so.
+  const useCaseGroups = getUseCaseGroups(setId, selectedSignals).map((g) => ({
+    ...g,
+    useCases: filterByRole(g.useCases, roleId),
+  }));
   const totalApps = useCaseGroups.reduce((n, g) => n + g.useCases.length, 0);
+
+  // Role view data — every task the role can run, across all lakes, grouped.
+  const roleView = roleId !== ALL_ROLES && count === 0 && set ? true : false;
+  const roleTasks = roleView ? getRoleTasks(set!, roleId) : [];
+  const roleGroups = new Map<
+    string,
+    { label: string; color: string; tasks: typeof roleTasks }
+  >();
+  for (const t of roleTasks) {
+    const g = roleGroups.get(t.datalakeId) ?? {
+      label: t.datalakeLabel,
+      color: t.color,
+      tasks: [] as typeof roleTasks,
+    };
+    g.tasks.push(t);
+    roleGroups.set(t.datalakeId, g);
+  }
 
   // Sources and weekly insights read as properties of ONE dataset — with a
   // combination selected, whose sources would they be? Single selection only.
@@ -1816,12 +1855,15 @@ export function InsightPanel({
     useCase: UseCase,
     title: string,
     url?: string,
-    params?: HistoryEvent["params"]
+    params?: HistoryEvent["params"],
+    datasetIds?: string[]
   ) => {
     appendHistory({
       type,
       setId,
-      datasetIds: selectedSignals.map((s) => s.id),
+      // Role view runs tasks with no selection — the task's own lake is the
+      // journal context then.
+      datasetIds: datasetIds ?? selectedSignals.map((s) => s.id),
       useCaseId: useCase.id,
       title,
       url,
@@ -1887,7 +1929,7 @@ export function InsightPanel({
       />
 
       <AnimatePresence>
-        {count === 0 && (
+        {count === 0 && !roleView && (
           <motion.div
             key="empty-overlay"
             initial={{ opacity: 0 }}
@@ -1954,6 +1996,115 @@ export function InsightPanel({
             panel stuck on the exiting node. Both nodes are absolutely
             positioned, so they overlap for the fade and nothing jumps. */}
         <AnimatePresence>
+          {roleView && (
+            <motion.div
+              key={`role-${roleId}`}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="m360-scroll"
+              style={{
+                position: "absolute",
+                inset: 0,
+                overflowY: "auto",
+                padding: "28px 26px 28px 32px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 18,
+              }}
+            >
+              {/* The flipped axis (client, 2026-08-03): not "dataset → what
+                  can it do" but "my role → what can I run". */}
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.4)",
+                  fontFamily: FONT,
+                  marginBottom: -10,
+                }}
+              >
+                Role view
+              </span>
+              <div
+                style={{
+                  fontSize: 26,
+                  fontWeight: 600,
+                  lineHeight: 1.15,
+                  color: "#ffffff",
+                  fontFamily: FONT,
+                }}
+              >
+                Tasks for {roleId}
+              </div>
+              <p
+                style={{
+                  fontSize: 14,
+                  lineHeight: 1.5,
+                  color: "rgba(255,255,255,0.55)",
+                  margin: 0,
+                  fontFamily: FONT,
+                }}
+              >
+                {roleTasks.length} task{roleTasks.length === 1 ? "" : "s"}{" "}
+                across {roleGroups.size} dataset
+                {roleGroups.size === 1 ? "" : "s"} — the lit tiles are where{" "}
+                {roleId} works. Pick one to narrow down.
+              </p>
+
+              {[...roleGroups.entries()].map(([lakeId, g]) => (
+                <section key={lakeId} style={{ ...sectionStyle, gap: 8 }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                      color: g.color,
+                      fontFamily: FONT,
+                    }}
+                  >
+                    {g.label}
+                  </span>
+                  {g.tasks.map((t) => (
+                    <UseCaseCard
+                      key={t.useCase.id}
+                      useCase={t.useCase}
+                      title={resolveTitle(t.useCase.title, typeLabel)}
+                      onClick={() =>
+                        setOpenJob({
+                          useCase: t.useCase,
+                          accent: t.color,
+                          datalakeLabel: t.datalakeLabel,
+                          journalDatasetIds: [t.datalakeId],
+                        })
+                      }
+                      onBuildReport={() =>
+                        setOpenBuilder({
+                          useCase: t.useCase,
+                          accent: t.color,
+                          datalakeLabel: t.datalakeLabel,
+                          journalDatasetIds: [t.datalakeId],
+                        })
+                      }
+                      onOutput={(type, url) =>
+                        recordOutput(
+                          type,
+                          t.useCase,
+                          resolveTitle(t.useCase.title, typeLabel),
+                          url,
+                          undefined,
+                          [t.datalakeId]
+                        )
+                      }
+                    />
+                  ))}
+                </section>
+              ))}
+            </motion.div>
+          )}
+
           {count > 0 && (
             <motion.div
               // Single selection keys by dataset so hopping tiles cross-fades
@@ -2110,7 +2261,9 @@ export function InsightPanel({
                       fontFamily: FONT,
                     }}
                   >
-                    No apps for this dataset yet.
+                    {roleId !== ALL_ROLES
+                      ? `No ${roleId} tasks for this dataset yet.`
+                      : "No apps for this dataset yet."}
                   </span>
                 )}
                 {useCaseGroups.map((group) => (
@@ -2209,7 +2362,9 @@ export function InsightPanel({
                 type,
                 openJob.useCase,
                 resolveTitle(openJob.useCase.title, typeLabel),
-                url
+                url,
+                undefined,
+                openJob.journalDatasetIds
               )
             }
           />
@@ -2236,7 +2391,8 @@ export function InsightPanel({
                   from: period.from.toISOString(),
                   to: period.to.toISOString(),
                   language,
-                }
+                },
+                openBuilder.journalDatasetIds
               )
             }
             onClose={() => setOpenBuilder(null)}

@@ -14,6 +14,12 @@ import {
 import { DataCard } from "@/components/v2/DataCard";
 import { InsightPanel } from "@/components/v2/InsightPanel";
 import { seedHistoryIfEmpty } from "@/lib/v2/history";
+import {
+  ALL_ROLES,
+  getRolesForSet,
+  getRoleTasks,
+  getRoleDatalakeIds,
+} from "@/lib/v2/roles";
 import { Toggle } from "@/components/v2/Toggle";
 import { Select } from "@/components/v2/Select";
 import { VersionSwitcher } from "@/components/VersionSwitcher";
@@ -35,6 +41,9 @@ export default function DataLayerV2() {
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [showAiOnly, setShowAiOnly] = useState(false);
   const [resetHovered, setResetHovered] = useState(false);
+  // Role & Tasks view (client email 2026-08-03, "Advanced"): "я пиарщик —
+  // что я могу решить?". "All roles" keeps the module exactly as it was.
+  const [roleId, setRoleId] = useState(ALL_ROLES);
 
   const industry = useMemo(() => getIndustry(industryId), [industryId]);
   const set = useMemo(() => getDatalakeSet(industryId), [industryId]);
@@ -46,7 +55,8 @@ export default function DataLayerV2() {
     seedHistoryIfEmpty();
   }, []);
 
-  // Datalake ids are per-set, so a selection cannot survive an industry change.
+  // Datalake ids are per-set, so a selection cannot survive an industry
+  // change — and neither can a role: the tags belong to the set's apps.
   const handleIndustryChange = useCallback((id: string) => {
     // Roadmap industries are listed but not selectable; the Select already
     // refuses them, this is the belt to its braces.
@@ -54,6 +64,7 @@ export default function DataLayerV2() {
     setIndustryId(id);
     setTypeId(getIndustry(id).types[0]?.id ?? "");
     setSelectedIds([]);
+    setRoleId(ALL_ROLES);
   }, []);
 
   const handleTypeChange = useCallback((id: string) => {
@@ -133,6 +144,25 @@ export default function DataLayerV2() {
     selectedIds.length === 1 &&
     !set.aiChatIds.includes(selectedIds[0]);
 
+  const roles = useMemo(() => getRolesForSet(set), [set]);
+  const roleOptions = useMemo(
+    () => [
+      { id: ALL_ROLES, label: "All roles", hint: "Browse by dataset" },
+      ...roles.map((r) => ({
+        id: r,
+        label: r,
+        hint: `${getRoleTasks(set, r).length} tasks`,
+      })),
+    ],
+    [set, roles]
+  );
+  // Lakes the picked role can actually work in — everything else dims while
+  // nothing is selected, so the board doubles as the role's coverage map.
+  const roleLakeIds = useMemo(
+    () => (roleId === ALL_ROLES ? null : getRoleDatalakeIds(set, roleId)),
+    [set, roleId]
+  );
+
   const rows = useMemo(() => {
     const chunks = [];
     for (let i = 0; i < set.datalakes.length; i += 4) {
@@ -206,6 +236,15 @@ export default function DataLayerV2() {
                 onChange={handleTypeChange}
                 minWidth={230}
               />
+              {roles.length > 0 && (
+                <Select
+                  label="Role"
+                  options={roleOptions}
+                  value={roleId}
+                  onChange={setRoleId}
+                  minWidth={150}
+                />
+              )}
             </div>
 
             {/* Reset — flush with the grid's right edge. Fixed slot so the row
@@ -334,6 +373,13 @@ export default function DataLayerV2() {
                   } else {
                     isDisabled = true;
                   }
+                } else if (
+                  roleLakeIds &&
+                  !roleLakeIds.includes(datalake.id)
+                ) {
+                  // Role view, nothing selected: the board is the role's
+                  // coverage map — lakes the role has no tasks in dim out.
+                  isDisabled = true;
                 }
 
                 // No tile is dead any more (2026-08-04). In LLM mode a
@@ -380,6 +426,8 @@ export default function DataLayerV2() {
             selectedSignals={selectedDatalakes}
             description={description}
             llmBlocked={llmBlocked}
+            roleId={roleId}
+            set={set}
             setId={set.id}
             typeLabel={
               industry.types.find((t) => t.id === typeId)?.label ?? ""

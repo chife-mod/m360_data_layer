@@ -96,6 +96,19 @@ Search Demand's `#FF4560` read as Media's red; he asked for green. `#34D399`
 in both sets (watches' Support Chats moved with it) so same-position-same-
 colour survives. DESIGN.md updated.
 
+### Role & Tasks — the flipped axis lands as a working draft
+The last Advanced item builds the same day. A third selector — **Role** —
+joins Industry and Type, its options harvested from the apps' own role tags
+("All roles" keeps the module exactly as before). Pick a role with nothing
+selected and the axis flips: the board dims to the role's coverage map (lit
+tiles = lakes with tasks for this role, still clickable), and the panel
+renders the **Role view** — "Tasks for PR", task cards grouped by lake, every
+card fully live (Build Report, popups, journal entries land on the task's own
+lake). Select a tile and the role stays on as a lens: Tasks & Apps shows only
+that role's apps, the count says so, and an empty result states "No PR tasks
+for this dataset yet". Roles reset with the industry — the tags belong to the
+set's apps.
+
 ### Output history — the journal lands in the panel, then everywhere
 Fourth round of the day, promoted straight out of BACKLOG §2.7 ("добавь
 историю на плитке, где Sources"). A localStorage journal
