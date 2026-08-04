@@ -22,7 +22,8 @@ returns the whole stage — industry, type, role, LLM toggle, selection — to
 the demo default, and only shows when something is off default. The
 right-hand panel is **one scroll column, no tabs**: title → the dataset's
 copy → **facts strip** (Archive · N years / Zero-Day indexed with tooltip /
-Explorer ↗ link) → **Sources** (top 5 of N with monthly volumes, links out)
+Explorer ↗ link; the same facts sit as glyph micro-marks on the tiles
+themselves) → **Sources** (top 5 of N with monthly volumes, links out)
 → **Enrichment** (aspects / brands / persons counts) → **Tasks & Apps [n]**
 → **Prompts** (the lake's custom prompts; a row opens the chat-shaped popup
 with an honest shimmer for the answer) → **Insights · Weekly** (2–3 findings
@@ -76,7 +77,18 @@ figures); **Zero-Day indexed** with the definition in a hover tooltip
 lake has one — KOLs: Finance points at the pharma dols explorer he named
 as the reference. Opening an explorer journals as an output (new history
 type). Placement answers his own worry that a bare "архив 20 лет"
-is ambiguous ("он полный или нет?") — depth and zero-day sit side by side.
+is ambiguous ("он полный или нет?") — depth and zero-day sit side by side:
+depth says how far back, zero-day says the depth is complete (every source
+from its first message), so they are a pair, not synonyms.
+
+**Follow-up the same day — the marks moved onto the tiles too** ("хочет
+видеть прямо на плитках, не hover, не правая панель"): a quiet glyph row
+on the tile's bottom edge — database + "15Y" for depth, skip-back for
+zero-day, compass for an explorer — same glyphs as the panel strip, so the
+tile teases what the panel explains. Indicators only: no tooltips, no
+links, pointer-events off; they ride the label's opacity so disabled
+tiles dim them along with everything else. Glyphs now live in a shared
+`fact-icons.tsx` so the two surfaces cannot drift apart.
 
 ### Enrichment — after Sources
 "Сколько аспектов распознаётся, сколько брендов" — a plain three-row

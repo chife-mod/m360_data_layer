@@ -35,6 +35,12 @@ import {
 import type { DatalakeSet } from "@/lib/v2/datalakes";
 import { Select } from "./Select";
 import { PeriodPicker, type Period } from "./PeriodPicker";
+import {
+  FactGlyph,
+  ICON_COMPASS,
+  ICON_DATABASE,
+  ICON_SKIP_BACK,
+} from "./fact-icons";
 import type { UseCase } from "@/lib/v2/use-cases";
 
 const MONTHS_SHORT = [
@@ -358,47 +364,10 @@ function CollapsibleSection({
   );
 }
 
-/** 15px inline glyph, Tabler geometry, stroked with currentColor. */
+/** 15px inline glyph — shared geometry from fact-icons, panel opacity. */
 function ChipIcon({ children }: { children: React.ReactNode }) {
-  return (
-    <svg
-      width={15}
-      height={15}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.75}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      style={{ flexShrink: 0, opacity: 0.7 }}
-      aria-hidden
-    >
-      {children}
-    </svg>
-  );
+  return <FactGlyph style={{ opacity: 0.7 }}>{children}</FactGlyph>;
 }
-
-const ICON_DATABASE = (
-  <>
-    <ellipse cx="12" cy="6" rx="8" ry="3" />
-    <path d="M4 6v6a8 3 0 0 0 16 0V6" />
-    <path d="M4 12v6a8 3 0 0 0 16 0v-6" />
-  </>
-);
-
-const ICON_SKIP_BACK = (
-  <>
-    <path d="M4 5v14" />
-    <path d="M20 5v14l-12 -7z" />
-  </>
-);
-
-const ICON_COMPASS = (
-  <>
-    <path d="M8 16l2 -6l6 -2l-2 6z" />
-    <circle cx="12" cy="12" r="9" />
-  </>
-);
 
 /**
  * One lake-level fact — a chip with a hover tooltip carrying the definition.

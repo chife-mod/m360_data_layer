@@ -5,6 +5,25 @@ import { useState, useEffect } from "react";
 import { fetchSvgAsset } from "@/lib/utils";
 import type { SourceItem } from "@/lib/v2/sources-data";
 import { cardStyles } from "@/lib/v2/card-styles";
+import {
+  FactGlyph,
+  ICON_COMPASS,
+  ICON_DATABASE,
+  ICON_SKIP_BACK,
+} from "./fact-icons";
+
+/**
+ * Lake facts a tile may carry (client, 2026-08-04: "хочу видеть прямо на
+ * плитках — архив, глубину, наличие эксплорера"). The board passes whole
+ * Datalake objects as `source`, so these fields simply surface here; the
+ * watches set has none and renders no marks. Marks are indicators only —
+ * the tooltips and the explorer link live in the panel's passport strip.
+ */
+type TileFacts = {
+  archiveYears?: number;
+  zeroDayIndexed?: boolean;
+  explorerUrl?: string;
+};
 
 export type CardState =
   | "default"
@@ -35,7 +54,7 @@ export type CardInteractionState = {
 export type ComboMode = "add" | "remove" | "none";
 
 type Props = {
-  source: SourceItem;
+  source: SourceItem & TileFacts;
   index: number;
   state?: CardState;
   isSelected?: boolean;
@@ -318,6 +337,58 @@ export function DataCard({
             {source.label}
           </span>
         </div>
+
+        {/* ── Lake facts, on the tile itself (client, 2026-08-04) ────────────
+            A quiet mark row along the bottom edge: archive depth as "15Y"
+            with the database glyph, zero-day as the skip-back glyph, an
+            explorer as the compass. Glyphs match the panel's passport strip
+            one-to-one, so the tile teases what the panel explains. Rides
+            the label's opacity so disabled tiles dim it with everything
+            else; pointer-events none — the tile's click stays whole. */}
+        {(source.archiveYears !== undefined ||
+          source.zeroDayIndexed ||
+          source.explorerUrl) && (
+          <div
+            className="absolute z-10 pointer-events-none"
+            style={{
+              left: 0,
+              right: 0,
+              bottom: 7,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              opacity: s.textOpacity,
+              transition: `opacity ${STATE_MS}ms ease`,
+              color: "rgba(255,255,255,0.6)",
+            }}
+          >
+            {source.archiveYears !== undefined && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 10,
+                  fontWeight: 500,
+                  letterSpacing: "0.06em",
+                  lineHeight: 1,
+                  fontFamily:
+                    "var(--font-inter), Inter, system-ui, sans-serif",
+                }}
+              >
+                <FactGlyph size={11}>{ICON_DATABASE}</FactGlyph>
+                {source.archiveYears}Y
+              </span>
+            )}
+            {source.zeroDayIndexed && (
+              <FactGlyph size={11}>{ICON_SKIP_BACK}</FactGlyph>
+            )}
+            {source.explorerUrl && (
+              <FactGlyph size={11}>{ICON_COMPASS}</FactGlyph>
+            )}
+          </div>
+        )}
 
         {/* Ellipse 867 — indicator dot, top-LEFT since 2026-08-04: the client
             split the corners — selection state lives left, the Add/Remove
