@@ -107,11 +107,15 @@ everything hangs off datasets; he wants a view that starts from the viewer —
 lakes for that role. The role tags on apps already exist, so the data side is
 a pivot, not new content. Explicitly "начать думать", not build.
 
-### 2.7 History of outputs — **[open, parked by him]**
-Source: same call. Somewhere, a trail of what the user produced — reports
-built, dashboards opened. His own verdict on the spot: "это уже, наверное,
-пока too much" — parked until the builder produces real artifacts worth
-listing.
+### 2.7 History of outputs — **built as a pilot (2026-08-04)**
+Source: the 2026-08-03 call ("рано пока"), unparked by Oleg the next day.
+Built: a localStorage journal of outputs (reports built / dashboards /
+templates opened — not clicks) surfacing as the **History** section on the
+pilot dataset's panel, with Open and parameter-preserving Rebuild. Still
+open here: rolling it out beyond the pilot, and the prod answer — the
+journal must live server-side behind the M360 account (localStorage dies
+with site data), plus whether history also belongs in a product header near
+the profile once M360 integration is real.
 
 ### 2.8 "Datasets available in LLMs" — the argument, not the toggle — **[us, think first]**
 Source: same call, the long Finval-director passage. The toggle exists; what

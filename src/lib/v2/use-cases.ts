@@ -232,6 +232,23 @@ export function resolveTitle(title: string, typeLabel: string): string {
 }
 
 /**
+ * Find an app by id anywhere in a set — the history section needs the live
+ * UseCase behind a journal entry to offer Rebuild, and the entry may refer to
+ * an app outside the current selection.
+ */
+export function findUseCase(
+  setId: string,
+  useCaseId: string
+): UseCase | undefined {
+  for (const [key, cases] of Object.entries(authoredApps)) {
+    if (!key.startsWith(`${setId}:`)) continue;
+    const hit = cases.find((c) => c.id === useCaseId);
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
+/**
  * Apps for the current selection, grouped by datalake so it stays obvious which
  * lake an app belongs to when two or three are selected.
  */

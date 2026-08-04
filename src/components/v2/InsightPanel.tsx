@@ -10,10 +10,48 @@ import type {
 } from "@/lib/v2/datalakes";
 import { getInsightDescription } from "@/lib/v2/signals-data";
 import { getAssetPath } from "@/lib/utils";
-import { getUseCaseGroups, resolveTitle, PUMB_MONTHLY_PULSE } from "@/lib/v2/use-cases";
+import {
+  getUseCaseGroups,
+  resolveTitle,
+  findUseCase,
+  PUMB_MONTHLY_PULSE,
+} from "@/lib/v2/use-cases";
+import {
+  appendHistory,
+  loadHistory,
+  onHistoryChange,
+  type HistoryEvent,
+  type HistoryEventType,
+} from "@/lib/v2/history";
 import { Select } from "./Select";
 import { PeriodPicker, type Period } from "./PeriodPicker";
 import type { UseCase } from "@/lib/v2/use-cases";
+
+const MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+/** "1–30 Jun" within a month, "28 May – 3 Jun" across months. */
+function formatPeriod(fromIso: string, toIso: string): string {
+  const f = new Date(fromIso);
+  const t = new Date(toIso);
+  if (Number.isNaN(f.getTime()) || Number.isNaN(t.getTime())) return "";
+  const fm = MONTHS_SHORT[f.getMonth()];
+  const tm = MONTHS_SHORT[t.getMonth()];
+  return f.getMonth() === t.getMonth() && f.getFullYear() === t.getFullYear()
+    ? `${f.getDate()}–${t.getDate()} ${fm}`
+    : `${f.getDate()} ${fm} – ${t.getDate()} ${tm}`;
+}
+
+function timeAgo(ts: number): string {
+  const s = (Date.now() - ts) / 1000;
+  if (s < 60) return "just now";
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
+  const d = new Date(ts);
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+}
 
 function hexToRgba(hex: string, alpha: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -484,6 +522,205 @@ function InsightsSection({ insights }: { insights: DatalakeInsight[] }) {
   );
 }
 
+const HISTORY_TYPE_ICON: Record<HistoryEventType, string> = {
+  report_built: "ui-build",
+  dashboard_opened: "ui-dashboard",
+  template_opened: "ui-report-template",
+};
+
+const HISTORY_TYPE_LABEL: Record<HistoryEventType, string> = {
+  report_built: "Report",
+  dashboard_opened: "Dashboard",
+  template_opened: "Template",
+};
+
+/**
+ * One journal entry. The row opens the output again; Rebuild (report entries
+ * only) reopens Build Report with the entry's parameters — repeat last
+ * month's report in one click.
+ */
+function HistoryRow({
+  event,
+  onRebuild,
+}: {
+  event: HistoryEvent;
+  onRebuild?: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const sub =
+    event.type === "report_built" && event.params
+      ? `${event.params.bank} · ${formatPeriod(
+          event.params.from,
+          event.params.to
+        )} · ${event.params.language.toUpperCase()}`
+      : HISTORY_TYPE_LABEL[event.type];
+
+  return (
+    <a
+      href={event.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => {
+        if (!event.url) e.preventDefault();
+        e.stopPropagation();
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        padding: "5px 10px",
+        margin: "0 -10px",
+        borderRadius: 8,
+        textDecoration: "none",
+        backgroundColor: hovered ? "rgba(255,255,255,0.05)" : "transparent",
+        transition: "background-color 0.15s ease",
+        fontFamily: FONT,
+      }}
+    >
+      <img
+        src={getAssetPath(`/assets/icons/${HISTORY_TYPE_ICON[event.type]}.svg`)}
+        alt=""
+        width={15}
+        height={15}
+        draggable={false}
+        style={{ filter: "invert(1)", opacity: 0.5, flexShrink: 0 }}
+      />
+      <span
+        style={{
+          fontSize: 13.5,
+          color: "rgba(255,255,255,0.92)",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          flexShrink: 1,
+        }}
+      >
+        {event.title}
+      </span>
+      <span
+        style={{
+          fontSize: 12,
+          color: "rgba(255,255,255,0.4)",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          flexShrink: 2,
+        }}
+      >
+        {sub}
+      </span>
+      <span style={{ flex: "1 1 auto" }} />
+      <span
+        style={{
+          fontSize: 11.5,
+          color: "rgba(255,255,255,0.35)",
+          whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {timeAgo(event.ts)}
+      </span>
+      {onRebuild && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onRebuild();
+          }}
+          style={{
+            height: 22,
+            padding: "0 8px",
+            borderRadius: 6,
+            border: "1px solid rgba(255,255,255,0.25)",
+            background: "transparent",
+            color: "rgba(255,255,255,0.85)",
+            fontSize: 11,
+            lineHeight: 1,
+            cursor: "pointer",
+            outline: "none",
+            fontFamily: FONT,
+            opacity: hovered ? 1 : 0,
+            pointerEvents: hovered ? "auto" : "none",
+            transition: "opacity 0.15s ease",
+            flexShrink: 0,
+          }}
+        >
+          Rebuild
+        </button>
+      )}
+    </a>
+  );
+}
+
+function HistorySection({
+  events,
+  onRebuild,
+}: {
+  events: HistoryEvent[];
+  onRebuild: (event: HistoryEvent) => void;
+}) {
+  const shown = events.slice(0, 5);
+  const earlier = events.length - shown.length;
+  return (
+    <section style={{ ...sectionStyle, gap: 6 }}>
+      <SectionHeading
+        label="History"
+        aside={
+          // Honest about where the journal lives: localStorage. In the real
+          // M360 it belongs server-side behind the account.
+          <span
+            style={{
+              fontSize: 12,
+              color: "rgba(255,255,255,0.3)",
+              fontFamily: FONT,
+            }}
+          >
+            this device
+          </span>
+        }
+      />
+      {events.length === 0 ? (
+        <span
+          style={{
+            fontSize: 12.5,
+            color: "rgba(255,255,255,0.35)",
+            fontFamily: FONT,
+          }}
+        >
+          No outputs yet — build a report and it lands here.
+        </span>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          {shown.map((e) => (
+            <HistoryRow
+              key={e.id}
+              event={e}
+              onRebuild={
+                e.type === "report_built" ? () => onRebuild(e) : undefined
+              }
+            />
+          ))}
+          {earlier > 0 && (
+            <span
+              style={{
+                fontSize: 12,
+                color: "rgba(255,255,255,0.3)",
+                fontFamily: FONT,
+                paddingTop: 4,
+              }}
+            >
+              + {earlier} earlier
+            </span>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 /** Role chips, the way the brief writes them: [MARKETING] [PR] [CX]. */
 function RoleTags({ roles }: { roles: string[] }) {
   return (
@@ -600,10 +837,13 @@ function InlineLink({
   href,
   label,
   icon,
+  onNavigate,
 }: {
   href: string;
   label: string;
   icon: string;
+  /** Fires when the link is actually followed — the history journal's hook. */
+  onNavigate?: () => void;
 }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -613,7 +853,10 @@ function InlineLink({
       rel="noopener noreferrer"
       // Without this the click would bubble to the card and open the popup as
       // well — the point is that the link is a separate destination.
-      onClick={(e) => e.stopPropagation()}
+      onClick={(e) => {
+        e.stopPropagation();
+        onNavigate?.();
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -667,11 +910,14 @@ function UseCaseCard({
   title,
   onClick,
   onBuildReport,
+  onOutput,
 }: {
   useCase: UseCase;
   title: string;
   onClick: () => void;
   onBuildReport: () => void;
+  /** Journals an output the card produced (dashboard / template opened). */
+  onOutput?: (type: HistoryEventType, url: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
@@ -766,6 +1012,9 @@ function UseCaseCard({
             href={useCase.reportTemplateUrl}
             label="Report Templates"
             icon="ui-report-template"
+            onNavigate={() =>
+              onOutput?.("template_opened", useCase.reportTemplateUrl!)
+            }
           />
         )}
         {useCase.dashboardUrl && (
@@ -773,6 +1022,9 @@ function UseCaseCard({
             href={useCase.dashboardUrl}
             label="Dashboard"
             icon="ui-dashboard"
+            onNavigate={() =>
+              onOutput?.("dashboard_opened", useCase.dashboardUrl!)
+            }
           />
         )}
       </div>
@@ -781,13 +1033,22 @@ function UseCaseCard({
 }
 
 /** Opens the client's report template / dashboard in a new tab. */
-function LinkButton({ href, label }: { href: string; label: string }) {
+function LinkButton({
+  href,
+  label,
+  onNavigate,
+}: {
+  href: string;
+  label: string;
+  onNavigate?: () => void;
+}) {
   const [hovered, setHovered] = useState(false);
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={() => onNavigate?.()}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -833,6 +1094,7 @@ function JobPopup({
   datalakeLabel,
   onClose,
   onBuildReport,
+  onOutput,
 }: {
   useCase: UseCase;
   title: string;
@@ -840,6 +1102,7 @@ function JobPopup({
   datalakeLabel: string;
   onClose: () => void;
   onBuildReport: () => void;
+  onOutput?: (type: HistoryEventType, url: string) => void;
 }) {
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
   const [mounted, setMounted] = useState(false);
@@ -1028,10 +1291,22 @@ function JobPopup({
               height={40}
             />
             {useCase.reportTemplateUrl && (
-              <LinkButton href={useCase.reportTemplateUrl} label="Report Templates" />
+              <LinkButton
+                href={useCase.reportTemplateUrl}
+                label="Report Templates"
+                onNavigate={() =>
+                  onOutput?.("template_opened", useCase.reportTemplateUrl!)
+                }
+              />
             )}
             {useCase.dashboardUrl && (
-              <LinkButton href={useCase.dashboardUrl} label="Dashboard" />
+              <LinkButton
+                href={useCase.dashboardUrl}
+                label="Dashboard"
+                onNavigate={() =>
+                  onOutput?.("dashboard_opened", useCase.dashboardUrl!)
+                }
+              />
             )}
           </div>
 
@@ -1209,24 +1484,50 @@ const BUILDER_LANGUAGES = [
   { id: "uk", label: "Українська" },
 ];
 
+/** What Rebuild refills the dialog with — a journal entry's parameters. */
+export type BuildInitial = {
+  bank?: string;
+  period?: Period;
+  language?: string;
+};
+
 function BuildReportPopup({
   useCase,
   title,
   accent,
   datalakeLabel,
+  initial,
+  onBuilt,
   onClose,
 }: {
   useCase: UseCase;
   title: string;
   accent: string;
   datalakeLabel: string;
+  initial?: BuildInitial;
+  /** Fires on Build — the history journal's hook. */
+  onBuilt?: (params: {
+    bank: string;
+    period: Period;
+    language: string;
+    url: string;
+  }) => void;
   onClose: () => void;
 }) {
   const font = "var(--font-inter), Inter, system-ui, sans-serif";
   const [mounted, setMounted] = useState(false);
-  const [bank, setBank] = useState(BUILDER_BANKS[0].id);
-  const [period, setPeriod] = useState<Period>(lastMonth);
-  const [language, setLanguage] = useState(BUILDER_LANGUAGES[0].id);
+  const [bank, setBank] = useState(
+    initial?.bank && BUILDER_BANKS.some((b) => b.id === initial.bank)
+      ? initial.bank
+      : BUILDER_BANKS[0].id
+  );
+  const [period, setPeriod] = useState<Period>(initial?.period ?? lastMonth);
+  const [language, setLanguage] = useState(
+    initial?.language &&
+      BUILDER_LANGUAGES.some((l) => l.id === initial.language)
+      ? initial.language
+      : BUILDER_LANGUAGES[0].id
+  );
   const [buildHovered, setBuildHovered] = useState(false);
   // A backdrop click while the period panel is open must close only the
   // panel, not the whole popup — dismissing a calendar should never cost the
@@ -1254,6 +1555,7 @@ function BuildReportPopup({
     // Stand-in for the real pipeline: "building" opens the PUMB Monthly
     // Pulse — the one finished single-bank report that exists, i.e. exactly
     // what these parameters would have produced.
+    onBuilt?.({ bank, period, language, url: PUMB_MONTHLY_PULSE });
     window.open(PUMB_MONTHLY_PULSE, "_blank", "noopener,noreferrer");
     onClose();
   };
@@ -1480,6 +1782,8 @@ export function InsightPanel({
     useCase: UseCase;
     accent: string;
     datalakeLabel: string;
+    /** Present when opened from a journal entry's Rebuild. */
+    initial?: BuildInitial;
   } | null>(null);
 
   // A popup for a job that is no longer on screen would be orphaned.
@@ -1494,6 +1798,62 @@ export function InsightPanel({
   // Sources and weekly insights read as properties of ONE dataset — with a
   // combination selected, whose sources would they be? Single selection only.
   const single = count === 1 ? selectedSignals[0] : null;
+
+  // ── Output history ──────────────────────────────────────────────────────
+  // The journal lives in localStorage (see lib/v2/history.ts); the panel just
+  // mirrors it and appends on real outputs.
+  const [history, setHistory] = useState<HistoryEvent[]>([]);
+  useEffect(() => {
+    setHistory(loadHistory());
+    return onHistoryChange(() => setHistory(loadHistory()));
+  }, []);
+
+  const recordOutput = (
+    type: HistoryEventType,
+    useCase: UseCase,
+    title: string,
+    url?: string,
+    params?: HistoryEvent["params"]
+  ) => {
+    appendHistory({
+      type,
+      setId,
+      datasetIds: selectedSignals.map((s) => s.id),
+      useCaseId: useCase.id,
+      title,
+      url,
+      params,
+    });
+  };
+
+  // Entries shown under the current dataset: produced from a selection this
+  // dataset was part of, in this set.
+  const datasetHistory = single
+    ? history.filter(
+        (e) => e.setId === setId && e.datasetIds.includes(single.id)
+      )
+    : [];
+
+  const handleRebuild = (e: HistoryEvent) => {
+    const useCase = findUseCase(setId, e.useCaseId);
+    if (!useCase || !single) return;
+    const from = e.params ? new Date(e.params.from) : null;
+    const to = e.params ? new Date(e.params.to) : null;
+    const periodValid =
+      from && to && !Number.isNaN(from.getTime()) && !Number.isNaN(to.getTime());
+    setOpenBuilder({
+      useCase,
+      accent: single.color,
+      datalakeLabel: single.label,
+      initial: e.params
+        ? {
+            bank: e.params.bank,
+            period: periodValid ? { from: from!, to: to! } : undefined,
+            language: e.params.language,
+          }
+        : undefined,
+    });
+  };
 
   return (
     <div
@@ -1788,6 +2148,14 @@ export function InsightPanel({
                             datalakeLabel: group.datalakeLabel,
                           })
                         }
+                        onOutput={(type, url) =>
+                          recordOutput(
+                            type,
+                            uc,
+                            resolveTitle(uc.title, typeLabel),
+                            url
+                          )
+                        }
                       />
                     ))}
                   </div>
@@ -1795,10 +2163,20 @@ export function InsightPanel({
               </section>
               )}
 
-              {/* Weekly insights close the column — "я домотал до низа, я вижу
-                  бац-инсайт" (client call, 2026-08-03). Pilot: Reviews: Banks. */}
+              {/* Weekly insights — "я домотал до низа, я вижу бац-инсайт"
+                  (client call, 2026-08-03). Pilot: Reviews: Banks. */}
               {!llmBlocked && single?.insights && (
                 <InsightsSection insights={single.insights} />
+              )}
+
+              {/* Output history closes the column — piloted on the same
+                  dataset that pilots Sources ("где добавил source — добавь
+                  историю", 2026-08-04). */}
+              {!llmBlocked && single?.sources && (
+                <HistorySection
+                  events={datasetHistory}
+                  onRebuild={handleRebuild}
+                />
               )}
             </motion.div>
           )}
@@ -1823,6 +2201,14 @@ export function InsightPanel({
               setOpenBuilder(openJob);
               setOpenJob(null);
             }}
+            onOutput={(type, url) =>
+              recordOutput(
+                type,
+                openJob.useCase,
+                resolveTitle(openJob.useCase.title, typeLabel),
+                url
+              )
+            }
           />
         )}
       </AnimatePresence>
@@ -1835,6 +2221,21 @@ export function InsightPanel({
             title={resolveTitle(openBuilder.useCase.title, typeLabel)}
             accent={openBuilder.accent}
             datalakeLabel={openBuilder.datalakeLabel}
+            initial={openBuilder.initial}
+            onBuilt={({ bank, period, language, url }) =>
+              recordOutput(
+                "report_built",
+                openBuilder.useCase,
+                resolveTitle(openBuilder.useCase.title, typeLabel),
+                url,
+                {
+                  bank,
+                  from: period.from.toISOString(),
+                  to: period.to.toISOString(),
+                  language,
+                }
+              )
+            }
             onClose={() => setOpenBuilder(null)}
           />
         )}

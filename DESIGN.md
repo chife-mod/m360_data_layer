@@ -141,13 +141,15 @@ original watches set.
   Options may be `disabled`: muted, keyboard-skipped, click keeps the list open.
 - **Insight panel** — 515×532, radius 12. Since 2026-08-03 the inside is **one
   scroll column**, no tabs and no icon badges: title → overview text → Sources
-  → Tasks & Apps [n] → Insights · Weekly. Section headings are **18px/600
-  plain white** — landmarks, not whispers (2026-08-04); sections open with a
-  `rgba(255,255,255,0.08)` hairline. Source rows carry the site's real favicon
-  on a 26px white tile (assets under `public/assets/sources/`), and the volume
-  column ends flush on the same right edge as the heading's aside — nothing
-  moves on hover. The decorative bar chart at the panel's foot was removed on
-  2026-08-03 ("он весёлый, но он не функция").
+  → Tasks & Apps [n] → Insights · Weekly → History. Section headings are
+  **18px/600 plain white** — landmarks, not whispers (2026-08-04); sections
+  open with a `rgba(255,255,255,0.08)` hairline. Source rows carry the site's
+  real favicon on a 26px white tile (assets under `public/assets/sources/`),
+  and the volume column ends flush on the same right edge as the heading's
+  aside — nothing moves on hover. History rows follow the same row anatomy
+  (type icon · title · parameters · relative time, Rebuild on hover). The
+  decorative bar chart at the panel's foot was removed on 2026-08-03 ("он
+  весёлый, но он не функция").
 
 ---
 
