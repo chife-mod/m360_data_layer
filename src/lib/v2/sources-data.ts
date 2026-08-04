@@ -51,6 +51,9 @@ export const sourcesGrid: SourceItem[][] = [
     { id: "retailers",   label: "Retailers",        icon: "retailers",    color: "#F472B6" },
     { id: "reviews",     label: "Reviews",          icon: "reviews",      color: "#00D4FF" },
     { id: "seo",         label: "SEO & AI rankings",icon: "seo",          color: "#84CC16" },
-    { id: "support-chats", label: "Support Chats",  icon: "support-chats", color: "#FF4560" },
+    // Was #FF4560 — read as the same red as Media in position 2. Emerald now,
+    // so the palette change (client call 2026-08-03, made for Search Demand on
+    // the banking board) keeps the same-position-same-colour rule across sets.
+    { id: "support-chats", label: "Support Chats",  icon: "support-chats", color: "#34D399" },
   ],
 ];

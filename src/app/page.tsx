@@ -40,6 +40,9 @@ export default function DataLayerV2() {
 
   // Datalake ids are per-set, so a selection cannot survive an industry change.
   const handleIndustryChange = useCallback((id: string) => {
+    // Roadmap industries are listed but not selectable; the Select already
+    // refuses them, this is the belt to its braces.
+    if (getIndustry(id).disabled) return;
     setIndustryId(id);
     setTypeId(getIndustry(id).types[0]?.id ?? "");
     setSelectedIds([]);
@@ -72,14 +75,25 @@ export default function DataLayerV2() {
     [set, selectedIds]
   );
 
-  const toggleDatalake = useCallback(
+  /**
+   * Body click — single-select swap (client call, 2026-08-03): picking a pair
+   * is real but not frequent enough to own the whole tile, so clicking a tile
+   * now selects exactly that tile wherever the selection stood before.
+   * Clicking the sole selected tile clears it. Combinations are built from the
+   * tile's top-right corner zone instead — see toggleCombo.
+   */
+  const selectSingle = useCallback((id: string) => {
+    setSelectedIds((prev) => (prev.length === 1 && prev[0] === id ? [] : [id]));
+  }, []);
+
+  /** Corner-zone click — the old multi-select toggle (max 3, compatibility). */
+  const toggleCombo = useCallback(
     (id: string) => {
       setSelectedIds((prev) => {
         if (showAiOnly) {
           // Single-select mode: clicking selected deselects, clicking another swaps
           return prev.includes(id) ? [] : [id];
         }
-        // Multi-select mode (up to 3, compatibility-based)
         if (prev.includes(id)) return prev.filter((x) => x !== id);
         if (prev.length >= 3) return prev;
         if (!getCompatible(set, prev).includes(id)) return prev;
@@ -159,8 +173,12 @@ export default function DataLayerV2() {
                   icon: i.icon,
                   accent: i.accent,
                   // Factual subtitle — the industry's viewer types, no copy
-                  // invented for it.
-                  hint: i.types.map((t) => t.label).join(" · "),
+                  // invented for it. Roadmap industries have no types yet and
+                  // say why they cannot be picked instead.
+                  hint: i.disabled
+                    ? "Coming soon"
+                    : i.types.map((t) => t.label).join(" · "),
+                  disabled: i.disabled,
                 }))}
                 value={industryId}
                 onChange={handleIndustryChange}
@@ -303,6 +321,19 @@ export default function DataLayerV2() {
                   }
                 }
 
+                // Only LLM-mode-hidden tiles are truly dead. A tile dimmed for
+                // compatibility still takes a body click — it starts a fresh
+                // selection there instead of forcing a Reset first.
+                const llmDead =
+                  showAiOnly && !set.aiChatIds.includes(datalake.id);
+                const comboMode = showAiOnly
+                  ? "none"
+                  : isSelected
+                    ? "remove"
+                    : compatibleIds.includes(datalake.id)
+                      ? "add"
+                      : "none";
+
                 return (
                   <DataCard
                     key={`${set.id}-${datalake.id}`}
@@ -312,7 +343,11 @@ export default function DataLayerV2() {
                     isHovered={isHovered}
                     isActive={isActive}
                     isDisabled={isDisabled}
-                    onClick={() => toggleDatalake(datalake.id)}
+                    onSelect={
+                      llmDead ? undefined : () => selectSingle(datalake.id)
+                    }
+                    onToggleCombo={() => toggleCombo(datalake.id)}
+                    comboMode={comboMode}
                     onMouseEnter={() => setHoveredCard(datalake.id)}
                     onMouseLeave={() => setHoveredCard(null)}
                   />
@@ -323,7 +358,6 @@ export default function DataLayerV2() {
 
           <InsightPanel
             selectedSignals={selectedDatalakes}
-            singleSelect={showAiOnly}
             description={description}
             setId={set.id}
             typeLabel={

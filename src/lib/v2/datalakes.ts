@@ -26,6 +26,30 @@ import {
   bankingFallback,
 } from "./datalakes-banking";
 
+/**
+ * One row of the Sources preview (client call, 2026-08-03: "видеть, о каких
+ * источниках идёт речь" + ideally the monthly intake per source). The row
+ * links to the site — sources should open in one click.
+ */
+export type DatalakeSource = {
+  name: string;
+  /** Site domain, doubles as the link target. */
+  domain: string;
+  /** Monthly intake, e.g. "3 400 reviews / mo". Sample data until wired. */
+  monthlyVolume: string;
+};
+
+export type DatalakeInsight = {
+  id: string;
+  tone: "negative" | "positive" | "neutral";
+  title: string;
+  detail?: string;
+  /** Small right-aligned figure, e.g. "+38% WoW" or "4.6★ avg". */
+  delta?: string;
+  /** Mini ranking — label + share of volume (0–100), drawn as thin bars. */
+  ranking?: { label: string; value: number }[];
+};
+
 export type Datalake = {
   id: string;
   label: string;
@@ -34,6 +58,20 @@ export type Datalake = {
   /** Datalakes that combine well with this one. Symmetrised at read time. */
   recommendedWith: string[];
   descriptionSingle: string;
+  /**
+   * Top-5 sources shown on the dataset's overview. Far from every dataset
+   * will carry this (client call, 2026-08-03) — absent means the section is
+   * simply not rendered.
+   */
+  sources?: DatalakeSource[];
+  /** How many sources the dataset really has — drives "top 5 of N". */
+  sourcesTotal?: number;
+  /**
+   * Weekly insights block — 2–3 sample findings so the overview ends with a
+   * live reason to come back ("я зайду сюда через день — у меня будет новый
+   * инсайт"). Sample data, only authored where the client asked.
+   */
+  insights?: DatalakeInsight[];
 };
 
 export type DatalakeSet = {
@@ -83,9 +121,24 @@ const bankingSet: DatalakeSet = {
   fallbackDescription: bankingFallback,
 };
 
+/**
+ * The set behind industries that exist in the selector but are not built yet
+ * (client email, 2026-08-03: new industries arrive DISABLED with an empty set
+ * of buckets). Nothing can select them, but the registry stays total.
+ */
+const emptySet: DatalakeSet = {
+  id: "empty",
+  datalakes: [],
+  pairDescriptions: {},
+  tripleDescriptions: {},
+  aiChatIds: [],
+  fallbackDescription: "",
+};
+
 export const DATALAKE_SETS: Record<string, DatalakeSet> = {
   watches: watchesSet,
   banking: bankingSet,
+  empty: emptySet,
 };
 
 // ─── Industries and viewer types ──────────────────────────────────────────────
@@ -112,6 +165,11 @@ export type Industry = {
   accent?: string;
   /** "Who is looking" — drives the second selector. */
   types: ViewerType[];
+  /**
+   * Listed but not selectable — the industry exists so the roadmap is visible
+   * in the selector, its buckets do not (client email, 2026-08-03).
+   */
+  disabled?: boolean;
 };
 
 export const INDUSTRIES: Industry[] = [
@@ -150,6 +208,46 @@ export const INDUSTRIES: Industry[] = [
       { id: "brand", label: "Brand", icon: "ui-type-brand", accent: "#46FEC3", hint: "Manufacturer perspective" },
       { id: "influencer", label: "Influencer", icon: "ui-type-influencer", accent: "#9333EA", hint: "Creator perspective" },
     ],
+  },
+
+  // ── Roadmap industries — client email, 2026-08-03: listed DISABLED with an
+  //    empty set of buckets, so the selector shows where the platform goes
+  //    next without pretending anything is behind the doors yet. ─────────────
+  {
+    id: "pharma",
+    label: "Pharma",
+    setId: "empty",
+    icon: "ui-ind-pharma",
+    accent: "#06B6D4",
+    types: [],
+    disabled: true,
+  },
+  {
+    id: "film-festivals",
+    label: "Film Festivals",
+    setId: "empty",
+    icon: "ui-ind-film-festivals",
+    accent: "#9333EA",
+    types: [],
+    disabled: true,
+  },
+  {
+    id: "fashion",
+    label: "Fashion",
+    setId: "empty",
+    icon: "ui-ind-fashion",
+    accent: "#EC4899",
+    types: [],
+    disabled: true,
+  },
+  {
+    id: "books",
+    label: "Books",
+    setId: "empty",
+    icon: "ui-ind-books",
+    accent: "#FBBF24",
+    types: [],
+    disabled: true,
   },
 ];
 

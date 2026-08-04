@@ -3,9 +3,13 @@
 import { Fragment, useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import type { SignalConfig } from "@/lib/v2/signals-data";
+import type {
+  Datalake,
+  DatalakeInsight,
+  DatalakeSource,
+} from "@/lib/v2/datalakes";
 import { getInsightDescription } from "@/lib/v2/signals-data";
-import { getAssetPath, fetchSvgAsset } from "@/lib/utils";
+import { getAssetPath } from "@/lib/utils";
 import { getUseCaseGroups, resolveTitle, PUMB_MONTHLY_PULSE } from "@/lib/v2/use-cases";
 import { Select } from "./Select";
 import { PeriodPicker, type Period } from "./PeriodPicker";
@@ -18,19 +22,7 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function useIconSvg(iconName: string) {
-  const [svg, setSvg] = useState("");
-  useEffect(() => {
-    let live = true;
-    fetchSvgAsset(`/assets/icons/${iconName}.svg`).then((t) => {
-      if (live) setSvg(t);
-    });
-    return () => {
-      live = false;
-    };
-  }, [iconName]);
-  return svg;
-}
+const FONT = "var(--font-inter), Inter, system-ui, sans-serif";
 
 /**
  * Drag-to-scroll for the report preview strip — grab it and throw it sideways,
@@ -111,132 +103,360 @@ function useDragScroll() {
   return { setNode, dragging };
 }
 
-const BAR_COUNT = 15;
-
-const HEIGHT_SETS: Record<number, number[]> = {
-  0: Array(BAR_COUNT).fill(0),
-  1: [28, 52, 44, 72, 36, 88, 48, 64, 32, 76, 56, 40, 68, 96, 112],
-  2: [17, 48, 87, 36, 73, 52, 28, 69, 20, 48, 84, 42, 73, 104, 119],
-  3: [48, 72, 36, 96, 28, 64, 52, 88, 40, 80, 56, 32, 72, 108, 119],
-};
-
-function SignalBarChart({
-  selectedSignals,
+/**
+ * Small uppercase heading each panel section starts with — the tab bar's
+ * replacement. Tabs died on 2026-08-03 ("минимальное время до шашлыка"): the
+ * panel is one scroll now, and these are its landmarks.
+ */
+function SectionHeading({
+  label,
+  aside,
 }: {
-  selectedSignals: SignalConfig[];
+  label: string;
+  aside?: React.ReactNode;
 }) {
-  const count = selectedSignals.length;
-  const heights = HEIGHT_SETS[Math.min(count, 3)];
-
   return (
-    <>
-      {Array.from({ length: BAR_COUNT }, (_, i) => {
-        const signal = count > 0 ? selectedSignals[i % count] : null;
-        const color = signal?.color ?? "transparent";
-        const height = heights[i];
-
-        return (
-          <motion.div
-            key={i}
-            animate={{ height, opacity: count > 0 ? 1 : 0 }}
-            initial={{ height: 0, opacity: 0 }}
-            transition={{
-              height: {
-                type: "spring",
-                stiffness: 200,
-                damping: 22,
-                delay: i * 0.028,
-              },
-              opacity: { duration: 0.3, delay: i * 0.025 },
-            }}
-            style={{
-              flex: "1 0 0",
-              minWidth: 0,
-              minHeight: 0,
-              position: "relative",
-              background:
-                count > 0
-                  ? `linear-gradient(to bottom, ${hexToRgba(color, 0.12)}, transparent)`
-                  : "transparent",
-              transition: "background 0.45s ease",
-            }}
-          >
-            {count > 0 && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  padding: 1,
-                  background: `linear-gradient(to bottom, ${hexToRgba(color, 0.2)}, transparent)`,
-                  WebkitMask:
-                    "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                  WebkitMaskComposite: "xor",
-                  maskComposite: "exclude",
-                  pointerEvents: "none",
-                  transition: "background 0.45s ease",
-                }}
-              />
-            )}
-          </motion.div>
-        );
-      })}
-    </>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        gap: 10,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.35)",
+          fontFamily: FONT,
+        }}
+      >
+        {label}
+      </span>
+      {aside}
+    </div>
   );
 }
 
-function SignalIconBadge({
-  signal,
-  index,
-}: {
-  signal: SignalConfig;
-  index: number;
-}) {
-  const svg = useIconSvg(signal.icon);
+/** Shared chrome for the panel's scroll sections: hairline on top, then rows. */
+const sectionStyle: React.CSSProperties = {
+  borderTop: "1px solid rgba(255,255,255,0.08)",
+  paddingTop: 16,
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+};
 
+/**
+ * One source — a link, because the client wants sources one click away
+ * ("ты можешь их в один клик открыть"). Name, domain, monthly intake.
+ */
+function SourceRow({
+  source,
+  accent,
+}: {
+  source: DatalakeSource;
+  accent: string;
+}) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <motion.div
-      layout
-      initial={{ scale: 0.7, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0.6, opacity: 0 }}
-      transition={{
-        layout: { type: "spring", stiffness: 350, damping: 28 },
-        scale: { type: "spring", stiffness: 400, damping: 22 },
-        opacity: { duration: 0.18 },
-        delay: index * 0.05,
-      }}
-      // Dark rounded tile rather than a bare glowing glyph — the naked 64px
-      // icons read cartoonish next to the data. The accent stays on the stroke,
-      // so the colour link to the board survives.
+    <a
+      href={`https://${source.domain}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        position: "relative",
-        width: 52,
-        height: 52,
-        flexShrink: 0,
-        borderRadius: 14,
-        backgroundColor: "rgba(7,10,40,0.55)",
-        border: "1px solid rgba(255,255,255,0.08)",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        gap: 10,
+        // Negative margin so the hover pill breathes while the text column
+        // stays on the panel's 32px gutter.
+        padding: "5px 10px",
+        margin: "0 -10px",
+        borderRadius: 8,
+        textDecoration: "none",
+        backgroundColor: hovered ? "rgba(255,255,255,0.05)" : "transparent",
+        transition: "background-color 0.15s ease",
+        fontFamily: FONT,
       }}
     >
-      {svg && (
-        <div
+      <span
+        aria-hidden
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: 7,
+          flexShrink: 0,
+          backgroundColor: hexToRgba(accent, 0.14),
+          color: accent,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 12,
+          fontWeight: 600,
+        }}
+      >
+        {source.name[0]}
+      </span>
+      <span
+        style={{
+          fontSize: 14,
+          color: "rgba(255,255,255,0.92)",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {source.name}
+      </span>
+      <span
+        style={{
+          fontSize: 12,
+          color: "rgba(255,255,255,0.35)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
+      >
+        {source.domain}
+      </span>
+      <span style={{ flex: "1 1 auto" }} />
+      <span
+        style={{
+          fontSize: 12,
+          color: "rgba(255,255,255,0.55)",
+          whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {source.monthlyVolume}
+      </span>
+      <span
+        aria-hidden
+        style={{
+          fontSize: 11,
+          color: "rgba(255,255,255,0.9)",
+          opacity: hovered ? 0.6 : 0,
+          transition: "opacity 0.15s ease",
+        }}
+      >
+        ↗
+      </span>
+    </a>
+  );
+}
+
+function SourcesSection({
+  sources,
+  total,
+  accent,
+}: {
+  sources: DatalakeSource[];
+  total?: number;
+  accent: string;
+}) {
+  return (
+    <section style={{ ...sectionStyle, gap: 6 }}>
+      <SectionHeading
+        label="Sources"
+        aside={
+          total !== undefined && total > sources.length ? (
+            <span
+              style={{
+                fontSize: 12,
+                color: "rgba(255,255,255,0.3)",
+                fontFamily: FONT,
+              }}
+            >
+              top {sources.length} of {total}
+            </span>
+          ) : undefined
+        }
+      />
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {sources.map((s) => (
+          <SourceRow key={s.domain} source={s} accent={accent} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+const TONE_COLORS: Record<DatalakeInsight["tone"], string> = {
+  negative: "#F43F5E",
+  positive: "#46FEC3",
+  neutral: "#9FA9FF",
+};
+
+/**
+ * One weekly finding — the client's sketch from 2026-08-03: "два-три инсайта…
+ * я домотал до низа, я вижу, по этому озеру, про этот рынок". Headline with a
+ * tone dot, optional delta chip, optional mini ranking.
+ */
+function InsightCard({ insight }: { insight: DatalakeInsight }) {
+  const tone = TONE_COLORS[insight.tone];
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+        padding: "12px 14px",
+        borderRadius: 10,
+        backgroundColor: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        fontFamily: FONT,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span
+          aria-hidden
           style={{
-            width: 26,
-            height: 26,
-            color: signal.color,
-            lineHeight: 0,
-          }}
-          dangerouslySetInnerHTML={{
-            __html: svg
-              .replace(/width="32"\s*height="32"/, 'width="26" height="26"')
-              .replace(/viewBox="[^"]*"/, 'viewBox="0 0 32 32"'),
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            backgroundColor: tone,
+            boxShadow: `0 0 8px ${hexToRgba(tone, 0.5)}`,
+            flexShrink: 0,
           }}
         />
+        <span
+          style={{
+            fontSize: 14,
+            fontWeight: 500,
+            lineHeight: 1.35,
+            color: "rgba(255,255,255,0.95)",
+            flex: "1 1 auto",
+          }}
+        >
+          {insight.title}
+        </span>
+        {insight.delta && (
+          <span
+            style={{
+              fontSize: 12,
+              fontWeight: 500,
+              color: tone,
+              backgroundColor: hexToRgba(tone, 0.12),
+              borderRadius: 4,
+              padding: "2px 6px",
+              whiteSpace: "nowrap",
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
+            {insight.delta}
+          </span>
+        )}
+      </div>
+
+      {insight.detail && (
+        <span
+          style={{
+            fontSize: 12.5,
+            lineHeight: 1.45,
+            color: "rgba(255,255,255,0.45)",
+          }}
+        >
+          {insight.detail}
+        </span>
       )}
-    </motion.div>
+
+      {insight.ranking && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 6,
+            marginTop: 2,
+          }}
+        >
+          {insight.ranking.map((r) => (
+            <div
+              key={r.label}
+              style={{ display: "flex", alignItems: "center", gap: 10 }}
+            >
+              <span
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.7)",
+                  width: 96,
+                  flexShrink: 0,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {r.label}
+              </span>
+              <span
+                style={{
+                  flex: "1 1 auto",
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: "rgba(255,255,255,0.06)",
+                  overflow: "hidden",
+                }}
+              >
+                <span
+                  style={{
+                    display: "block",
+                    width: `${r.value}%`,
+                    height: "100%",
+                    borderRadius: 2,
+                    backgroundColor: hexToRgba(tone, 0.75),
+                  }}
+                />
+              </span>
+              <span
+                style={{
+                  fontSize: 11.5,
+                  color: "rgba(255,255,255,0.5)",
+                  width: 32,
+                  textAlign: "right",
+                  fontVariantNumeric: "tabular-nums",
+                  flexShrink: 0,
+                }}
+              >
+                {r.value}%
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InsightsSection({ insights }: { insights: DatalakeInsight[] }) {
+  return (
+    <section style={sectionStyle}>
+      <SectionHeading
+        label="Insights · Weekly"
+        aside={
+          // The figures are authored samples, not measurements — the chip keeps
+          // that honest on screen the way "draft" does for apps.
+          <span
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.04em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.3)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 4,
+              padding: "1px 5px",
+              fontFamily: FONT,
+            }}
+          >
+            sample
+          </span>
+        }
+      />
+      {insights.map((i) => (
+        <InsightCard key={i.id} insight={i} />
+      ))}
+    </section>
   );
 }
 
@@ -1184,8 +1404,7 @@ function BuildReportPopup({
 }
 
 type Props = {
-  selectedSignals: SignalConfig[];
-  singleSelect?: boolean;
+  selectedSignals: Datalake[];
   /**
    * Copy for the current combination. Supplied by the page because it depends
    * on the active datalake set (watches / banking), which this panel does not
@@ -1200,7 +1419,6 @@ type Props = {
 
 export function InsightPanel({
   selectedSignals,
-  singleSelect = false,
   description: descriptionProp,
   setId = "watches",
   typeLabel = "",
@@ -1209,7 +1427,6 @@ export function InsightPanel({
   const description =
     descriptionProp ?? getInsightDescription(selectedSignals.map((s) => s.id));
 
-  const [activeTab, setActiveTab] = useState<"overview" | "apps">("overview");
   const [openJob, setOpenJob] = useState<{
     useCase: UseCase;
     accent: string;
@@ -1225,15 +1442,14 @@ export function InsightPanel({
   useEffect(() => {
     setOpenJob(null);
     setOpenBuilder(null);
-  }, [activeTab, count]);
-
-  // A job list for tiles that are no longer selected would be nonsense.
-  useEffect(() => {
-    if (count === 0) setActiveTab("overview");
   }, [count]);
 
   const useCaseGroups = getUseCaseGroups(setId, selectedSignals);
   const totalApps = useCaseGroups.reduce((n, g) => n + g.useCases.length, 0);
+
+  // Sources and weekly insights read as properties of ONE dataset — with a
+  // combination selected, whose sources would they be? Single selection only.
+  const single = count === 1 ? selectedSignals[0] : null;
 
   return (
     <div
@@ -1311,7 +1527,8 @@ export function InsightPanel({
                   "var(--font-inter), Inter, system-ui, sans-serif",
               }}
             >
-              Select multiple data sources to generate combined insights
+              Select a dataset to explore it — or combine up to three with the
+              corner +
             </p>
           </motion.div>
         )}
@@ -1324,279 +1541,181 @@ export function InsightPanel({
           minHeight: 0,
         }}
       >
-        <AnimatePresence mode="wait">
+        {/* Concurrent crossfade on purpose — NOT mode="wait". Wait-mode holds
+            the next dataset back until the old one's exit finishes, and a
+            click that lands inside that 200ms window (the demo IS rapid
+            clicking now that a body click swaps the selection) leaves the
+            panel stuck on the exiting node. Both nodes are absolutely
+            positioned, so they overlap for the fade and nothing jumps. */}
+        <AnimatePresence>
           {count > 0 && (
             <motion.div
-              key={singleSelect ? (selectedSignals[0]?.id ?? "single") : "active-content"}
-              initial={{ opacity: 0, y: singleSelect ? 0 : 10 }}
+              // Single selection keys by dataset so hopping tiles cross-fades
+              // the whole column; a combination keeps one key so adding a lake
+              // animates in place instead of remounting everything.
+              key={count === 1 ? selectedSignals[0].id : "multi"}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: singleSelect ? 0 : -10 }}
-              transition={{
-                duration: singleSelect ? 0.18 : 0.3,
-                ease: [0.25, 0.46, 0.45, 0.94],
-              }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="m360-scroll"
+              // One scroll, no tabs (client call, 2026-08-03): title first,
+              // overview right under it, then Sources / Tasks & Apps /
+              // Insights as sections — "всё поднялось, сразу видим текст".
               style={{
                 position: "absolute",
                 inset: 0,
-                padding: "32px 32px 0 32px",
+                overflowY: "auto",
+                padding: "28px 26px 28px 32px",
                 display: "flex",
                 flexDirection: "column",
-                gap: 24,
+                gap: 18,
               }}
             >
+              {/* Title — the first thing in the panel now. The icon-badge row
+                  and the tab bar above it died on 2026-08-03: "иконка убили,
+                  заголовок поднялся, место под табы убили". */}
               <div
                 style={{
                   display: "flex",
-                  flexDirection: "column",
-                  gap: 16,
+                  flexWrap: "wrap",
+                  gap: 8,
+                  alignItems: "baseline",
+                  fontSize: 26,
+                  fontWeight: 600,
+                  lineHeight: 1.15,
                   width: "100%",
-                }}
-              >
-                <motion.div layout style={{ display: "flex", gap: 16 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 28 }}
-                >
-                  <AnimatePresence mode="popLayout">
-                    {selectedSignals.map((signal, i) => (
-                      <SignalIconBadge
-                        key={signal.id}
-                        signal={signal}
-                        index={i}
-                      />
-                    ))}
-                  </AnimatePresence>
-                </motion.div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 8,
-                    alignItems: "baseline",
-                    fontSize: 26,
-                    fontWeight: 600,
-                    lineHeight: 1.1,
-                    width: "100%",
-                    fontFamily:
-                      "var(--font-inter), Inter, system-ui, sans-serif",
-                  }}
-                >
-                  {selectedSignals.map((signal, i) => (
-                    <Fragment key={signal.id}>
-                      {i > 0 && (
-                        <motion.span
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 25,
-                            delay: 0.08,
-                          }}
-                          style={{ color: "white" }}
-                        >
-                          +
-                        </motion.span>
-                      )}
-                      <motion.span
-                        initial={{ opacity: 0, x: -6 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.25, delay: i * 0.07 }}
-                        style={{ color: signal.color }}
-                      >
-                        {signal.label}
-                      </motion.span>
-                    </Fragment>
-                  ))}
-                </div>
-              </div>
-
-              {/* Tabs sit above their content — they label what is below them
-                  rather than trailing it. They were decorative in the Figma
-                  design; Apps had no handler at all, and is where the client's
-                  Jobs to be Done live: `Jobs to be Done == Use Case == App`. */}
-              <div
-                role="tablist"
-                style={{
-                  display: "flex",
-                  alignItems: "stretch",
-                  gap: 24,
-                  borderBottom: "1px solid rgba(255,255,255,0.1)",
                   flexShrink: 0,
+                  fontFamily: FONT,
                 }}
               >
-                {(["overview", "apps"] as const).map((tab) => {
-                  const isActive = activeTab === tab;
-                  return (
-                    <button
-                      key={tab}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      onClick={() => setActiveTab(tab)}
-                      style={{
-                        position: "relative",
-                        border: "none",
-                        background: "transparent",
-                        padding: "0 0 10px 0",
-                        fontSize: 14,
-                        fontWeight: 400,
-                        lineHeight: 1,
-                        color: isActive ? "white" : "rgba(255, 255, 255, 0.45)",
-                        cursor: "pointer",
-                        fontFamily:
-                          "var(--font-inter), Inter, system-ui, sans-serif",
-                        outline: "none",
-                        transition: "color 0.15s ease",
-                      }}
+                {selectedSignals.map((signal, i) => (
+                  <Fragment key={signal.id}>
+                    {i > 0 && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 25,
+                          delay: 0.08,
+                        }}
+                        style={{ color: "white" }}
+                      >
+                        +
+                      </motion.span>
+                    )}
+                    <motion.span
+                      initial={{ opacity: 0, x: -6 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.25, delay: i * 0.07 }}
+                      style={{ color: signal.color }}
                     >
-                      {tab === "overview"
-                        ? "Overview"
-                        : `Tasks & Apps [${totalApps}]`}
-                      {isActive && (
-                        <motion.span
-                          layoutId="tab-underline"
-                          transition={{
-                            type: "spring",
-                            stiffness: 450,
-                            damping: 38,
-                          }}
-                          style={{
-                            position: "absolute",
-                            left: 0,
-                            right: 0,
-                            bottom: -1,
-                            height: 2,
-                            borderRadius: 2,
-                            backgroundColor: "white",
-                          }}
-                        />
-                      )}
-                    </button>
-                  );
-                })}
+                      {signal.label}
+                    </motion.span>
+                  </Fragment>
+                ))}
               </div>
 
               {/* No paragraph at all when there is no copy — an empty <p> would
                   still take its line-height and leave a phantom gap. */}
-              {activeTab === "overview" && description && (
-                <motion.p
-                  layout
-                  transition={{
-                    layout: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
-                  }}
+              {description && (
+                <p
                   style={{
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: 400,
-                    lineHeight: 1.4,
-                    color: "white",
-                    width: 378,
-                    maxWidth: "100%",
+                    lineHeight: 1.5,
+                    color: "rgba(255,255,255,0.9)",
                     margin: 0,
-                    fontFamily:
-                      "var(--font-inter), Inter, system-ui, sans-serif",
+                    fontFamily: FONT,
                   }}
                 >
                   {description}
-                </motion.p>
+                </p>
               )}
 
-              {activeTab === "apps" && (
-                <div
-                  className="m360-scroll"
-                  style={{
-                    flex: "1 1 0",
-                    minHeight: 0,
-                    overflowY: "auto",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 20,
-                    paddingBottom: 32,
-                    // Cards must sit in the same 32px gutter on both sides. The
-                    // scrollbar is inside the box and shrinks the content area,
-                    // so the negative margin has to cover the padding AND the
-                    // scrollbar (~11px at `scrollbar-width: thin`) — otherwise
-                    // the right edge lands ~11px short of the left.
-                    marginRight: -21,
-                    paddingRight: 10,
-                  }}
-                >
-                  {totalApps === 0 && (
-                    <span
-                      style={{
-                        fontSize: 13,
-                        color: "rgba(255,255,255,0.35)",
-                        fontFamily:
-                          "var(--font-inter), Inter, system-ui, sans-serif",
-                      }}
-                    >
-                      No apps for this dataset yet.
-                    </span>
-                  )}
-                  {useCaseGroups.map((group) => (
-                    <div
-                      key={group.datalakeId}
-                      style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                    >
-                      {useCaseGroups.length > 1 && (
-                        <span
-                          style={{
-                            fontSize: 11,
-                            letterSpacing: "0.06em",
-                            textTransform: "uppercase",
-                            color: group.color,
-                            fontFamily:
-                              "var(--font-inter), Inter, system-ui, sans-serif",
-                          }}
-                        >
-                          {group.datalakeLabel}
-                        </span>
-                      )}
+              {/* Sources — datasets that carry the preview only; the pilot is
+                  Reviews: Banks (client call, 2026-08-03). */}
+              {single?.sources && (
+                <SourcesSection
+                  sources={single.sources}
+                  total={single.sourcesTotal}
+                  accent={single.color}
+                />
+              )}
 
-                      {group.useCases.map((uc) => (
-                        <UseCaseCard
-                          key={uc.id}
-                          useCase={uc}
-                          title={resolveTitle(uc.title, typeLabel)}
-                          onClick={() =>
-                            setOpenJob({
-                              useCase: uc,
-                              accent: group.color,
-                              datalakeLabel: group.datalakeLabel,
-                            })
-                          }
-                          onBuildReport={() =>
-                            setOpenBuilder({
-                              useCase: uc,
-                              accent: group.color,
-                              datalakeLabel: group.datalakeLabel,
-                            })
-                          }
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
+              {/* Tasks & Apps — the tab became a section; the count stays. */}
+              <section style={{ ...sectionStyle, gap: 12 }}>
+                <SectionHeading label={`Tasks & Apps [${totalApps}]`} />
+                {totalApps === 0 && (
+                  <span
+                    style={{
+                      fontSize: 13,
+                      color: "rgba(255,255,255,0.35)",
+                      fontFamily: FONT,
+                    }}
+                  >
+                    No apps for this dataset yet.
+                  </span>
+                )}
+                {useCaseGroups.map((group) => (
+                  <div
+                    key={group.datalakeId}
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  >
+                    {useCaseGroups.length > 1 && (
+                      <span
+                        style={{
+                          fontSize: 11,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                          color: group.color,
+                          fontFamily: FONT,
+                        }}
+                      >
+                        {group.datalakeLabel}
+                      </span>
+                    )}
+
+                    {group.useCases.map((uc) => (
+                      <UseCaseCard
+                        key={uc.id}
+                        useCase={uc}
+                        title={resolveTitle(uc.title, typeLabel)}
+                        onClick={() =>
+                          setOpenJob({
+                            useCase: uc,
+                            accent: group.color,
+                            datalakeLabel: group.datalakeLabel,
+                          })
+                        }
+                        onBuildReport={() =>
+                          setOpenBuilder({
+                            useCase: uc,
+                            accent: group.color,
+                            datalakeLabel: group.datalakeLabel,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                ))}
+              </section>
+
+              {/* Weekly insights close the column — "я домотал до низа, я вижу
+                  бац-инсайт" (client call, 2026-08-03). Pilot: Reviews: Banks. */}
+              {single?.insights && (
+                <InsightsSection insights={single.insights} />
               )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* The chart belongs to Overview. Apps needs the height for the job list,
-          and a chart under a list of jobs would imply the two are related. */}
-      {activeTab === "overview" && (
-        <div
-          style={{
-            height: 119,
-            flexShrink: 0,
-            display: "flex",
-            alignItems: "flex-end",
-            overflow: "hidden",
-            width: "100%",
-          }}
-        >
-          <SignalBarChart selectedSignals={selectedSignals} />
-        </div>
-      )}
+      {/* The decorative bar chart that used to close the panel is gone —
+          client call, 2026-08-03: "он весёлый, но он не функция". The space
+          belongs to real content (apps, sources, insights) now. */}
 
       <AnimatePresence>
         {openJob && (

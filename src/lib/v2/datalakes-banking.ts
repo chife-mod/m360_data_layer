@@ -78,6 +78,53 @@ export const bankingDatalakes: Datalake[] = [
     // Real copy — client email, 2026-07-30 (second round).
     descriptionSingle:
       "Analyze reviews related to 50+ major Ukrainian banks across 8 major review sites such as MinFin, Vidhuk, Banki.ua and others.",
+    // ── Sources preview — the pilot dataset for the new overview structure
+    //    (client call, 2026-08-03: "пока делаем только для одной группы").
+    //    The three named sites are the client's own examples from the overview
+    //    copy; the rest of the list and every volume figure are SAMPLE data
+    //    chosen by me, not by him — flagged in BACKLOG.md §1.4.
+    sources: [
+      { name: "MinFin", domain: "minfin.com.ua", monthlyVolume: "3 400 / mo" },
+      { name: "Vidhuk", domain: "vidhuk.in.ua", monthlyVolume: "1 850 / mo" },
+      { name: "Banki.ua", domain: "banki.ua", monthlyVolume: "1 320 / mo" },
+      { name: "Finance.ua", domain: "finance.ua", monthlyVolume: "780 / mo" },
+      { name: "Bankchart", domain: "bankchart.com.ua", monthlyVolume: "510 / mo" },
+    ],
+    sourcesTotal: 8,
+    // ── Weekly insights — sample findings in the shape the client sketched on
+    //    the 2026-08-03 call: the negativity leaders mirror his own words
+    //    ("по объёмам печали у нас есть явные три лидера"), the other two show
+    //    the range (a trend and a positive counter). SAMPLE data, not real
+    //    measurements — flagged in BACKLOG.md §1.4.
+    insights: [
+      {
+        id: "rb-negativity-leaders",
+        tone: "negative",
+        title: "Three banks drive most of the negative volume",
+        detail: "Share of this week's negative reviews across all tracked sites.",
+        ranking: [
+          { label: "Ukreximbank", value: 34 },
+          { label: "TAScombank", value: 28 },
+          { label: "PUMB", value: 21 },
+        ],
+      },
+      {
+        id: "rb-card-blocks",
+        tone: "negative",
+        title: "Fastest-growing complaint: card blocks",
+        detail:
+          "Frozen cards and compliance holds dominate new 1★ reviews on MinFin and Vidhuk.",
+        delta: "+38% WoW",
+      },
+      {
+        id: "rb-support-speed",
+        tone: "positive",
+        title: "Support speed praised at Monobank",
+        detail:
+          "Response-time mentions trend positive for the third week running.",
+        delta: "4.6★ avg",
+      },
+    ],
   },
   {
     id: "reviews-branches",
@@ -171,7 +218,11 @@ export const bankingDatalakes: Datalake[] = [
     id: "search-demand",
     label: "Search Demand",
     icon: "bk-search-demand",
-    color: "#FF4560",
+    // Was #FF4560 — visually the same red as Media (#F43F5E), and the client
+    // asked for the two to separate: "он должен быть какой-то зелёный"
+    // (call, 2026-08-03). Emerald, distinct from the lime Payment Systems
+    // beside it; clears 3:1 on #111539 with room to spare. DESIGN.md updated.
+    color: "#34D399",
     recommendedWith: ["owned-blogs", "products-services", "media"],
     descriptionSingle: "",
   },

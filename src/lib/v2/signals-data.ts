@@ -160,7 +160,9 @@ export const signalConfigs: Record<string, SignalConfig> = {
     id: "support-chats",
     label: "Support Chats",
     icon: "support-chats",
-    color: "#FF4560",
+    // Kept in sync with v2/sources-data.ts — #FF4560 clashed with Media's red
+    // (palette change of 2026-08-03, see DESIGN.md).
+    color: "#34D399",
     recommendedWith: ["reviews", "products"],
     descriptionSingle:
       "Analyze recurring product and service issues emerging from customer support interactions.",

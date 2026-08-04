@@ -26,6 +26,8 @@ export type SelectOption = {
   accent?: string;
   /** One-line subtitle under the label in the open list. */
   hint?: string;
+  /** Listed but not selectable — rendered muted, skipped by the keyboard. */
+  disabled?: boolean;
 };
 
 type Props = {
@@ -184,8 +186,25 @@ export function Select({
 
   const commit = (index: number) => {
     const option = options[index];
+    // A disabled option keeps the list open — nothing was chosen.
+    if (option?.disabled) return;
     if (option) onChange(option.id);
     setOpen(false);
+  };
+
+  /** Next enabled index in `dir`, or `from` if there is none. */
+  const step = (from: number, dir: 1 | -1) => {
+    let i = from + dir;
+    while (i >= 0 && i < options.length && options[i].disabled) i += dir;
+    return i >= 0 && i < options.length ? i : from;
+  };
+
+  const firstEnabled = () => options.findIndex((o) => !o.disabled);
+  const lastEnabled = () => {
+    for (let i = options.length - 1; i >= 0; i--) {
+      if (!options[i].disabled) return i;
+    }
+    return -1;
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {
@@ -206,19 +225,19 @@ export function Select({
         break;
       case "ArrowDown":
         e.preventDefault();
-        setHighlight((h) => Math.min(h + 1, options.length - 1));
+        setHighlight((h) => step(h, 1));
         break;
       case "ArrowUp":
         e.preventDefault();
-        setHighlight((h) => Math.max(h - 1, 0));
+        setHighlight((h) => step(h, -1));
         break;
       case "Home":
         e.preventDefault();
-        setHighlight(0);
+        setHighlight(Math.max(0, firstEnabled()));
         break;
       case "End":
         e.preventDefault();
-        setHighlight(options.length - 1);
+        setHighlight(Math.max(0, lastEnabled()));
         break;
       case "Enter":
       case " ":
@@ -380,7 +399,7 @@ export function Select({
         >
               {options.map((option, i) => {
                 const isSelected = option.id === value;
-                const isHighlighted = i === highlight;
+                const isHighlighted = i === highlight && !option.disabled;
 
                 return (
                   <li key={option.id} style={{ listStyle: "none" }}>
@@ -391,10 +410,13 @@ export function Select({
                       type="button"
                       role="option"
                       aria-selected={isSelected}
+                      aria-disabled={option.disabled || undefined}
                       // The combobox owns the tab stop; options are reached with
                       // the arrow keys, and must not be tabbable while closed.
                       tabIndex={-1}
-                      onMouseEnter={() => setHighlight(i)}
+                      onMouseEnter={
+                        option.disabled ? undefined : () => setHighlight(i)
+                      }
                       onClick={() => commit(i)}
                       onKeyDown={onKeyDown}
                       style={{
@@ -406,19 +428,24 @@ export function Select({
                         padding: "8px 12px",
                         border: "none",
                         borderRadius: 6,
-                        cursor: "pointer",
+                        cursor: option.disabled ? "default" : "pointer",
                         outline: "none",
                         textAlign: "left",
                         fontFamily: FONT,
                         fontSize: 14,
                         lineHeight: "20px",
-                        color: isSelected
-                          ? "rgba(255,255,255,0.98)"
-                          : "rgba(255,255,255,0.7)",
+                        color: option.disabled
+                          ? "rgba(255,255,255,0.32)"
+                          : isSelected
+                            ? "rgba(255,255,255,0.98)"
+                            : "rgba(255,255,255,0.7)",
                         backgroundColor: isHighlighted
                           ? "rgba(255,255,255,0.07)"
                           : "transparent",
                         transition: "background-color 0.12s ease",
+                        // The tile and hint dim with the text, so the whole row
+                        // reads as one disabled unit rather than a broken one.
+                        opacity: option.disabled ? 0.75 : 1,
                       }}
                     >
                       <span

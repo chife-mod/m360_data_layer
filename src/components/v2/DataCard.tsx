@@ -22,6 +22,16 @@ export type CardInteractionState = {
   isDisabled: boolean;
 };
 
+/**
+ * What the top-right corner zone does (client call, 2026-08-03: body click
+ * swaps the selection, the corner adds to it — picking a pair is real but not
+ * frequent enough to own the whole tile):
+ *   "add"    — tile can join the current combination; corner shows a "+"
+ *   "remove" — tile is selected; corner (the indicator dot) takes it out
+ *   "none"   — corner is inert (LLM mode, incompatible, selection full)
+ */
+export type ComboMode = "add" | "remove" | "none";
+
 type Props = {
   source: SourceItem;
   index: number;
@@ -30,7 +40,11 @@ type Props = {
   isHovered?: boolean;
   isActive?: boolean;
   isDisabled?: boolean;
-  onClick?: () => void;
+  /** Body click — makes this tile THE selection (single-select swap). */
+  onSelect?: () => void;
+  /** Corner-zone click — adds to / removes from the combination. */
+  onToggleCombo?: () => void;
+  comboMode?: ComboMode;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 };
@@ -50,11 +64,14 @@ export function DataCard({
   isHovered = false,
   isActive = false,
   isDisabled = false,
-  onClick,
+  onSelect,
+  onToggleCombo,
+  comboMode = "none",
   onMouseEnter,
   onMouseLeave,
 }: Props) {
   const [iconSvg, setIconSvg] = useState<string>("");
+  const [cornerHovered, setCornerHovered] = useState(false);
 
   let currentState: CardState;
   if (isDisabled) {
@@ -112,7 +129,11 @@ export function DataCard({
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
       className="relative"
-      onClick={!isDisabled ? onClick : undefined}
+      // A compatibility-dimmed tile still takes a body click — clicking it
+      // simply starts a fresh selection there (the dotted style now means
+      // "cannot join the current combination", not "inert"). Only tiles the
+      // page gave no handler to (LLM mode) are truly dead.
+      onClick={onSelect}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -124,7 +145,7 @@ export function DataCard({
           backgroundColor: s.bg,
           borderRadius: "12px",
           boxShadow: s.shadow === "none" ? undefined : s.shadow,
-          cursor: isDisabled ? "not-allowed" : "pointer",
+          cursor: onSelect ? "pointer" : "not-allowed",
           // Deliberately NOT `all`: animating the border made the tile pass
           // through a half-drawn outline on every state change.
           transition: `background-color ${STATE_MS}ms ease, box-shadow ${STATE_MS}ms ease`,
@@ -285,7 +306,8 @@ export function DataCard({
 
         {/* Ellipse 867 — indicator dot top-right.
             Always mounted: unmounting it made the dot pop out instead of
-            fading with the rest of the tile. */}
+            fading with the rest of the tile. When the corner zone offers
+            "remove", the × affordance takes the dot's place on hover. */}
         <div
           className="absolute pointer-events-none z-10"
           style={{
@@ -297,10 +319,88 @@ export function DataCard({
             backgroundColor:
               s.dotFill === "currentColor" ? accentColor : s.dotFill,
             border: "1px solid rgba(255, 255, 255, 0.2)",
-            opacity: s.showDot ? 1 : 0,
+            opacity:
+              s.showDot && !(comboMode === "remove" && cornerHovered) ? 1 : 0,
             transition: `opacity ${STATE_MS}ms ease, background-color ${STATE_MS}ms ease`,
           }}
         />
+
+        {/* ── Corner zone — the multi-select entry point ─────────────────────
+            Body click swaps the selection; this 44×44 corner is the only place
+            that adds to it (client call, 2026-08-03). The affordance sits on
+            the indicator dot's centre: a "+" that fades in on tile hover for
+            addable tiles, an "×" replacing the dot on selected ones. */}
+        {comboMode !== "none" && (
+          <div
+            role="button"
+            aria-label={
+              comboMode === "add" ? "Add to selection" : "Remove from selection"
+            }
+            title={
+              comboMode === "add" ? "Add to selection" : "Remove from selection"
+            }
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCombo?.();
+            }}
+            onMouseEnter={() => setCornerHovered(true)}
+            onMouseLeave={() => setCornerHovered(false)}
+            className="absolute z-30"
+            style={{
+              right: 0,
+              top: 0,
+              width: "44px",
+              height: "44px",
+              cursor: "pointer",
+            }}
+          >
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                // Centred on the indicator dot (its centre is 14px from the
+                // tile's top-right corner).
+                right: "4px",
+                top: "4px",
+                width: "20px",
+                height: "20px",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: comboMode === "add" ? 14 : 12,
+                fontWeight: 400,
+                lineHeight: 1,
+                fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+                color: "rgba(255,255,255,0.95)",
+                backgroundColor: cornerHovered
+                  ? "rgba(255,255,255,0.16)"
+                  : "rgba(255,255,255,0.05)",
+                border: `1px solid ${
+                  cornerHovered
+                    ? "rgba(255,255,255,0.6)"
+                    : "rgba(255,255,255,0.35)"
+                }`,
+                // "+" appears when the tile is hovered at all, sharpens over
+                // the corner itself; "×" only over the corner — the dot is the
+                // resting state of a selected tile.
+                opacity:
+                  comboMode === "add"
+                    ? cornerHovered
+                      ? 1
+                      : isHovered
+                        ? 0.55
+                        : 0
+                    : cornerHovered
+                      ? 1
+                      : 0,
+                transition: `opacity ${STATE_MS}ms ease, background-color ${STATE_MS}ms ease, border-color ${STATE_MS}ms ease`,
+              }}
+            >
+              {comboMode === "add" ? "+" : "×"}
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );
