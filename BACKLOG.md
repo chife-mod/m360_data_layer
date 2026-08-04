@@ -107,8 +107,9 @@ in this project thinking happens as a working draft. Built: a Role selector
 map when nothing is selected, a Role view in the panel (tasks grouped by
 lake, fully live), and the role as a lens over a selected dataset's apps.
 Open: Vsevolod has not seen it; role list will grow as he writes apps for
-the remaining nine datasets; a role-coloured accent system was deliberately
-NOT invented (roles stay neutral until he wants them branded).
+the remaining nine datasets. Roles got icons and accents the same day at
+Oleg's ask (ROLE_META in `lib/v2/roles.ts`, palette reused from the board);
+a role missing from that map falls back to the neutral tile.
 
 ### 2.7 History of outputs — **built (2026-08-04)**
 Source: the 2026-08-03 call ("рано пока"), unparked by Oleg the next day.

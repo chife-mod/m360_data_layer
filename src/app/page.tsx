@@ -16,6 +16,7 @@ import { InsightPanel } from "@/components/v2/InsightPanel";
 import { seedHistoryIfEmpty } from "@/lib/v2/history";
 import {
   ALL_ROLES,
+  ROLE_META,
   getRolesForSet,
   getRoleTasks,
   getRoleDatalakeIds,
@@ -147,12 +148,23 @@ export default function DataLayerV2() {
   const roles = useMemo(() => getRolesForSet(set), [set]);
   const roleOptions = useMemo(
     () => [
-      { id: ALL_ROLES, label: "All roles", hint: "Browse by dataset" },
-      ...roles.map((r) => ({
-        id: r,
-        label: r,
-        hint: `${getRoleTasks(set, r).length} tasks`,
-      })),
+      {
+        id: ALL_ROLES,
+        label: "All roles",
+        hint: "Browse by dataset",
+        icon: ROLE_META[ALL_ROLES].icon,
+        accent: ROLE_META[ALL_ROLES].accent,
+      },
+      ...roles.map((r) => {
+        const n = getRoleTasks(set, r).length;
+        return {
+          id: r,
+          label: r,
+          hint: `${n} task${n === 1 ? "" : "s"}`,
+          icon: ROLE_META[r]?.icon,
+          accent: ROLE_META[r]?.accent,
+        };
+      }),
     ],
     [set, roles]
   );

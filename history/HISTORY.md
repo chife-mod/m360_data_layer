@@ -107,7 +107,11 @@ card fully live (Build Report, popups, journal entries land on the task's own
 lake). Select a tile and the role stays on as a lens: Tasks & Apps shows only
 that role's apps, the count says so, and an empty result states "No PR tasks
 for this dataset yet". Roles reset with the industry — the tags belong to the
-set's apps.
+set's apps. Roles wear icons and accents (Oleg's ask, same day): Tabler
+glyphs on palette tiles — PR/speakerphone-rose, Marketing/trending-pink,
+CX/handshake-mint, BI/chart-blue, Dev/code-cyan, C-Level/briefcase-amber —
+and the Role view title carries the accent; unmapped roles fall back to the
+neutral tile.
 
 ### Output history — the journal lands in the panel, then everywhere
 Fourth round of the day, promoted straight out of BACKLOG §2.7 ("добавь

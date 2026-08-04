@@ -23,7 +23,12 @@ import {
   type HistoryEvent,
   type HistoryEventType,
 } from "@/lib/v2/history";
-import { ALL_ROLES, getRoleTasks, filterByRole } from "@/lib/v2/roles";
+import {
+  ALL_ROLES,
+  ROLE_META,
+  getRoleTasks,
+  filterByRole,
+} from "@/lib/v2/roles";
 import type { DatalakeSet } from "@/lib/v2/datalakes";
 import { Select } from "./Select";
 import { PeriodPicker, type Period } from "./PeriodPicker";
@@ -2037,7 +2042,15 @@ export function InsightPanel({
                   fontFamily: FONT,
                 }}
               >
-                Tasks for {roleId}
+                Tasks for{" "}
+                {/* The role wears its selector accent — same link the lake
+                    titles keep to their tiles. 26px display text, so the
+                    accent-on-body-text rule stays intact. */}
+                <span
+                  style={{ color: ROLE_META[roleId]?.accent ?? "#9FA9FF" }}
+                >
+                  {roleId}
+                </span>
               </div>
               <p
                 style={{

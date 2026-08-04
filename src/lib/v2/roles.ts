@@ -18,6 +18,22 @@ export const ALL_ROLES = "all";
 /** Canonical display order — team roles first, oversight last. */
 const ROLE_ORDER = ["PR", "Marketing", "CX", "BI", "Dev", "C-Level"];
 
+/**
+ * Icons and accents per role (client, 2026-08-04: "для роли тоже иконки и
+ * цвета"). Accents reuse the board's palette so the colour coding stays one
+ * system; a role outside this map (e.g. watches' "PR & Comm Team") falls
+ * back to the selector's neutral tile.
+ */
+export const ROLE_META: Record<string, { icon: string; accent: string }> = {
+  [ALL_ROLES]: { icon: "ui-role-all", accent: "#9FA9FF" },
+  PR: { icon: "ui-role-pr", accent: "#F43F5E" },
+  Marketing: { icon: "ui-role-marketing", accent: "#EC4899" },
+  CX: { icon: "ui-role-cx", accent: "#46FEC3" },
+  BI: { icon: "ui-role-bi", accent: "#2563EB" },
+  Dev: { icon: "ui-role-dev", accent: "#06B6D4" },
+  "C-Level": { icon: "ui-role-clevel", accent: "#FBBF24" },
+};
+
 /** Unique role tags present in a set's authored apps, canonically ordered. */
 export function getRolesForSet(set: DatalakeSet): string[] {
   const found = new Set<string>();
