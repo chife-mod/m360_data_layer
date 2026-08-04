@@ -234,8 +234,10 @@ function persistCollapsed(key: string, collapsed: boolean): void {
 /**
  * A panel section that folds. The whole heading row is the toggle — a 44px
  * strip beats a 16px chevron as a target — and the chevron narrates the
- * state: down = open, right = folded. Collapsed, the heading (and its count
- * aside) stays as the summary line.
+ * state: up = open (click to fold), down = folded (click to expand) —
+ * vertical on purpose, the sideways disclosure arrow read wrong (Oleg,
+ * 2026-08-04). Collapsed, the heading (and its count aside) stays as the
+ * summary line.
  *
  * These sections mount client-side only (nothing renders without a
  * selection), so reading localStorage in the state initializer is safe and
@@ -314,7 +316,7 @@ function CollapsibleSection({
                 strokeWidth={1.75}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                animate={{ rotate: collapsed ? -90 : 0 }}
+                animate={{ rotate: collapsed ? 0 : 180 }}
                 transition={{ duration: 0.2 }}
                 style={{
                   opacity: headHovered ? 0.85 : 0.4,
@@ -1327,9 +1329,23 @@ const HISTORY_FORMAT_LABEL: Record<HistoryFormat, string> = {
 };
 
 /**
- * One journal entry. The row opens the output again; Rebuild (report entries
- * only) reopens Build Report with the entry's parameters — repeat last
- * month's report in one click.
+ * Fixed column widths so every journal row lines up (client, 2026-08-04:
+ * "чтобы форматы, время были выровнены по колонкам, а сейчас скачет") —
+ * the format chip and the timestamp are columns, not floaters. The format
+ * column is sized to its widest chip (VIDEO) and stays empty for web
+ * surfaces, so timestamps align across mixed rows.
+ */
+const HISTORY_FORMAT_COL = 52;
+const HISTORY_TIME_COL = 76;
+
+/**
+ * One journal entry — two lines, full width (client, 2026-08-04: "мало
+ * места для заголовка, мало места для клиента… давай в две строки").
+ * Line one: type icon, the output's title, then the format and time
+ * columns. Line two, indented past the icon: the parameters (bank ·
+ * period · language, or the surface type), with Rebuild surfacing on
+ * hover. The row opens the output again; Rebuild (report entries only)
+ * reopens Build Report with the entry's parameters.
  */
 function HistoryRow({
   event,
@@ -1360,9 +1376,9 @@ function HistoryRow({
       onMouseLeave={() => setHovered(false)}
       style={{
         display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "5px 10px",
+        flexDirection: "column",
+        gap: 3,
+        padding: "6px 10px",
         margin: "0 -10px",
         borderRadius: 8,
         textDecoration: "none",
@@ -1371,97 +1387,124 @@ function HistoryRow({
         fontFamily: FONT,
       }}
     >
-      <img
-        src={getAssetPath(`/assets/icons/${HISTORY_TYPE_ICON[event.type]}.svg`)}
-        alt=""
-        width={15}
-        height={15}
-        draggable={false}
-        style={{ filter: "invert(1)", opacity: 0.5, flexShrink: 0 }}
-      />
-      <span
-        style={{
-          fontSize: 14,
-          color: "rgba(255,255,255,0.92)",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          flexShrink: 1,
-        }}
-      >
-        {event.title}
-      </span>
-      <span
-        style={{
-          fontSize: 13,
-          color: "rgba(255,255,255,0.5)",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          flexShrink: 2,
-        }}
-      >
-        {sub}
-      </span>
-      {/* The artifact's format — Excel / PDF / PPT / Video / Audio (client
-          email, 2026-08-04). Web surfaces carry no chip. */}
-      {event.format && (
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <img
+          src={getAssetPath(
+            `/assets/icons/${HISTORY_TYPE_ICON[event.type]}.svg`
+          )}
+          alt=""
+          width={15}
+          height={15}
+          draggable={false}
+          style={{ filter: "invert(1)", opacity: 0.5, flexShrink: 0 }}
+        />
         <span
           style={{
-            fontSize: 10,
-            letterSpacing: "0.04em",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.55)",
-            border: "1px solid rgba(255,255,255,0.18)",
-            borderRadius: 4,
-            padding: "1px 5px",
+            fontSize: 14,
+            color: "rgba(255,255,255,0.92)",
             whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            flex: "1 1 auto",
+          }}
+        >
+          {event.title}
+        </span>
+        {/* The artifact's format — Excel / PDF / PPT / Video / Audio (client
+            email, 2026-08-04). Web surfaces leave the column empty, which is
+            what keeps the time column straight. */}
+        <span
+          style={{
+            width: HISTORY_FORMAT_COL,
+            display: "flex",
+            justifyContent: "flex-end",
             flexShrink: 0,
           }}
         >
-          {HISTORY_FORMAT_LABEL[event.format]}
+          {event.format && (
+            <span
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.04em",
+                textTransform: "uppercase",
+                color: "rgba(255,255,255,0.55)",
+                border: "1px solid rgba(255,255,255,0.18)",
+                borderRadius: 4,
+                padding: "1px 5px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {HISTORY_FORMAT_LABEL[event.format]}
+            </span>
+          )}
         </span>
-      )}
-      <span style={{ flex: "1 1 auto" }} />
-      <span
+        <span
+          style={{
+            width: HISTORY_TIME_COL,
+            textAlign: "right",
+            fontSize: 12,
+            color: "rgba(255,255,255,0.45)",
+            whiteSpace: "nowrap",
+            fontVariantNumeric: "tabular-nums",
+            flexShrink: 0,
+          }}
+        >
+          {timeAgo(event.ts)}
+        </span>
+      </div>
+
+      <div
         style={{
-          fontSize: 12,
-          color: "rgba(255,255,255,0.45)",
-          whiteSpace: "nowrap",
-          fontVariantNumeric: "tabular-nums",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          // Line two starts where the title does: icon width + gap.
+          paddingLeft: 25,
+          minHeight: 22,
         }}
       >
-        {timeAgo(event.ts)}
-      </span>
-      {onRebuild && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onRebuild();
-          }}
+        <span
           style={{
-            height: 22,
-            padding: "0 8px",
-            borderRadius: 6,
-            border: "1px solid rgba(255,255,255,0.25)",
-            background: "transparent",
-            color: "rgba(255,255,255,0.85)",
-            fontSize: 12,
-            lineHeight: 1,
-            cursor: "pointer",
-            outline: "none",
-            fontFamily: FONT,
-            opacity: hovered ? 1 : 0,
-            pointerEvents: hovered ? "auto" : "none",
-            transition: "opacity 0.15s ease",
-            flexShrink: 0,
+            fontSize: 13,
+            color: "rgba(255,255,255,0.5)",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            flex: "1 1 auto",
           }}
         >
-          Rebuild
-        </button>
-      )}
+          {sub}
+        </span>
+        {onRebuild && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRebuild();
+            }}
+            style={{
+              height: 22,
+              padding: "0 8px",
+              borderRadius: 6,
+              border: "1px solid rgba(255,255,255,0.25)",
+              background: "transparent",
+              color: "rgba(255,255,255,0.85)",
+              fontSize: 12,
+              lineHeight: 1,
+              cursor: "pointer",
+              outline: "none",
+              fontFamily: FONT,
+              opacity: hovered ? 1 : 0,
+              pointerEvents: hovered ? "auto" : "none",
+              transition: "opacity 0.15s ease",
+              flexShrink: 0,
+            }}
+          >
+            Rebuild
+          </button>
+        )}
+      </div>
     </a>
   );
 }

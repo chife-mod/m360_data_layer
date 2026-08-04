@@ -86,7 +86,8 @@ chip). The numbers are the message; no links.
 ### Prompts — after Tasks & Apps, продаём козла
 His separation kept: a task produces an artifact (шашлык), a prompt
 produces an answer. Section lists the lake's custom prompts — Summary /
-Summary: NEG / Summary: POZ, labels his — each row runs in a chat-shaped
+Summary: Negative / Summary: Positive, names his (spelled out from the
+email's NEG / POZ at his follow-up) — each row runs in a chat-shaped
 popup: prompt goes out as the user bubble, the answer area stays an honest
 shimmer ("The assistant answers here… wired to the live AI chat in M360").
 No invented AI output — the no-filler rule covers the козёл too.
@@ -101,8 +102,10 @@ upgrade in place; journals with any real output are never touched.
 ### Collapse — every section folds
 For the person on their 200th visit who knows the lake's sources by heart:
 every panel section (Sources / Enrichment / Tasks & Apps / Prompts /
-Insights / History) folds on its heading, chevron narrating, state
-remembered per set + selection + section in localStorage. Folded, the
+Insights / History) folds on its heading, chevron narrating — up when
+open, down when folded; it pointed sideways at first and Oleg turned it
+vertical the same day ("стрелочки смотрят вправо, а не вверх-вниз") —
+state remembered per set + selection + section in localStorage. Folded, the
 heading with its count stays as the summary line. The heading-to-body gap
 lives inside the animated wrapper — as a flex gap it would survive the
 fold as a phantom 10px.

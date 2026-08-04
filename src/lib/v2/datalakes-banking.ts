@@ -109,11 +109,12 @@ export const bankingDatalakes: Datalake[] = [
       { id: "brands", label: "Brands", detail: "52 tracked" },
       { id: "persons", label: "Persons", detail: "129 identified" },
     ],
-    // ── Custom prompts — the three from the client email of 2026-08-04
-    //    ("Summary / Summary: NEG / Summary: POZ"); the goal line from the
-    //    same email: продаём и встраиваем козла — the AI chat sold through
-    //    the lake. Labels are his; the full prompt texts are mine (sample),
-    //    flagged in BACKLOG.md §1.4.
+    // ── Custom prompts — the three from the client email of 2026-08-04,
+    //    names spelled out per his follow-up ("саммари, саммари негатив,
+    //    саммари позитив"); the goal line from the same email: продаём и
+    //    встраиваем козла — the AI chat sold through the lake. Names are
+    //    his; the full prompt texts are mine (sample), flagged in
+    //    BACKLOG.md §1.4.
     prompts: [
       {
         id: "summary",
@@ -122,12 +123,12 @@ export const bankingDatalakes: Datalake[] = [
       },
       {
         id: "summary-neg",
-        label: "Summary: NEG",
+        label: "Summary: Negative",
         text: "Summarize the negative reviews about my bank this month — the top complaints and where they are growing.",
       },
       {
         id: "summary-poz",
-        label: "Summary: POZ",
+        label: "Summary: Positive",
         text: "Summarize the positive reviews about my bank this month — what customers praise most.",
       },
     ],
