@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import {
@@ -13,6 +13,7 @@ import {
 } from "@/lib/v2/datalakes";
 import { DataCard } from "@/components/v2/DataCard";
 import { InsightPanel } from "@/components/v2/InsightPanel";
+import { seedHistoryIfEmpty } from "@/lib/v2/history";
 import { Toggle } from "@/components/v2/Toggle";
 import { Select } from "@/components/v2/Select";
 import { VersionSwitcher } from "@/components/VersionSwitcher";
@@ -37,6 +38,13 @@ export default function DataLayerV2() {
 
   const industry = useMemo(() => getIndustry(industryId), [industryId]);
   const set = useMemo(() => getDatalakeSet(industryId), [industryId]);
+
+  // A virgin journal gets a believable week of outputs, so History reads as
+  // lived-in on first open ("как будто там уже есть история", 2026-08-04).
+  // No-op the moment any real output exists.
+  useEffect(() => {
+    seedHistoryIfEmpty();
+  }, []);
 
   // Datalake ids are per-set, so a selection cannot survive an industry change.
   const handleIndustryChange = useCallback((id: string) => {

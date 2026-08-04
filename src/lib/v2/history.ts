@@ -86,3 +86,130 @@ export function onHistoryChange(cb: () => void): () => void {
     window.removeEventListener("storage", onStorage);
   };
 }
+
+// ─── Demo seed ────────────────────────────────────────────────────────────────
+//
+// "Сделаем, как будто там уже есть история" (client, 2026-08-04): a virgin
+// journal starts with a believable week of outputs instead of an empty
+// section on every dataset. Seeds only when the journal is EMPTY, so the
+// moment real outputs exist nothing is ever mixed in, and entries reference
+// real use-case ids — Open and Rebuild work on them like on the real thing.
+
+type SeedSpec = {
+  type: HistoryEventType;
+  datasetIds: string[];
+  useCaseId: string;
+  /** How long ago the output "happened". */
+  agoMs: number;
+  params?: HistoryEvent["params"];
+};
+
+/** Last full month as ISO bounds — what the seeded reports were "built" for. */
+function lastMonthIso(): { from: string; to: string } {
+  const now = new Date();
+  return {
+    from: new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString(),
+    to: new Date(now.getFullYear(), now.getMonth(), 0).toISOString(),
+  };
+}
+
+const HOUR = 3_600_000;
+const DAY = 24 * HOUR;
+
+export function seedHistoryIfEmpty(): void {
+  if (typeof window === "undefined") return;
+  if (loadHistory().length > 0) return;
+
+  // Imported lazily to keep module init cheap and dependency-light.
+  // (Static import would also be fine — no cycle — but nothing outside the
+  // seed needs use-cases here.)
+  import("./use-cases").then(({ findUseCase, PUMB_MONTHLY_PULSE }) => {
+    if (loadHistory().length > 0) return; // real output raced the seed — keep it
+
+    const m = lastMonthIso();
+    const seeds: SeedSpec[] = [
+      {
+        type: "report_built",
+        datasetIds: ["reviews-banks"],
+        useCaseId: "banking-reviews-banks-benchmark",
+        agoMs: 26 * 60_000,
+        params: { bank: "Oschadbank", from: m.from, to: m.to, language: "en" },
+      },
+      {
+        type: "dashboard_opened",
+        datasetIds: ["media"],
+        useCaseId: "banking-media-2",
+        agoMs: 3 * HOUR,
+      },
+      {
+        type: "dashboard_opened",
+        datasetIds: ["kols-finance"],
+        useCaseId: "banking-kols-finance-benchmark",
+        agoMs: DAY + 2 * HOUR,
+      },
+      {
+        type: "report_built",
+        datasetIds: ["media"],
+        useCaseId: "banking-media-1",
+        agoMs: 2 * DAY + 5 * HOUR,
+        params: { bank: "PrivatBank", from: m.from, to: m.to, language: "uk" },
+      },
+      {
+        type: "dashboard_opened",
+        datasetIds: ["reviews-apps"],
+        useCaseId: "banking-reviews-apps-benchmark",
+        agoMs: 4 * DAY + 3 * HOUR,
+      },
+      {
+        type: "dashboard_opened",
+        datasetIds: ["reviews-branches"],
+        useCaseId: "banking-reviews-branches-benchmark",
+        agoMs: 5 * DAY + 7 * HOUR,
+      },
+      {
+        type: "template_opened",
+        datasetIds: ["banks"],
+        useCaseId: "banking-banks-benchmark",
+        agoMs: 6 * DAY + 4 * HOUR,
+      },
+      {
+        type: "dashboard_opened",
+        datasetIds: ["kols-celebrities"],
+        useCaseId: "banking-kols-celebrities-benchmark",
+        agoMs: 8 * DAY + HOUR,
+      },
+    ];
+
+    const now = Date.now();
+    const entries: HistoryEvent[] = [];
+    for (const s of seeds) {
+      const uc = findUseCase("banking", s.useCaseId);
+      if (!uc) continue; // registry moved on — a stale seed just drops out
+      const url =
+        s.type === "report_built"
+          ? PUMB_MONTHLY_PULSE
+          : s.type === "dashboard_opened"
+            ? uc.dashboardUrl
+            : uc.reportTemplateUrl;
+      entries.push({
+        id: `seed-${s.useCaseId}-${s.type}`,
+        ts: now - s.agoMs,
+        type: s.type,
+        setId: "banking",
+        datasetIds: s.datasetIds,
+        useCaseId: s.useCaseId,
+        title: uc.title,
+        url,
+        params: s.params,
+      });
+    }
+    if (entries.length === 0) return;
+
+    try {
+      window.localStorage.setItem(KEY, JSON.stringify(entries));
+      window.dispatchEvent(new CustomEvent(EVENT));
+    } catch {
+      // Blocked storage: the app just behaves as before the seed existed.
+    }
+  });
+}

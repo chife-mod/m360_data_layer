@@ -2169,10 +2169,10 @@ export function InsightPanel({
                 <InsightsSection insights={single.insights} />
               )}
 
-              {/* Output history closes the column — piloted on the same
-                  dataset that pilots Sources ("где добавил source — добавь
-                  историю", 2026-08-04). */}
-              {!llmBlocked && single?.sources && (
+              {/* Output history closes the column. Piloted on the Sources
+                  dataset first, rolled out to every dataset the same day
+                  ("историю давай тогда везде добавим", 2026-08-04). */}
+              {!llmBlocked && single && (
                 <HistorySection
                   events={datasetHistory}
                   onRebuild={handleRebuild}

@@ -96,19 +96,26 @@ Search Demand's `#FF4560` read as Media's red; he asked for green. `#34D399`
 in both sets (watches' Support Chats moved with it) so same-position-same-
 colour survives. DESIGN.md updated.
 
-### Output history — the journal lands in the panel
+### Output history — the journal lands in the panel, then everywhere
 Fourth round of the day, promoted straight out of BACKLOG §2.7 ("добавь
 историю на плитке, где Sources"). A localStorage journal
 (`lib/v2/history.ts`, key `m360.history.v1`, capped at 50) records OUTPUTS —
-report built, dashboard opened, template opened — never tile clicks. The
-panel's pilot dataset (same condition as Sources) closes its column with a
-**History** section: type icon, app title, parameters, relative time; the row
-reopens the output, **Rebuild** reopens Build Report pre-filled with the
-entry's bank/period/language. Aside says "this device" — honest about
-localStorage; in the real M360 the journal belongs server-side behind the
-account (users are logged in), which is what the demo script should say when
-asked "а если почистить куки". Decisions parked the same day: body click in a
-pair keeps collapsing to that tile, Sources stay pilot-only.
+report built, dashboard opened, template opened — never tile clicks. Every
+dataset's panel closes its column with a **History** section (piloted on the
+Sources dataset, rolled out the same day — "историю давай тогда везде
+добавим"): type icon, app title, parameters, relative time; the row reopens
+the output, **Rebuild** reopens Build Report pre-filled with the entry's
+bank/period/language. Aside says "this device" — honest about localStorage;
+in the real M360 the journal belongs server-side behind the account (users
+are logged in), which is what the demo script should say when asked "а если
+почистить куки".
+
+A virgin journal is **seeded with a believable week** of outputs across the
+seven datasets that have apps ("сделаем, как будто там уже есть история") —
+seed entries reference real use-case ids, so Open and Rebuild work on them,
+and seeding never happens once any real output exists. Datasets without apps
+honestly show "No outputs yet". Decisions parked the same day: body click in
+a pair keeps collapsing to that tile, Sources stay pilot-only.
 
 ### LLM mode: filtered-out tiles explain themselves
 Third round of the day. In LLM mode a filtered-out tile is clickable now: the
