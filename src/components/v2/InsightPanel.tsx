@@ -195,6 +195,195 @@ const sectionStyle: React.CSSProperties = {
   gap: 10,
 };
 
+/** 15px inline glyph, Tabler geometry, stroked with currentColor. */
+function ChipIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      width={15}
+      height={15}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      style={{ flexShrink: 0, opacity: 0.7 }}
+      aria-hidden
+    >
+      {children}
+    </svg>
+  );
+}
+
+const ICON_DATABASE = (
+  <>
+    <ellipse cx="12" cy="6" rx="8" ry="3" />
+    <path d="M4 6v6a8 3 0 0 0 16 0V6" />
+    <path d="M4 12v6a8 3 0 0 0 16 0v-6" />
+  </>
+);
+
+const ICON_SKIP_BACK = (
+  <>
+    <path d="M4 5v14" />
+    <path d="M20 5v14l-12 -7z" />
+  </>
+);
+
+const ICON_COMPASS = (
+  <>
+    <path d="M8 16l2 -6l6 -2l-2 6z" />
+    <circle cx="12" cy="12" r="9" />
+  </>
+);
+
+/**
+ * One lake-level fact — a chip with a hover tooltip carrying the definition.
+ * The chips answer "how deep and how complete is this lake" at a glance
+ * (client email, 2026-08-04: archive depth, zero-day indexing, explorer);
+ * the tooltip is where a term like Zero-Day gets its one-sentence explainer.
+ */
+function FactChip({
+  icon,
+  label,
+  tooltip,
+  tooltipAlign = "left",
+  href,
+  onNavigate,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  tooltip: string;
+  /** "right" for chips that sit near the panel's right edge — an overflowing
+      tooltip would otherwise engage the scroll column's horizontal overflow. */
+  tooltipAlign?: "left" | "right";
+  href?: string;
+  onNavigate?: () => void;
+}) {
+  const [hovered, setHovered] = useState(false);
+  const chipStyle: React.CSSProperties = {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 7,
+    height: 28,
+    padding: "0 11px",
+    borderRadius: 8,
+    border: `1px solid ${
+      hovered ? "rgba(255,255,255,0.32)" : "rgba(255,255,255,0.14)"
+    }`,
+    backgroundColor: hovered ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.02)",
+    fontSize: 13,
+    lineHeight: 1,
+    color: "rgba(255,255,255,0.78)",
+    whiteSpace: "nowrap",
+    textDecoration: "none",
+    transition: "border-color 0.15s ease, background-color 0.15s ease",
+    cursor: href ? "pointer" : "default",
+    fontFamily: FONT,
+  };
+  const content = (
+    <>
+      <ChipIcon>{icon}</ChipIcon>
+      {label}
+      {href && <span style={{ opacity: 0.45, fontSize: 11 }}>↗</span>}
+    </>
+  );
+  return (
+    <span
+      style={{ position: "relative", display: "inline-flex" }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {href ? (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigate?.();
+          }}
+          style={chipStyle}
+        >
+          {content}
+        </a>
+      ) : (
+        <span style={chipStyle}>{content}</span>
+      )}
+      <span
+        role="tooltip"
+        style={{
+          position: "absolute",
+          top: "calc(100% + 6px)",
+          ...(tooltipAlign === "left" ? { left: 0 } : { right: 0 }),
+          width: 240,
+          padding: "8px 11px",
+          borderRadius: 8,
+          backgroundColor: "#1b2050",
+          border: "1px solid rgba(255,255,255,0.16)",
+          boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
+          fontSize: 13,
+          lineHeight: 1.45,
+          color: "rgba(255,255,255,0.82)",
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 0.15s ease",
+          pointerEvents: "none",
+          zIndex: 30,
+          fontFamily: FONT,
+          whiteSpace: "normal",
+        }}
+      >
+        {tooltip}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * The lake's passport line — archive depth, zero-day indexing, explorer.
+ * Sits right under the overview copy, before any section: these are facts
+ * about the lake itself, not content from it. Only facts the lake actually
+ * has render; a lake with none renders no strip at all.
+ */
+function FactsStrip({
+  lake,
+  onExplorerOpen,
+}: {
+  lake: Datalake;
+  onExplorerOpen: (url: string) => void;
+}) {
+  const years = lake.archiveYears;
+  const hasOtherFacts = years !== undefined || lake.zeroDayIndexed;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: -6 }}>
+      {years !== undefined && (
+        <FactChip
+          icon={ICON_DATABASE}
+          label={`Archive · ${years} ${years === 1 ? "year" : "years"}`}
+          tooltip={`The archive in this lake reaches ${years} years back.`}
+        />
+      )}
+      {lake.zeroDayIndexed && (
+        <FactChip
+          icon={ICON_SKIP_BACK}
+          label="Zero-Day indexed"
+          tooltip="Every source in this lake is collected from its very first message — a source that is 5 years old contributes 5 years of archive."
+        />
+      )}
+      {lake.explorerUrl && (
+        <FactChip
+          icon={ICON_COMPASS}
+          label="Explorer"
+          tooltip="A browsable explorer over this lake — its entities, boards and metrics. Opens in a new tab."
+          tooltipAlign={hasOtherFacts ? "right" : "left"}
+          href={lake.explorerUrl}
+          onNavigate={() => onExplorerOpen(lake.explorerUrl!)}
+        />
+      )}
+    </div>
+  );
+}
+
 /**
  * One source — a link, because the client wants sources one click away
  * ("ты можешь их в один клик открыть"). Name, domain, monthly intake.
@@ -536,12 +725,14 @@ const HISTORY_TYPE_ICON: Record<HistoryEventType, string> = {
   report_built: "ui-build",
   dashboard_opened: "ui-dashboard",
   template_opened: "ui-report-template",
+  explorer_opened: "ui-dashboard",
 };
 
 const HISTORY_TYPE_LABEL: Record<HistoryEventType, string> = {
   report_built: "Report",
   dashboard_opened: "Dashboard",
   template_opened: "Template",
+  explorer_opened: "Explorer",
 };
 
 /**
@@ -1885,7 +2076,7 @@ export function InsightPanel({
     : [];
 
   const handleRebuild = (e: HistoryEvent) => {
-    const useCase = findUseCase(setId, e.useCaseId);
+    const useCase = e.useCaseId ? findUseCase(setId, e.useCaseId) : undefined;
     if (!useCase || !single) return;
     const from = e.params ? new Date(e.params.from) : null;
     const to = e.params ? new Date(e.params.to) : null;
@@ -2251,6 +2442,28 @@ export function InsightPanel({
                   {description}
                 </p>
               )}
+
+              {/* The lake's passport — archive depth, zero-day indexing,
+                  explorer (client email, 2026-08-04). Facts about the lake,
+                  so they sit with the overview, above the content sections. */}
+              {!llmBlocked &&
+                single &&
+                (single.archiveYears !== undefined ||
+                  single.zeroDayIndexed ||
+                  single.explorerUrl) && (
+                  <FactsStrip
+                    lake={single}
+                    onExplorerOpen={(url) =>
+                      appendHistory({
+                        type: "explorer_opened",
+                        setId,
+                        datasetIds: [single.id],
+                        title: `${single.label} Explorer`,
+                        url,
+                      })
+                    }
+                  />
+                )}
 
               {/* Sources — datasets that carry the preview only; the pilot is
                   Reviews: Banks (client call, 2026-08-03). */}

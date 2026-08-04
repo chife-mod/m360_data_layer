@@ -56,6 +56,10 @@ export const bankingDatalakes: Datalake[] = [
     // Real copy — client email, 2026-07-30.
     descriptionSingle:
       "Track over 100 Ukrainian financial influencers covering banking, payments, investments and more.",
+    // Client email, 2026-08-04: show that an explorer exists for this lake.
+    // The URL is his own example — the pharma KOLs explorer stands in until
+    // a finance one is built.
+    explorerUrl: "https://chife-mod.github.io/sf-pharma-360/dols/",
   },
   {
     id: "kols-celebrities",
@@ -78,6 +82,11 @@ export const bankingDatalakes: Datalake[] = [
     // Real copy — client email, 2026-07-30 (second round).
     descriptionSingle:
       "Analyze reviews related to 50+ major Ukrainian banks across 8 major review sites such as MinFin, Vidhuk, Banki.ua and others.",
+    // Archive depth per the client email of 2026-08-04: "Reviews: Banks
+    // [3 years]". Zero-day on all three review lakes — his own examples of
+    // where every source is collected from its first message.
+    archiveYears: 3,
+    zeroDayIndexed: true,
     // ── Sources preview — the pilot dataset for the new overview structure
     //    (client call, 2026-08-03: "пока делаем только для одной группы").
     //    The three named sites are the client's own examples from the overview
@@ -135,6 +144,10 @@ export const bankingDatalakes: Datalake[] = [
     // Real copy — client email, 2026-07-30 (second round).
     descriptionSingle:
       "Analyze reviews related to branches of 50+ Ukrainian banks on Google Maps and other review sites.",
+    // "Reviews: Branches [15 years]" — the deepest archive on the board, and
+    // the client's favourite sales line ("говнище за 15 лет").
+    archiveYears: 15,
+    zeroDayIndexed: true,
   },
   {
     id: "reviews-apps",
@@ -145,6 +158,9 @@ export const bankingDatalakes: Datalake[] = [
     // Real copy — client email, 2026-07-30 (second round).
     descriptionSingle:
       "Analyze reviews related to mobile apps of 50+ Ukrainian banks (Google Play and Apple Store).",
+    // "Reviews: Banking Apps [5 years]" — client email, 2026-08-04.
+    archiveYears: 5,
+    zeroDayIndexed: true,
   },
   {
     id: "branches-atms",

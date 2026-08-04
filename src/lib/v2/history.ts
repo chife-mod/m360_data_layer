@@ -15,7 +15,8 @@
 export type HistoryEventType =
   | "report_built"
   | "dashboard_opened"
-  | "template_opened";
+  | "template_opened"
+  | "explorer_opened";
 
 export type HistoryEvent = {
   id: string;
@@ -26,7 +27,8 @@ export type HistoryEvent = {
   setId: string;
   /** The selection the output was produced from. */
   datasetIds: string[];
-  useCaseId: string;
+  /** Absent for outputs that belong to the lake itself (explorer opened). */
+  useCaseId?: string;
   /** App title as resolved at the moment (Type substitution included). */
   title: string;
   /** Where "Open" goes — the produced report / the dashboard. */

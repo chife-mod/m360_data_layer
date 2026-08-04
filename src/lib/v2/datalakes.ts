@@ -65,6 +65,23 @@ export type Datalake = {
   recommendedWith: string[];
   descriptionSingle: string;
   /**
+   * How deep the lake's archive goes, in years (client email, 2026-08-04:
+   * "Reviews: Banks [3 years]"). Absent -> the fact simply is not shown.
+   */
+  archiveYears?: number;
+  /**
+   * Zero-day indexing — the client's own term: every source in the lake is
+   * collected from its very first message, so a 5-year-old source contributes
+   * 5 years of archive. Not a property every lake has ("она будет не всегда").
+   */
+  zeroDayIndexed?: boolean;
+  /**
+   * A dedicated explorer exists for this lake — a browsable surface over its
+   * entities (the sf-pharma-360 "dols" explorer is the reference). Shown as a
+   * link; absent means no explorer yet.
+   */
+  explorerUrl?: string;
+  /**
    * Top-5 sources shown on the dataset's overview. Far from every dataset
    * will carry this (client call, 2026-08-03) — absent means the section is
    * simply not rendered.
