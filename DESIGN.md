@@ -126,8 +126,12 @@ original watches set.
 ## Component tokens
 
 - **Card** — 191×130, radius 12, padding 24, vertical centre, gap 12. Grid gap 4 → row width 776.
-  The top-right 44×44 corner is the combo zone: "+" to add to the selection,
-  the indicator dot / "×" to remove. The body is single-select.
+  The body is single-select. The top-right corner edits the combination, and
+  only exists once something is selected: tile hover shows a labelled
+  affordance — "Add +" on compatible tiles, "Remove ×" on selected ones — a
+  24px circle sitting exactly over the indicator dot (which yields while the
+  affordance is up). Before the first pick the tile is clean: hover, click,
+  chosen.
 - **Toggle** — 60×32 track, 24×24 knob, radius 40, 40×40 blurred glow behind the knob.
 - **Select** — 36 high, radius 8, 1px border, panel offset 6, option 34 high, radius 6.
   Options may be `disabled`: muted, keyboard-skipped, click keeps the list open.

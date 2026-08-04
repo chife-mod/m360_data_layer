@@ -326,11 +326,15 @@ export default function DataLayerV2() {
                 // selection there instead of forcing a Reset first.
                 const llmDead =
                   showAiOnly && !set.aiChatIds.includes(datalake.id);
+                // No Add affordance before the first pick (client, 2026-08-04:
+                // "я не добавляю, я просто выбираю") — the corner only starts
+                // meaning something once there is a selection to add to.
                 const comboMode = showAiOnly
                   ? "none"
                   : isSelected
                     ? "remove"
-                    : compatibleIds.includes(datalake.id)
+                    : selectedIds.length > 0 &&
+                        compatibleIds.includes(datalake.id)
                       ? "add"
                       : "none";
 

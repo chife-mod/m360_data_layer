@@ -1527,8 +1527,7 @@ export function InsightPanel({
                   "var(--font-inter), Inter, system-ui, sans-serif",
               }}
             >
-              Select a dataset to explore it — or combine up to three with the
-              corner +
+              Select a dataset to explore it — add more on hover, up to three
             </p>
           </motion.div>
         )}

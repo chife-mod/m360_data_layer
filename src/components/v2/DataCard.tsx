@@ -306,8 +306,9 @@ export function DataCard({
 
         {/* Ellipse 867 — indicator dot top-right.
             Always mounted: unmounting it made the dot pop out instead of
-            fading with the rest of the tile. When the corner zone offers
-            "remove", the × affordance takes the dot's place on hover. */}
+            fading with the rest of the tile. While the corner affordance is
+            visible it covers the dot's spot, so the dot yields to it
+            (client, 2026-08-04: "плюсик перекрывает кружок индикации"). */}
         <div
           className="absolute pointer-events-none z-10"
           style={{
@@ -319,24 +320,21 @@ export function DataCard({
             backgroundColor:
               s.dotFill === "currentColor" ? accentColor : s.dotFill,
             border: "1px solid rgba(255, 255, 255, 0.2)",
-            opacity:
-              s.showDot && !(comboMode === "remove" && cornerHovered) ? 1 : 0,
+            opacity: s.showDot && !(comboMode !== "none" && isHovered) ? 1 : 0,
             transition: `opacity ${STATE_MS}ms ease, background-color ${STATE_MS}ms ease`,
           }}
         />
 
-        {/* ── Corner zone — the multi-select entry point ─────────────────────
-            Body click swaps the selection; this 44×44 corner is the only place
-            that adds to it (client call, 2026-08-03). The affordance sits on
-            the indicator dot's centre: a "+" that fades in on tile hover for
-            addable tiles, an "×" replacing the dot on selected ones. */}
+        {/* ── Corner affordance — the multi-select entry point ───────────────
+            Body click swaps the selection; this corner is the only place that
+            edits the combination (client calls, 2026-08-03/04). It exists only
+            once something is selected, and shows itself on TILE hover, not
+            corner hover: a labelled "Add +" over the indicator dot's spot on
+            compatible tiles, "Remove ×" on selected ones. */}
         {comboMode !== "none" && (
           <div
             role="button"
             aria-label={
-              comboMode === "add" ? "Add to selection" : "Remove from selection"
-            }
-            title={
               comboMode === "add" ? "Add to selection" : "Remove from selection"
             }
             onClick={(e) => {
@@ -349,56 +347,67 @@ export function DataCard({
             style={{
               right: 0,
               top: 0,
-              width: "44px",
-              height: "44px",
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "flex-end",
+              gap: 6,
+              // 2px insets put the 24px circle exactly over the 12px dot
+              // (both centre 14px from the corner); the rest pads the hit
+              // zone so the label and near-misses still register.
+              padding: "2px 2px 14px 14px",
               cursor: "pointer",
+              // The whole affordance rides tile hover — before that the tile
+              // is clean, after a click it is gone again.
+              opacity: isHovered ? 1 : 0,
+              pointerEvents: isHovered ? "auto" : "none",
+              transition: `opacity ${STATE_MS}ms ease`,
             }}
           >
-            <div
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
+                lineHeight: "24px",
+                color: cornerHovered
+                  ? "rgba(255,255,255,0.95)"
+                  : "rgba(255,255,255,0.7)",
+                fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
+                userSelect: "none",
+                transition: `color ${STATE_MS}ms ease`,
+              }}
+            >
+              {comboMode === "add" ? "Add" : "Remove"}
+            </span>
+            <span
               aria-hidden
               style={{
-                position: "absolute",
-                // Centred on the indicator dot (its centre is 14px from the
-                // tile's top-right corner).
-                right: "4px",
-                top: "4px",
-                width: "20px",
-                height: "20px",
+                width: "24px",
+                height: "24px",
                 borderRadius: "50%",
+                flexShrink: 0,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: comboMode === "add" ? 14 : 12,
+                fontSize: comboMode === "add" ? 16 : 14,
                 fontWeight: 400,
                 lineHeight: 1,
                 fontFamily: "var(--font-inter), Inter, system-ui, sans-serif",
                 color: "rgba(255,255,255,0.95)",
                 backgroundColor: cornerHovered
-                  ? "rgba(255,255,255,0.16)"
-                  : "rgba(255,255,255,0.05)",
+                  ? "rgba(255,255,255,0.18)"
+                  : "rgba(255,255,255,0.08)",
                 border: `1px solid ${
                   cornerHovered
-                    ? "rgba(255,255,255,0.6)"
-                    : "rgba(255,255,255,0.35)"
+                    ? "rgba(255,255,255,0.65)"
+                    : "rgba(255,255,255,0.4)"
                 }`,
-                // "+" appears when the tile is hovered at all, sharpens over
-                // the corner itself; "×" only over the corner — the dot is the
-                // resting state of a selected tile.
-                opacity:
-                  comboMode === "add"
-                    ? cornerHovered
-                      ? 1
-                      : isHovered
-                        ? 0.55
-                        : 0
-                    : cornerHovered
-                      ? 1
-                      : 0,
-                transition: `opacity ${STATE_MS}ms ease, background-color ${STATE_MS}ms ease, border-color ${STATE_MS}ms ease`,
+                transition: `background-color ${STATE_MS}ms ease, border-color ${STATE_MS}ms ease`,
               }}
             >
               {comboMode === "add" ? "+" : "×"}
-            </div>
+            </span>
           </div>
         )}
       </div>
