@@ -33,11 +33,14 @@ const PANEL_WIDTH = 515;
 /** Grid + 5px gap + insight panel — the full module width. */
 const BOARD_WIDTH = GRID_WIDTH + 5 + PANEL_WIDTH;
 
+// Default scope per the client (2026-07-30): the Mastercard demo opens on
+// Banking as seen by a Payment System. Named so Reset knows where home is.
+const DEFAULT_INDUSTRY = "banking";
+const DEFAULT_TYPE = "payment-system";
+
 export default function DataLayerV2() {
-  // Default scope per the client (2026-07-30): the Mastercard demo opens on
-  // Banking as seen by a Payment System.
-  const [industryId, setIndustryId] = useState("banking");
-  const [typeId, setTypeId] = useState("payment-system");
+  const [industryId, setIndustryId] = useState(DEFAULT_INDUSTRY);
+  const [typeId, setTypeId] = useState(DEFAULT_TYPE);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [showAiOnly, setShowAiOnly] = useState(false);
@@ -88,7 +91,16 @@ export default function DataLayerV2() {
     [set]
   );
 
-  const handleReset = useCallback(() => setSelectedIds([]), []);
+  // Reset clears the WHOLE stage, not just the tile selection (Oleg's call
+  // note, 2026-08-04): industry, type, role, the LLM toggle and the picked
+  // tiles all go home in one click — the demo's "clean sheet" move.
+  const handleReset = useCallback(() => {
+    setIndustryId(DEFAULT_INDUSTRY);
+    setTypeId(DEFAULT_TYPE);
+    setSelectedIds([]);
+    setRoleId(ALL_ROLES);
+    setShowAiOnly(false);
+  }, []);
 
   const compatibleIds = useMemo(
     () => getCompatible(set, selectedIds),
@@ -137,6 +149,15 @@ export default function DataLayerV2() {
   );
 
   const hasSelection = selectedIds.length > 0;
+
+  // Anything off the default state makes Reset appear — the button doubles
+  // as the "you have wandered" indicator, so it never shows on a clean sheet.
+  const isDirty =
+    hasSelection ||
+    industryId !== DEFAULT_INDUSTRY ||
+    typeId !== DEFAULT_TYPE ||
+    roleId !== ALL_ROLES ||
+    showAiOnly;
 
   // In LLM mode a selected dataset the toggle filters out gets the "why not
   // in LLMs" view instead of its content (client, 2026-08-04).
@@ -278,8 +299,8 @@ export default function DataLayerV2() {
                 <button
                   type="button"
                   onClick={handleReset}
-                  aria-hidden={!hasSelection}
-                  tabIndex={hasSelection ? 0 : -1}
+                  aria-hidden={!isDirty}
+                  tabIndex={isDirty ? 0 : -1}
                   onMouseEnter={() => setResetHovered(true)}
                   onMouseLeave={() => setResetHovered(false)}
                   style={{
@@ -291,12 +312,12 @@ export default function DataLayerV2() {
                     cursor: "pointer",
                     padding: 0,
                     outline: "none",
-                    opacity: hasSelection ? 1 : 0,
-                    transform: hasSelection
+                    opacity: isDirty ? 1 : 0,
+                    transform: isDirty
                       ? "translateX(0)"
                       : "translateX(8px)",
                     transition: "opacity 0.2s ease, transform 0.2s ease",
-                    pointerEvents: hasSelection ? "auto" : "none",
+                    pointerEvents: isDirty ? "auto" : "none",
                   }}
                 >
                   <span
@@ -312,7 +333,7 @@ export default function DataLayerV2() {
                       transition: "color 0.15s ease",
                     }}
                   >
-                    Reset selection
+                    Reset
                   </span>
                   <Image
                     src={getAssetPath("/assets/icons/reload.svg")}
