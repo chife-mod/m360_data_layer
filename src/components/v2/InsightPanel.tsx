@@ -281,8 +281,8 @@ function SourceRow({
       </span>
       <span
         style={{
-          fontSize: 12,
-          color: "rgba(255,255,255,0.35)",
+          fontSize: 13,
+          color: "rgba(255,255,255,0.45)",
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap",
@@ -297,8 +297,8 @@ function SourceRow({
           (client, 2026-08-04); the row hover pill already says "clickable". */}
       <span
         style={{
-          fontSize: 12,
-          color: hovered ? "rgba(255,255,255,0.8)" : "rgba(255,255,255,0.55)",
+          fontSize: 13,
+          color: hovered ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.6)",
           whiteSpace: "nowrap",
           fontVariantNumeric: "tabular-nums",
           transition: "color 0.15s ease",
@@ -327,8 +327,8 @@ function SourcesSection({
           total !== undefined && total > sources.length ? (
             <span
               style={{
-                fontSize: 12,
-                color: "rgba(255,255,255,0.3)",
+                fontSize: 12.5,
+                color: "rgba(255,255,255,0.4)",
                 fontFamily: FONT,
               }}
             >
@@ -414,11 +414,14 @@ function InsightCard({ insight }: { insight: DatalakeInsight }) {
       </div>
 
       {insight.detail && (
+        // 14px, not 12.5: the panel's readable-text floor is 13 (2026-08-04 —
+        // "двенадцатый это уже слишком маленький"), and low-alpha small text
+        // was failing AA anyway.
         <span
           style={{
-            fontSize: 12.5,
+            fontSize: 14,
             lineHeight: 1.45,
-            color: "rgba(255,255,255,0.45)",
+            color: "rgba(255,255,255,0.55)",
           }}
         >
           {insight.detail}
@@ -441,9 +444,9 @@ function InsightCard({ insight }: { insight: DatalakeInsight }) {
             >
               <span
                 style={{
-                  fontSize: 12,
-                  color: "rgba(255,255,255,0.7)",
-                  width: 96,
+                  fontSize: 13,
+                  color: "rgba(255,255,255,0.75)",
+                  width: 100,
                   flexShrink: 0,
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -473,9 +476,9 @@ function InsightCard({ insight }: { insight: DatalakeInsight }) {
               </span>
               <span
                 style={{
-                  fontSize: 11.5,
-                  color: "rgba(255,255,255,0.5)",
-                  width: 32,
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.55)",
+                  width: 34,
                   textAlign: "right",
                   fontVariantNumeric: "tabular-nums",
                   flexShrink: 0,
@@ -589,7 +592,7 @@ function HistoryRow({
       />
       <span
         style={{
-          fontSize: 13.5,
+          fontSize: 14,
           color: "rgba(255,255,255,0.92)",
           whiteSpace: "nowrap",
           overflow: "hidden",
@@ -601,8 +604,8 @@ function HistoryRow({
       </span>
       <span
         style={{
-          fontSize: 12,
-          color: "rgba(255,255,255,0.4)",
+          fontSize: 13,
+          color: "rgba(255,255,255,0.5)",
           whiteSpace: "nowrap",
           overflow: "hidden",
           textOverflow: "ellipsis",
@@ -614,8 +617,8 @@ function HistoryRow({
       <span style={{ flex: "1 1 auto" }} />
       <span
         style={{
-          fontSize: 11.5,
-          color: "rgba(255,255,255,0.35)",
+          fontSize: 12,
+          color: "rgba(255,255,255,0.45)",
           whiteSpace: "nowrap",
           fontVariantNumeric: "tabular-nums",
         }}
@@ -637,7 +640,7 @@ function HistoryRow({
             border: "1px solid rgba(255,255,255,0.25)",
             background: "transparent",
             color: "rgba(255,255,255,0.85)",
-            fontSize: 11,
+            fontSize: 12,
             lineHeight: 1,
             cursor: "pointer",
             outline: "none",
@@ -673,8 +676,8 @@ function HistorySection({
           // M360 it belongs server-side behind the account.
           <span
             style={{
-              fontSize: 12,
-              color: "rgba(255,255,255,0.3)",
+              fontSize: 12.5,
+              color: "rgba(255,255,255,0.4)",
               fontFamily: FONT,
             }}
           >
@@ -685,8 +688,8 @@ function HistorySection({
       {events.length === 0 ? (
         <span
           style={{
-            fontSize: 12.5,
-            color: "rgba(255,255,255,0.35)",
+            fontSize: 13.5,
+            color: "rgba(255,255,255,0.45)",
             fontFamily: FONT,
           }}
         >
@@ -706,8 +709,8 @@ function HistorySection({
           {earlier > 0 && (
             <span
               style={{
-                fontSize: 12,
-                color: "rgba(255,255,255,0.3)",
+                fontSize: 12.5,
+                color: "rgba(255,255,255,0.4)",
                 fontFamily: FONT,
                 paddingTop: 4,
               }}
@@ -985,7 +988,7 @@ function UseCaseCard({
       {/* Absent overview is hidden rather than printed as N/A — the client's
           own option, and "N/A" on screen reads as unfinished during a demo. */}
       {useCase.overview && (
-        <span style={{ fontSize: 13, lineHeight: 1.45, color: "rgba(255,255,255,0.45)" }}>
+        <span style={{ fontSize: 14, lineHeight: 1.45, color: "rgba(255,255,255,0.5)" }}>
           {useCase.overview}
         </span>
       )}
@@ -2059,7 +2062,7 @@ export function InsightPanel({
                     fontSize: 15,
                     fontWeight: 400,
                     lineHeight: 1.5,
-                    color: "rgba(255,255,255,0.5)",
+                    color: "rgba(255,255,255,0.55)",
                     margin: 0,
                     fontFamily: FONT,
                   }}
@@ -2102,8 +2105,8 @@ export function InsightPanel({
                 {totalApps === 0 && (
                   <span
                     style={{
-                      fontSize: 13,
-                      color: "rgba(255,255,255,0.35)",
+                      fontSize: 13.5,
+                      color: "rgba(255,255,255,0.45)",
                       fontFamily: FONT,
                     }}
                   >

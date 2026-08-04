@@ -150,6 +150,11 @@ original watches set.
   (type icon · title · parameters · relative time, Rebuild on hover). The
   decorative bar chart at the panel's foot was removed on 2026-08-03 ("он
   весёлый, но он не функция").
+- **Panel type floor** (2026-08-04, "двенадцатый — это уже слишком
+  маленький"): running text and data values are **≥13px**; primary copy
+  14–15px. 12–12.5px is reserved for footnotes, chips and timestamps only,
+  and never below `rgba(255,255,255,0.4)` — small AND faint was failing the
+  4.5:1 AA bar (12px at 0.35 alpha ≈ 3.2:1 on `#111539`).
 
 ---
 
