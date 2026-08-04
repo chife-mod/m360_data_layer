@@ -123,6 +123,12 @@ legible to a non-technical director. Direction to explore: per-tile LLM
 coverage cues in LLM mode (e.g. "LLMs see ~10 of 150 influencers") instead of
 binary on/off dimming.
 
+**First step built (2026-08-04):** in LLM mode a filtered-out tile is
+clickable and the panel shows the "why not" view — grey title, "Not available
+in LLMs" slug, and a lorem placeholder **he explicitly asked for** ("вставь
+Lorem Ipsum, не придумывай текст"). Waiting on his per-dataset argument text;
+the per-tile coverage cues remain unexplored.
+
 ---
 
 ## 3. Outside this module

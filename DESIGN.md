@@ -32,6 +32,8 @@ stay consistent with it instead of drifting into their own look.
 | Active border | `#646eca` | Card active/selected border, open select border |
 | Hover border | `#9fa9ff` | Card hover, select hover |
 | Disabled border | `rgba(58,64,120,0.5)` | Disabled card, **2px dotted** — the dotted stroke is what reads as disabled, not the colour alone |
+| Disabled hover border | `rgba(100,110,202,0.65)` | Disabled card under the cursor — disabled tiles take clicks since 2026-08-04 |
+| Disabled selected border | `rgba(159,169,255,0.8)` | Picked-while-unavailable (LLM mode): same dotted stroke, brighter, **no inner glow** — picked, not lit |
 
 ### Text
 `rgba(255,255,255,·)` throughout — `1` selected · `0.92` control value · `0.8` body ·

@@ -13,7 +13,9 @@ export type CardState =
   | "activeHover"
   | "selected"
   | "selectedHover"
-  | "disabled";
+  | "disabled"
+  | "disabledHover"
+  | "disabledSelected";
 
 export type CardInteractionState = {
   isHovered: boolean;
@@ -75,7 +77,14 @@ export function DataCard({
 
   let currentState: CardState;
   if (isDisabled) {
-    currentState = "disabled";
+    // Disabled is no longer inert (2026-08-04): selected-while-unavailable
+    // brightens the dotted stroke (no inner glow — picked, not lit), and a
+    // clickable disabled tile answers hover with its border.
+    currentState = isSelected
+      ? "disabledSelected"
+      : isHovered && onSelect
+        ? "disabledHover"
+        : "disabled";
   } else if (isSelected) {
     currentState = isHovered ? "selectedHover" : "selected";
   } else if (isActive) {
@@ -191,14 +200,20 @@ export function DataCard({
           }}
         />
 
-        {/* Disabled — dotted outline */}
+        {/* Disabled — dotted outline. Colour comes from the current state:
+            plain disabled, its hover, and disabled-selected share the stroke
+            style and differ only in brightness. */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
             borderRadius: "12px",
-            border: `2px dotted ${cardStyles.disabled.borderColor}`,
+            border: `2px dotted ${
+              isDottedBorder
+                ? s.borderColor
+                : cardStyles.disabled.borderColor
+            }`,
             opacity: isDottedBorder ? 1 : 0,
-            transition: `opacity ${STATE_MS}ms ease`,
+            transition: `opacity ${STATE_MS}ms ease, border-color ${STATE_MS}ms ease`,
             zIndex: 20,
           }}
         />

@@ -118,6 +118,13 @@ export default function DataLayerV2() {
 
   const hasSelection = selectedIds.length > 0;
 
+  // In LLM mode a selected dataset the toggle filters out gets the "why not
+  // in LLMs" view instead of its content (client, 2026-08-04).
+  const llmBlocked =
+    showAiOnly &&
+    selectedIds.length === 1 &&
+    !set.aiChatIds.includes(selectedIds[0]);
+
   const rows = useMemo(() => {
     const chunks = [];
     for (let i = 0; i < set.datalakes.length; i += 4) {
@@ -321,11 +328,10 @@ export default function DataLayerV2() {
                   }
                 }
 
-                // Only LLM-mode-hidden tiles are truly dead. A tile dimmed for
-                // compatibility still takes a body click — it starts a fresh
-                // selection there instead of forcing a Reset first.
-                const llmDead =
-                  showAiOnly && !set.aiChatIds.includes(datalake.id);
+                // No tile is dead any more (2026-08-04). In LLM mode a
+                // filtered-out tile still takes the click — it selects, and
+                // the panel explains WHY the dataset is unavailable there
+                // instead of showing its content.
                 // No Add affordance before the first pick (client, 2026-08-04:
                 // "я не добавляю, я просто выбираю") — the corner only starts
                 // meaning something once there is a selection to add to.
@@ -351,9 +357,7 @@ export default function DataLayerV2() {
                     isHovered={isHovered}
                     isActive={isActive}
                     isDisabled={isDisabled}
-                    onSelect={
-                      llmDead ? undefined : () => selectSingle(datalake.id)
-                    }
+                    onSelect={() => selectSingle(datalake.id)}
                     onToggleCombo={() => toggleCombo(datalake.id)}
                     comboMode={comboMode}
                     onMouseEnter={() => setHoveredCard(datalake.id)}
@@ -367,6 +371,7 @@ export default function DataLayerV2() {
           <InsightPanel
             selectedSignals={selectedDatalakes}
             description={description}
+            llmBlocked={llmBlocked}
             setId={set.id}
             typeLabel={
               industry.types.find((t) => t.id === typeId)?.label ?? ""

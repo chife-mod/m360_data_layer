@@ -96,6 +96,20 @@ Search Demand's `#FF4560` read as Media's red; he asked for green. `#34D399`
 in both sets (watches' Support Chats moved with it) so same-position-same-
 colour survives. DESIGN.md updated.
 
+### LLM mode: filtered-out tiles explain themselves
+Third round of the day. In LLM mode a filtered-out tile is clickable now: the
+click picks it in a new **disabledSelected** state — the same dotted stroke,
+brighter, deliberately no inner glow ("выделяем чуть ярче… но без внутреннего
+освещения") — and the panel drops its content for the "why not" view: a
+"Not available in LLMs" slug, the title in light grey instead of its accent,
+and a lorem paragraph where the real argument (hallucinations, coverage,
+freshness) will go. The lorem is BY CLIENT REQUEST ("вставь Lorem Ipsum, не
+придумывай текст") — a deliberate exception to the no-lorem rule of
+2026-07-30, which was about unwritten copy pretending to be finished. This is
+the first built step toward BACKLOG §2.8 (making LLM coverage legible).
+Disabled tiles also gained a hover answer (border brightens) since they all
+take clicks now.
+
 ### One robustness fix the demo style forced
 The panel content crossfade dropped `mode="wait"`: with body clicks making
 dataset-hopping the default gesture, a click landing inside the 200ms exit

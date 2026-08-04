@@ -1435,15 +1435,35 @@ type Props = {
    * know about. Falls back to the watches lookup when omitted.
    */
   description?: string;
+  /**
+   * The selected dataset is filtered out by the LLM toggle — render the
+   * "why this is not in LLMs" view instead of the dataset's content
+   * (client, 2026-08-04).
+   */
+  llmBlocked?: boolean;
   /** Which datalake set is active — needed to look up apps. */
   setId?: string;
   /** Current Type selector label — some app titles depend on it. */
   typeLabel?: string;
 };
 
+/**
+ * Placeholder for the per-dataset "why not in LLMs" explanation — lorem BY
+ * CLIENT REQUEST (2026-08-04: "вставь Lorem Ipsum, не придумывай текст"): he
+ * writes the real argument (hallucinations, coverage, freshness), we do not
+ * invent it. A deliberate exception to the no-lorem rule of 2026-07-30 —
+ * that rule was about unwritten dataset copy pretending to be finished.
+ */
+const LLM_BLOCKED_PLACEHOLDER =
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod " +
+  "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim " +
+  "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea " +
+  "commodo consequat.";
+
 export function InsightPanel({
   selectedSignals,
   description: descriptionProp,
+  llmBlocked = false,
   setId = "watches",
   typeLabel = "",
 }: Props) {
@@ -1575,8 +1595,14 @@ export function InsightPanel({
             <motion.div
               // Single selection keys by dataset so hopping tiles cross-fades
               // the whole column; a combination keeps one key so adding a lake
-              // animates in place instead of remounting everything.
-              key={count === 1 ? selectedSignals[0].id : "multi"}
+              // animates in place instead of remounting everything. The
+              // blocked flag joins the key so toggling LLM mode cross-fades
+              // between content and the "why not" view.
+              key={
+                count === 1
+                  ? `${selectedSignals[0].id}${llmBlocked ? "-llm-blocked" : ""}`
+                  : "multi"
+              }
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
@@ -1595,9 +1621,28 @@ export function InsightPanel({
                 gap: 18,
               }}
             >
+              {/* Blocked slug — states the situation; the reason below is the
+                  client's to write. */}
+              {llmBlocked && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.4)",
+                    fontFamily: FONT,
+                    marginBottom: -10,
+                  }}
+                >
+                  Not available in LLMs
+                </span>
+              )}
+
               {/* Title — the first thing in the panel now. The icon-badge row
                   and the tab bar above it died on 2026-08-03: "иконка убили,
-                  заголовок поднялся, место под табы убили". */}
+                  заголовок поднялся, место под табы убили". A blocked dataset
+                  keeps its name but loses its colour — light grey, not accent
+                  (client, 2026-08-04). */}
               <div
                 style={{
                   display: "flex",
@@ -1633,7 +1678,11 @@ export function InsightPanel({
                       initial={{ opacity: 0, x: -6 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.25, delay: i * 0.07 }}
-                      style={{ color: signal.color }}
+                      style={{
+                        color: llmBlocked
+                          ? "rgba(255,255,255,0.55)"
+                          : signal.color,
+                      }}
                     >
                       {signal.label}
                     </motion.span>
@@ -1641,9 +1690,27 @@ export function InsightPanel({
                 ))}
               </div>
 
+              {/* A blocked dataset shows the reason it is out of LLM reach and
+                  nothing else — no sources, no apps, no insights: the point
+                  of the state is the limitation, not the content. */}
+              {llmBlocked && (
+                <p
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 400,
+                    lineHeight: 1.5,
+                    color: "rgba(255,255,255,0.5)",
+                    margin: 0,
+                    fontFamily: FONT,
+                  }}
+                >
+                  {LLM_BLOCKED_PLACEHOLDER}
+                </p>
+              )}
+
               {/* No paragraph at all when there is no copy — an empty <p> would
                   still take its line-height and leave a phantom gap. */}
-              {description && (
+              {!llmBlocked && description && (
                 <p
                   style={{
                     fontSize: 15,
@@ -1660,7 +1727,7 @@ export function InsightPanel({
 
               {/* Sources — datasets that carry the preview only; the pilot is
                   Reviews: Banks (client call, 2026-08-03). */}
-              {single?.sources && (
+              {!llmBlocked && single?.sources && (
                 <SourcesSection
                   sources={single.sources}
                   total={single.sourcesTotal}
@@ -1669,6 +1736,7 @@ export function InsightPanel({
               )}
 
               {/* Tasks & Apps — the tab became a section; the count stays. */}
+              {!llmBlocked && (
               <section style={{ ...sectionStyle, gap: 12 }}>
                 <SectionHeading label={`Tasks & Apps [${totalApps}]`} />
                 {totalApps === 0 && (
@@ -1725,10 +1793,11 @@ export function InsightPanel({
                   </div>
                 ))}
               </section>
+              )}
 
               {/* Weekly insights close the column — "я домотал до низа, я вижу
                   бац-инсайт" (client call, 2026-08-03). Pilot: Reviews: Banks. */}
-              {single?.insights && (
+              {!llmBlocked && single?.insights && (
                 <InsightsSection insights={single.insights} />
               )}
             </motion.div>

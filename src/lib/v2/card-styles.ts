@@ -11,7 +11,9 @@ export type CardStyleState =
     | "activeHover"
     | "selected"
     | "selectedHover"
-    | "disabled";
+    | "disabled"
+    | "disabledHover"
+    | "disabledSelected";
 
 export type CardStyleDef = {
     bg: string;
@@ -135,6 +137,45 @@ export const cardStyles: Record<CardStyleState, CardStyleDef> = {
         iconOpacity: 0.2,
         iconStrokeWidth: 1,
         textOpacity: 0.2,
+        dotFill: "transparent",
+        showDot: false,
+    },
+    // A disabled tile under the cursor. Disabled tiles are clickable
+    // (2026-08-04): in LLM mode the click explains WHY the dataset is out; on
+    // a busy board it starts a fresh selection. The border answers the hover,
+    // nothing else does.
+    disabledHover: {
+        bg: "transparent",
+        borderType: "solid",
+        borderStyle: "dotted",
+        borderColor: "rgba(100, 110, 202, 0.65)",
+        borderWidth: 2,
+        shadow: "none",
+        glowOpacity: 0,
+        showCornerGlow: false,
+        cornerGlowOpacity: 0,
+        iconOpacity: 0.3,
+        iconStrokeWidth: 1,
+        textOpacity: 0.3,
+        dotFill: "transparent",
+        showDot: false,
+    },
+    // Chosen while unavailable (LLM mode): the same dotted stroke, just
+    // brighter, and deliberately NO inner glow — the tile is picked, not lit
+    // ("чуть-чуть ярче… но без внутреннего освещения", 2026-08-04).
+    disabledSelected: {
+        bg: "transparent",
+        borderType: "solid",
+        borderStyle: "dotted",
+        borderColor: "rgba(159, 169, 255, 0.8)",
+        borderWidth: 2,
+        shadow: "none",
+        glowOpacity: 0,
+        showCornerGlow: false,
+        cornerGlowOpacity: 0,
+        iconOpacity: 0.5,
+        iconStrokeWidth: 1,
+        textOpacity: 0.55,
         dotFill: "transparent",
         showDot: false,
     },
