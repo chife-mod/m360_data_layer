@@ -56,6 +56,18 @@ Written by me to keep the prototype presentable, never reviewed by him:
   on the 2026-08-03 call ("укрэксим, ТАС и ПУМБ"), but every figure, the
   card-blocks trend and the Monobank positive are invented samples. The UI
   wears a "sample" chip until real data exists.
+- **Reviews: Banks enrichment counts** (same file, 2026-08-04): "258
+  aspects" is his own number from the call; "52 brands" and "129 persons"
+  are mine. Section wears the sample chip.
+- **Prompt texts** (same file): the three labels — Summary / Summary: NEG /
+  Summary: POZ — are from his email; the full sentence each prompt sends to
+  the chat is mine.
+- **History seed formats** (`lib/v2/history.ts`): which seeded output is a
+  PDF vs XLSX vs video vs audio is my invention — the format *set* is his
+  email's list.
+- **Facts-strip tooltip copy** (`components/v2/InsightPanel.tsx`): the
+  Zero-Day definition paraphrases his own explanation; the archive and
+  explorer tooltips are mine.
 
 ---
 
@@ -117,10 +129,13 @@ Built: a localStorage journal of outputs (reports built / dashboards /
 templates opened — not clicks) surfacing as the **History** section on
 every dataset's panel, with Open and parameter-preserving Rebuild, and a
 one-time demo seed (a believable week of outputs over real use-case ids)
-so a virgin journal reads as lived-in. Still open here: the prod answer —
-the journal must live server-side behind the M360 account (localStorage
-dies with site data), plus whether history also belongs in a product
-header near the profile once M360 integration is real.
+so a virgin journal reads as lived-in. 2026-08-04 second pass: entries
+carry an **artifact format chip** (XLSX / PDF / PPT / VIDEO / AUDIO — his
+email's list) and opening a lake's explorer journals too. Still open here:
+the prod answer — the journal must live server-side behind the M360
+account (localStorage dies with site data; the per-section collapse state
+added the same day shares this caveat), plus whether history also belongs
+in a product header near the profile once M360 integration is real.
 
 ### 2.8 "Datasets available in LLMs" — the argument, not the toggle — **[us, think first]**
 Source: same call, the long Finval-director passage. The toggle exists; what

@@ -17,15 +17,25 @@ through git if a direction dies (agreed 2026-08-04).
 DISABLED roadmap industries) and Type selectors scope a 4x4 board of 16
 datasets. **Clicking a tile selects that tile** — single-select swap, even on
 a compatibility-dimmed tile; combinations (up to 3) are built from the tile's
-top-right **corner zone**: "+" adds, the dot/"×" removes. The right-hand panel
-is **one scroll column, no tabs**: title → the dataset's copy → **Sources**
-(top 5 of N with monthly volumes, links out) → **Tasks & Apps [n]** →
-**Insights · Weekly** (2–3 findings with a "sample" chip). Sources and
-Insights exist for the pilot dataset only — Reviews: Banks. The decorative
-bar chart is gone. An app card still carries role tags, title, description,
-**Build Report** plus Report Templates / Dashboard links; Build Report opens
-the three-parameter popup (Bank / Period / Language), the card opens the
-template popup with the captured-pages strip.
+top-right **corner zone**: "+" adds, the dot/"×" removes. **Reset** (top row)
+returns the whole stage — industry, type, role, LLM toggle, selection — to
+the demo default, and only shows when something is off default. The
+right-hand panel is **one scroll column, no tabs**: title → the dataset's
+copy → **facts strip** (Archive · N years / Zero-Day indexed with tooltip /
+Explorer ↗ link) → **Sources** (top 5 of N with monthly volumes, links out)
+→ **Enrichment** (aspects / brands / persons counts) → **Tasks & Apps [n]**
+→ **Prompts** (the lake's custom prompts; a row opens the chat-shaped popup
+with an honest shimmer for the answer) → **Insights · Weekly** (2–3 findings
+with a "sample" chip) → **History** (the localStorage journal; entries wear
+XLSX / PDF / PPT / VIDEO / AUDIO format chips). **Every section folds** on
+its heading, remembered per lake per section. Sources, Enrichment, Prompts
+and Insights exist for the pilot dataset only — Reviews: Banks; archive
+depth + zero-day sit on all three Reviews lakes, the Explorer link on
+KOLs: Finance. The decorative bar chart is gone. An app card still carries
+role tags, title, description, **Build Report** plus Report Templates /
+Dashboard links; Build Report opens the three-parameter popup
+(Bank / Period / Language), the card opens the template popup with the
+captured-pages strip.
 
 **Content status — Banking, the set that matters.** 7 of 16 datasets have the
 client's copy: Banks, Media, KOLs: Finance, KOLs: Celebrities, Reviews: Banks,
@@ -36,15 +46,78 @@ points at the watches set on purpose. The Reviews: Banks sources list and
 weekly insights are **sample data flagged in BACKLOG §1.4** — shapes he asked
 for, figures he has not supplied.
 
-**Immediate next step:** show him the 2026-08-03 brief built (this session);
-he still owes the bottom-row overviews. The three think-first items from that
-brief — Role & Tasks view, output history, the LLM-coverage argument — are
-BACKLOG §2.6–2.8. Everything else outstanding is in [BACKLOG.md](../BACKLOG.md).
+**Immediate next step:** show him the 2026-08-04 letter built (evening
+session below: lake passport, enrichment, prompts, history formats, folds,
+full Reset); he still owes the bottom-row overviews and real figures behind
+every "sample" chip. The LLM-coverage argument (§2.8) remains the one
+think-first item not yet advanced. Everything else outstanding is in
+[BACKLOG.md](../BACKLOG.md).
 
 **Two standing rules** that cost real time to establish, both in
 [DESIGN.md](../DESIGN.md): the code — not the Figma landing — is the source of
 truth for this module, and an accent colour never colours body-sized text
 (which is why selected tiles keep white labels).
+
+---
+
+## 2026-08-04 (evening) — The 2026-08-04 brief: lake passport, enrichment, prompts, formats, folds, full Reset
+
+Call + email of 2026-08-04, built the same day. Seven checkboxes from his
+letter, one from Oleg mid-session. Everything content-bearing pilots on
+Reviews: Banks, the same lake that pilots Sources and Insights.
+
+### The lake's passport — archive depth, zero-day, explorer
+His three "how do we show" questions answered as one chip row under the
+overview copy, before any section — facts about the lake, not content from
+it. **Archive · N years** (Reviews: Banks 3 / Branches 15 / Apps 5 — his
+figures); **Zero-Day indexed** with the definition in a hover tooltip
+(every source collected from its first message — his term, "она будет не
+всегда" so it is a flag, not a given); **Explorer ↗** linking out where a
+lake has one — KOLs: Finance points at the pharma dols explorer he named
+as the reference. Opening an explorer journals as an output (new history
+type). Placement answers his own worry that a bare "архив 20 лет"
+is ambiguous ("он полный или нет?") — depth and zero-day sit side by side.
+
+### Enrichment — after Sources
+"Сколько аспектов распознаётся, сколько брендов" — a plain three-row
+section: Aspects 258 (his number) / Brands 52 / Persons 129 (mine, sample
+chip). The numbers are the message; no links.
+
+### Prompts — after Tasks & Apps, продаём козла
+His separation kept: a task produces an artifact (шашлык), a prompt
+produces an answer. Section lists the lake's custom prompts — Summary /
+Summary: NEG / Summary: POZ, labels his — each row runs in a chat-shaped
+popup: prompt goes out as the user bubble, the answer area stays an honest
+shimmer ("The assistant answers here… wired to the live AI chat in M360").
+No invented AI output — the no-filler rule covers the козёл too.
+
+### History formats — Excel / PDF / PPT / Video / Audio
+Journal entries wear the artifact's format as a chip; the live Build
+Report writes PDF. The demo seed regrew: the same Reviews: Banks benchmark
+now exists as a PDF, an XLSX and a video, plus a PPT and an audio brief on
+Media — "мы будем её аудио" made visible. Old journals that are pure seed
+upgrade in place; journals with any real output are never touched.
+
+### Collapse — every section folds
+For the person on their 200th visit who knows the lake's sources by heart:
+every panel section (Sources / Enrichment / Tasks & Apps / Prompts /
+Insights / History) folds on its heading, chevron narrating, state
+remembered per set + selection + section in localStorage. Folded, the
+heading with its count stays as the summary line. The heading-to-body gap
+lives inside the animated wrapper — as a flex gap it would survive the
+fold as a phantom 10px.
+
+### Reset goes full-stage (Oleg, mid-session)
+"Я выбираю роль, тип, индустрию — я должен иметь возможность сбросить."
+Reset now returns industry, type, role, LLM toggle and selection to the
+demo default in one click, appears whenever anything is off default, and
+shortened its label to match its width of responsibility.
+
+### Verified
+Dev-server walkthrough: strip chips + tooltip, enrichment counts, prompt
+popup, format chips on the reseeded journal, fold + persistence across a
+reload, Reset appearing on a changed Type and clearing it. `tsc` adds no
+new errors beyond the §4.4 pre-existing set.
 
 ---
 
