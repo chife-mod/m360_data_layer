@@ -1343,12 +1343,16 @@ function HistoryRow({
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      // Wider negative margin than the one-line rows: a two-line entry reads
+      // as a card, and content sitting on the hover pill's edge looked
+      // cramped (client, 2026-08-04) — the pill extends sideways AND pads
+      // inside, while the grid stays put.
       style={{
         display: "flex",
         flexDirection: "column",
         gap: 3,
-        padding: "6px 10px",
-        margin: "0 -10px",
+        padding: "7px 14px",
+        margin: "0 -14px",
         borderRadius: 8,
         textDecoration: "none",
         backgroundColor: hovered ? "rgba(255,255,255,0.05)" : "transparent",
@@ -1381,12 +1385,14 @@ function HistoryRow({
         </span>
         {/* The artifact's format — Excel / PDF / PPT / Video / Audio (client
             email, 2026-08-04). Web surfaces leave the column empty, which is
-            what keeps the time column straight. */}
+            what keeps the time column straight. Left-aligned within the
+            column so every chip starts on the same vertical (client,
+            2026-08-04 — right-aligned, their ragged left edges "скакали"). */}
         <span
           style={{
             width: HISTORY_FORMAT_COL,
             display: "flex",
-            justifyContent: "flex-end",
+            justifyContent: "flex-start",
             flexShrink: 0,
           }}
         >
@@ -2840,11 +2846,14 @@ export function InsightPanel({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
               className="m360-scroll"
+              // The 4px inset keeps the scrollbar track clear of the panel's
+              // rounded corners (Windows draws it edge-to-edge); the padding
+              // gives the 4px back, so content sits exactly where it did.
               style={{
                 position: "absolute",
-                inset: 0,
+                inset: "4px 4px 4px 0",
                 overflowY: "auto",
-                padding: "28px 26px 28px 32px",
+                padding: "24px 22px 24px 32px",
                 display: "flex",
                 flexDirection: "column",
                 gap: 18,
@@ -2969,11 +2978,14 @@ export function InsightPanel({
               // One scroll, no tabs (client call, 2026-08-03): title first,
               // overview right under it, then Sources / Tasks & Apps /
               // Insights as sections — "всё поднялось, сразу видим текст".
+              // The 4px inset keeps the scrollbar track clear of the panel's
+              // rounded corners (Windows draws it edge-to-edge); the padding
+              // gives the 4px back, so content sits exactly where it did.
               style={{
                 position: "absolute",
-                inset: 0,
+                inset: "4px 4px 4px 0",
                 overflowY: "auto",
-                padding: "28px 26px 28px 32px",
+                padding: "24px 22px 24px 32px",
                 display: "flex",
                 flexDirection: "column",
                 gap: 18,

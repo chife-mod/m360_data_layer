@@ -83,6 +83,16 @@ body {
   background: transparent;
 }
 
+/* Windows Chromium draws stepper arrows at both ends of the bar; clipped by
+   the panel's rounded corners they read as broken chevrons (client,
+   2026-08-04 — "в Винде обрезанные стрелочки"). macOS never shows them, so
+   killing them costs nothing anywhere. Covers both axes. */
+.m360-scroll::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .m360-scroll::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.16);
   border-radius: 999px;

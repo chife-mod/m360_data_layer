@@ -128,10 +128,23 @@ Reset now returns industry, type, role, LLM toggle and selection to the
 demo default in one click, appears whenever anything is off default, and
 shortened its label to match its width of responsibility.
 
+### Windows scrollbar, History polish (late follow-ups)
+On Windows, Chromium draws stepper arrows at both ends of the scrollbar
+and the panel's rounded corners clipped them ("обрезанные стрелочки,
+выглядит крипово") — `::-webkit-scrollbar-button` is now hidden for every
+`.m360-scroll`, and the panel's scroll column sits 4px off the panel's
+edges (padding gives the 4px back, content did not move) so the track
+never touches the corner radius. History rows: format chips left-align
+within their column — right-aligned, their ragged left edges wandered —
+and the hover pill widened (±14px with matching inner padding), so
+content no longer sits on its edge.
+
 ### Verified
 Dev-server walkthrough: strip chips + tooltip, enrichment counts, prompt
 popup, format chips on the reseeded journal, fold + persistence across a
-reload, Reset appearing on a changed Type and clearing it. `tsc` adds no
+reload, Reset appearing on a changed Type and clearing it; after the
+follow-ups — chip left edges equal to the pixel, scroll-column inset
+applied, tile marks on the Reviews trio and KOLs: Finance. `tsc` adds no
 new errors beyond the §4.4 pre-existing set.
 
 ---
