@@ -329,10 +329,14 @@ export default function DataLayerV2() {
                 // No Add affordance before the first pick (client, 2026-08-04:
                 // "я не добавляю, я просто выбираю") — the corner only starts
                 // meaning something once there is a selection to add to.
+                // Remove needs TWO selected: excluding the only pick makes no
+                // sense ("выбор-то один") — a body click already clears it.
                 const comboMode = showAiOnly
                   ? "none"
                   : isSelected
-                    ? "remove"
+                    ? selectedIds.length >= 2
+                      ? "remove"
+                      : "none"
                     : selectedIds.length > 0 &&
                         compatibleIds.includes(datalake.id)
                       ? "add"

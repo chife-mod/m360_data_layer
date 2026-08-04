@@ -59,12 +59,14 @@ Picking a pair was the primary gesture but not the frequent one ("задача
 выбрать пару актуальна, но не настолько частотна"). Now a body click selects
 exactly that tile wherever the selection stood — including on a
 compatibility-dimmed tile, which starts a fresh selection instead of demanding
-Reset. The top-right corner owns combinations, refined on the 2026-08-04
-follow-up: **no affordance before the first pick** ("я не добавляю, я просто
-выбираю" — a virgin board is plain hover-and-click), then tile hover shows a
-labelled "Add +" on compatible tiles and "Remove ×" on selected ones — a 24px
-circle over the indicator dot's spot, the dot yielding while it is up. LLM
-mode stays single-select and shows no corner affordances.
+Reset. The corner affordance took two refinement rounds on 2026-08-04:
+**nothing before the first pick** ("я не добавляю, я просто выбираю" — a
+virgin board is plain hover-and-click); then tile hover shows a labelled
+24px "Add +" on compatible tiles; **"Remove ×" only once two or more are
+selected** — the sole pick has nothing to be excluded from ("выбор-то один"),
+a body click already clears it. The corners split to stop competing: the
+indicator dot moved **top-left**, the affordance owns **top-right**. LLM mode
+stays single-select and shows no corner affordances.
 
 ### The panel: one scroll, no tabs
 "Иконка убили, заголовок поднялся, овервью слово убили, место под табы убили,

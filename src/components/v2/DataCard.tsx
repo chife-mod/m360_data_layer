@@ -304,15 +304,15 @@ export function DataCard({
           </span>
         </div>
 
-        {/* Ellipse 867 — indicator dot top-right.
-            Always mounted: unmounting it made the dot pop out instead of
-            fading with the rest of the tile. While the corner affordance is
-            visible it covers the dot's spot, so the dot yields to it
-            (client, 2026-08-04: "плюсик перекрывает кружок индикации"). */}
+        {/* Ellipse 867 — indicator dot, top-LEFT since 2026-08-04: the client
+            split the corners — selection state lives left, the Add/Remove
+            affordance lives right — so neither ever has to yield to the
+            other. Always mounted: unmounting it made the dot pop out instead
+            of fading with the rest of the tile. */}
         <div
           className="absolute pointer-events-none z-10"
           style={{
-            right: "8px",
+            left: "8px",
             top: "8px",
             width: "12px",
             height: "12px",
@@ -320,17 +320,18 @@ export function DataCard({
             backgroundColor:
               s.dotFill === "currentColor" ? accentColor : s.dotFill,
             border: "1px solid rgba(255, 255, 255, 0.2)",
-            opacity: s.showDot && !(comboMode !== "none" && isHovered) ? 1 : 0,
+            opacity: s.showDot ? 1 : 0,
             transition: `opacity ${STATE_MS}ms ease, background-color ${STATE_MS}ms ease`,
           }}
         />
 
-        {/* ── Corner affordance — the multi-select entry point ───────────────
+        {/* ── Corner affordance (top-right) — the multi-select entry point ───
             Body click swaps the selection; this corner is the only place that
-            edits the combination (client calls, 2026-08-03/04). It exists only
-            once something is selected, and shows itself on TILE hover, not
-            corner hover: a labelled "Add +" over the indicator dot's spot on
-            compatible tiles, "Remove ×" on selected ones. */}
+            edits the combination (client calls, 2026-08-03/04). It exists
+            only while it can do something: "Add +" on compatible tiles once
+            anything is selected, "Remove ×" on selected tiles once the
+            combination has at least two — excluding the only pick is not a
+            thing, a body click already clears it. Shows on TILE hover. */}
         {comboMode !== "none" && (
           <div
             role="button"
@@ -351,9 +352,9 @@ export function DataCard({
               alignItems: "flex-start",
               justifyContent: "flex-end",
               gap: 6,
-              // 2px insets put the 24px circle exactly over the 12px dot
-              // (both centre 14px from the corner); the rest pads the hit
-              // zone so the label and near-misses still register.
+              // 2px insets centre the 24px circle 14px from the corner — the
+              // mirror of the dot's anchor in the left corner; the rest pads
+              // the hit zone so the label and near-misses still register.
               padding: "2px 2px 14px 14px",
               cursor: "pointer",
               // The whole affordance rides tile hover — before that the tile
