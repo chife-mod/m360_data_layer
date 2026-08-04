@@ -2,7 +2,7 @@
 
 ---
 
-## WHERE THINGS STAND — 2026-07-30, end of day
+## WHERE THINGS STAND — 2026-08-04
 
 **Live:** https://chife-mod.github.io/m360_data_layer/ · local `npm run dev` ->
 `http://localhost:3000/m360_data_layer` (the basePath applies in dev too; the
@@ -10,35 +10,92 @@ bare root 404s). Frozen first version at `/v1`, launcher at `/dashboard`.
 `/v2` redirects to `/`.
 
 Deploy is manual: `npm run build` -> publish `out/` to the `gh-pages` branch.
-Nothing in CI does this.
+Nothing in CI does this. Versioning is by commit — no v3 directory; roll back
+through git if a direction dies (agreed 2026-08-04).
 
-**What the module is now.** Industry (Watches / Banking / Retail) and Type
-selectors scope a 4x4 board of 16 datasets. Selecting up to 3 datasets drives
-the right-hand panel, which has two tabs: **Overview** (the dataset's copy plus
-the bar chart) and **Tasks & Apps [n]** (the apps for that selection). An app
-card carries role tags, a title, a description, and one primary action —
-**Build Report** — beside outlined links to **Report Templates** and
-**Dashboard**. Build Report opens a three-parameter popup (Bank / Period /
-Language, the period being a Toggl-style range picker); clicking the card
-instead opens the template popup with a drag-scrollable strip of the report's
-real captured pages.
+**What the module is now.** Industry (Watches / Banking / Retail, plus four
+DISABLED roadmap industries) and Type selectors scope a 4x4 board of 16
+datasets. **Clicking a tile selects that tile** — single-select swap, even on
+a compatibility-dimmed tile; combinations (up to 3) are built from the tile's
+top-right **corner zone**: "+" adds, the dot/"×" removes. The right-hand panel
+is **one scroll column, no tabs**: title → the dataset's copy → **Sources**
+(top 5 of N with monthly volumes, links out) → **Tasks & Apps [n]** →
+**Insights · Weekly** (2–3 findings with a "sample" chip). Sources and
+Insights exist for the pilot dataset only — Reviews: Banks. The decorative
+bar chart is gone. An app card still carries role tags, title, description,
+**Build Report** plus Report Templates / Dashboard links; Build Report opens
+the three-parameter popup (Bank / Period / Language), the card opens the
+template popup with the captured-pages strip.
 
 **Content status — Banking, the set that matters.** 7 of 16 datasets have the
 client's copy: Banks, Media, KOLs: Finance, KOLs: Celebrities, Reviews: Banks,
 Reviews: Branches, Reviews: Apps. The other 9 are deliberately **empty**, not
 filler. Apps exist for Banks (1), both KOLs (2 each) and all three Reviews
 (1 each) — 9 in total. Watches keeps its original copy from February; Retail
-points at the watches set on purpose.
+points at the watches set on purpose. The Reviews: Banks sources list and
+weekly insights are **sample data flagged in BACKLOG §1.4** — shapes he asked
+for, figures he has not supplied.
 
-**Immediate next step:** Vsevolod is writing the bottom row — Products &
-Services, Regulators, Payment Systems, Search Demand, plus Branches & ATMs and
-the four Owned channels. Everything else outstanding is in
-[BACKLOG.md](../BACKLOG.md).
+**Immediate next step:** show him the 2026-08-03 brief built (this session);
+he still owes the bottom-row overviews. The three think-first items from that
+brief — Role & Tasks view, output history, the LLM-coverage argument — are
+BACKLOG §2.6–2.8. Everything else outstanding is in [BACKLOG.md](../BACKLOG.md).
 
 **Two standing rules** that cost real time to establish, both in
 [DESIGN.md](../DESIGN.md): the code — not the Figma landing — is the source of
 truth for this module, and an accent colour never colours body-sized text
 (which is why selected tiles keep white labels).
+
+---
+
+## 2026-08-04 — The 2026-08-03 brief: click logic, tabless panel, pilot sources & insights
+
+Email + call of 2026-08-03 ("новые вводные"), built the next day. The part
+becomes "более важная, более data-intense" — less chrome, more content, fewer
+clicks to the goal ("минимальное время до шашлыка").
+
+### Click logic — body selects, corner combines
+Picking a pair was the primary gesture but not the frequent one ("задача
+выбрать пару актуальна, но не настолько частотна"). Now a body click selects
+exactly that tile wherever the selection stood — including on a
+compatibility-dimmed tile, which starts a fresh selection instead of demanding
+Reset. The top-right 44×44 corner zone owns combinations: "+" fades in on
+hover for addable tiles, the indicator dot turns "×" on selected ones. LLM
+mode stays single-select and shows no corner zones.
+
+### The panel: one scroll, no tabs
+"Иконка убили, заголовок поднялся, овервью слово убили, место под табы убили,
+всё поднялось." The icon-badge row, the tab bar and the decorative bottom
+chart are gone; the panel is a single scrollable column — title, overview
+copy, then sections with hairline tops: Sources, Tasks & Apps [n], Insights ·
+Weekly. Empty-state copy now teaches the new gesture ("Select a dataset to
+explore it — or combine up to three with the corner +").
+
+### Sources & Insights — pilot on Reviews: Banks only
+Per the brief, one group first. Sources: top 5 of 8 review sites with monthly
+intake, each row a link ("в один клик открыть"); MinFin / Vidhuk / Banki.ua
+are his names from the overview copy, the rest is sample (BACKLOG §1.4).
+Insights: three weekly findings closing the column — negativity leaders with
+mini bars (the trio he read off his own dashboard), a trending complaint, one
+positive counter — wearing a "sample" chip. Multi-selection hides both
+sections: sources belong to one dataset.
+
+### Roadmap industries, disabled
+Pharma, Film Festivals, Fashion, Books join the Industry selector muted with
+"Coming soon" and an empty datalake set behind them — visible roadmap, nothing
+selectable ("хер выберешь, но она есть"). The Select grew real disabled-option
+support: keyboard skips them, click keeps the list open.
+
+### Palette: position 16 red → emerald
+Search Demand's `#FF4560` read as Media's red; he asked for green. `#34D399`
+in both sets (watches' Support Chats moved with it) so same-position-same-
+colour survives. DESIGN.md updated.
+
+### One robustness fix the demo style forced
+The panel content crossfade dropped `mode="wait"`: with body clicks making
+dataset-hopping the default gesture, a click landing inside the 200ms exit
+window left the panel stuck on the outgoing dataset. Concurrent crossfade
+(both nodes absolute, overlap for the fade) survives arbitrary click speed.
 
 ---
 

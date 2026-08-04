@@ -48,6 +48,14 @@ Written by me to keep the prototype presentable, never reviewed by him:
   (`lib/v2/datalakes.ts`).
 - Build Report parameter lists: the six banks, and the two languages
   (`components/v2/InsightPanel.tsx`).
+- **Reviews: Banks sources list** (`lib/v2/datalakes-banking.ts`): he named
+  MinFin, Vidhuk, Banki.ua in the overview; Finance.ua and Bankchart, all five
+  domains, every monthly volume and the "8 total" split 5+3 are mine.
+- **Reviews: Banks weekly insights** (same file): the negativity-leaders trio
+  (Ukreximbank / TAScombank / PUMB) mirrors what he read off his own dashboard
+  on the 2026-08-03 call ("укрэксим, ТАС и ПУМБ"), but every figure, the
+  card-blocks trend and the Monobank positive are invented samples. The UI
+  wears a "sample" chip until real data exists.
 
 ---
 
@@ -91,6 +99,29 @@ a discrete task.
 Source: call of 2026-07-30. Long-horizon: feed the 16 datasets to a model, state
 your goals, get told what to do; scenario analysis. Explicitly "future", noted
 so it is not lost.
+
+### 2.6 Role & Tasks centric view — **[us, think first]**
+Source: email + call of 2026-08-03 ("Advanced"). Flip the module's axis: today
+everything hangs off datasets; he wants a view that starts from the viewer —
+"я PR-manager, какие задачи я могу решить?" — and lists tasks/apps across all
+lakes for that role. The role tags on apps already exist, so the data side is
+a pivot, not new content. Explicitly "начать думать", not build.
+
+### 2.7 History of outputs — **[open, parked by him]**
+Source: same call. Somewhere, a trail of what the user produced — reports
+built, dashboards opened. His own verdict on the spot: "это уже, наверное,
+пока too much" — parked until the builder produces real artifacts worth
+listing.
+
+### 2.8 "Datasets available in LLMs" — the argument, not the toggle — **[us, think first]**
+Source: same call, the long Finval-director passage. The toggle exists; what
+is missing is the *why*: an LLM will name 10–13 Ukrainian finfluencers but
+never 150, knows blogs but not competitors' ads, and cheerfully admits "I
+can't verify current followers" when pushed (his live Claude probe). He wants
+that segregation — what an LLM half-answers vs what only the lakes answer —
+legible to a non-technical director. Direction to explore: per-tile LLM
+coverage cues in LLM mode (e.g. "LLMs see ~10 of 150 influencers") instead of
+binary on/off dimming.
 
 ---
 

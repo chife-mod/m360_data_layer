@@ -46,8 +46,14 @@ neighbouring tiles contrast.
 #46FEC3  #F43F5E  #2563EB  #FBBF24
 #9333EA  #FF8000  #06B6D4  #EC4899
 #10B981  #6258D8  #FB923C  #7C3AED
-#F472B6  #00D4FF  #84CC16  #FF4560
+#F472B6  #00D4FF  #84CC16  #34D399
 ```
+
+Position 16 was `#FF4560` until 2026-08-03 — on the banking board it sat on
+Search Demand and read as the same red as Media (`#F43F5E`), and the client
+asked for a green ("он должен быть какой-то зелёный"). `#34D399` (emerald,
+~9:1 on `#111539`) replaced it **in both sets** — same-position-same-colour
+across industries is the rule, so watches' Support Chats moved with it.
 
 ### The accent never colours 14px text (2026-07-30)
 
@@ -120,9 +126,17 @@ original watches set.
 ## Component tokens
 
 - **Card** — 191×130, radius 12, padding 24, vertical centre, gap 12. Grid gap 4 → row width 776.
+  The top-right 44×44 corner is the combo zone: "+" to add to the selection,
+  the indicator dot / "×" to remove. The body is single-select.
 - **Toggle** — 60×32 track, 24×24 knob, radius 40, 40×40 blurred glow behind the knob.
 - **Select** — 36 high, radius 8, 1px border, panel offset 6, option 34 high, radius 6.
-- **Insight panel** — 515×532, radius 12.
+  Options may be `disabled`: muted, keyboard-skipped, click keeps the list open.
+- **Insight panel** — 515×532, radius 12. Since 2026-08-03 the inside is **one
+  scroll column**, no tabs and no icon badges: title → overview text → Sources
+  → Tasks & Apps [n] → Insights · Weekly. Section headings are 11px uppercase
+  at 0.35 white; sections open with a `rgba(255,255,255,0.08)` hairline. The
+  decorative bar chart at the panel's foot was removed the same day ("он
+  весёлый, но он не функция").
 
 ---
 
